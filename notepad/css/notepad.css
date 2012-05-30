@@ -1,0 +1,32 @@
+@CHARSET "UTF-8";
+
+.notepad span[contenteditable="true"] {
+	border: solid 1px blue;
+}
+
+.notepad li[about] {
+    background: #EEE;
+}
+.notepad li[about]:before {
+    /* content: "   (saved)"; */
+    font-size: xx-small;
+}
+
+.notepad li[rel="rdfs:Class"] {
+}
+
+.notepad li[rel="owl:sameAs"] {
+}
+
+.notepad .predicate {
+	font-style: italic;
+}
+.notepad .separator:before {
+	content: ": ";
+}
+
+label { display: none; }
+
+#status {
+	display: none;
+}
