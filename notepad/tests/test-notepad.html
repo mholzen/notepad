@@ -7,49 +7,111 @@
 
 <script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
 <script src="../external/jquery-ui.js" type="text/javascript"></script>
-<link href="../external/jquery-ui.js" type="text/css" rel="stylesheet" media="screen" />
+<link href="../external/jquery-ui.css" type="text/css" rel="stylesheet" media="screen" />
 
 <script src="../notepad/notepad.js" type="text/javascript"></script>
 <link href="../css/notepad.css" type="text/css" rel="stylesheet" media="screen" />
 
-
 <script>
-	$(document).ready(function() {
+    $(document).ready(function() {
 
-		module("notepad.js");
+        function get_new_notepad_div() {
+            $("#notepad").remove();
+            $("#notepad-container").append('<div id="notepad"/>');
+            var notepad = $("#notepad");
+            if (!notepad.length) {
+                throw "cannot find newly created notepad";
+            }
+            return notepad;
+        }
 
-		test("should get a new notepad with one empty line", function() {
-		    expect(2);
-			n = $("#notepad").notepad();
-			ok(n);
-			equal(n.find("li").length, 1);
-		});
-		
-		test("should add a URI on enter", function() {
-		    expect(1);
-			n = $("#notepad").notepad();
-			
-			li = n.find("li");
-			span = li.find("span.object");
-			span.text('Test a widget');
-
+        function enter_new_line(notepad) {
+            var li = notepad.find("li");
+            span = li.find(".object");
+            span.text('Test a widget');
             span.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+        }
+
+        module("notepad.js");
+
+        test("a new notepad should get a new notepad with one empty line", function() {
+            expect(3);
+            n = get_new_notepad_div();
+
+            n.notepad();
             
-			ok(li.attr('about'), "No about attr defined on the line");
-	    });
-			
-	});
+            ok(n,"no notepad object returned from creation");
+            equal(n.find("li").length, 1, "should have one line");
+            equal(n.find("li .predicate").text(), "sequence");
+        });
+        
+        test("a new notepad should get a new line on enter", function() {
+            expect(1);
+            n = get_new_notepad_div();
+            n.notepad();
+
+            enter_new_line(n);
+
+            equal(n.find("li").length, 2, "should have 2 lines");
+        });
+    
+        test("a new notepad should have two triples", function() {
+            expect(1);
+            var n = get_new_notepad_div();
+            n.notepad();
+            var notepad = n.data('notepad');
+            
+            deepEqual(notepad.triples(),[
+                [':blank2','rdf:Seq',notepad.getUri()],
+                [':blank2','rdfs:label','']
+            ]);
+        });
+
+        test("a notepad with two lines should have 4 triples", function() {
+            expect(1);
+            n = get_new_notepad_div();
+            n.notepad();
+
+            enter_new_line(n);
+            
+            equal(n.notepad("triples").length, 4);
+        });
+
+        test("a notepad should display RDF", function() {
+            expect(3);
+            var div = get_new_notepad_div();
+            div.notepad();
+            var notepad = div.data('notepad');
+            var notepadUri = notepad.getUri();
+            
+            notepad.setRdf([
+                [notepadUri,'rdf:Seq',':blank2'],
+                [':blank2','rdfs:label','First line']
+            ]);         
+            equal(div.find('li .object').text(), 'First line');
+
+            notepad.setRdf([
+                [notepadUri,'rdf:Seq',':blank2'],
+                [notepadUri,'rdf:Seq',':blank3'],
+                [':blank2','rdfs:label','First line'],
+                [':blank3','rdfs:label','Second line']
+            ]);         
+            equal(div.find('li .object')[0].textContent, 'First line');
+            equal(div.find('li .object')[1].textContent, 'Second line');
+        });
+
+    });
 </script>
 
 </head>
 <body>
-	<h1 id="qunit-header">QUnit example</h1>
-	<h2 id="qunit-banner"></h2>
-	<div id="qunit-testrunner-toolbar"></div>
-	<h2 id="qunit-userAgent"></h2>
-	<ol id="qunit-tests"></ol>
-	<div id="qunit-fixture">test markup, will be hidden</div>
-	<div id="notepad"></div>
+    <h1 id="qunit-header">QUnit example</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture">test markup, will be hidden</div>
+    <div id="notepad-container"/>
 </body>
 
 </html>
