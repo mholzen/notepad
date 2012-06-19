@@ -1,0 +1,45 @@
+<div class="notepad" about=":session_URI">
+	<ul id="top-level-container">
+		<li about=":li_uri" rel=":pred_to_parent">
+		    <span class="predicate">sequence</span>
+		    <span class="separator" />
+		    <span class="object" property="rdfs:label">Marc von Holzen</span>
+			<ul>
+				<li rel="rdfs:Class" about=":blank2" property="rdfs:label">
+				    <span class="predicate">subclass</span>
+				    <span class="separator" />
+				    <span class="object">Entrepreneur</span>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+li.triple =>
+    parent triple ( :li_uri, :pred_to_parent, :parent_uri );
+    line   triple ( :li_uri, rdfs:label, span text );
+    child triples 
+
+
+
+    <div class="notepad" about=":session_URI">
+    	<ul id="top-level-container">
+    		<li class="rdf" property="pred" >value</li>
+
+    		<li class="label" about=":li_uri" rel=":pred_to_parent" resource=":session_URI">
+
+    		<li class="label" about=":li_uri" rel=":pred_to_parent">
+    		    <span class="predicate">sequence</span>
+    		    <span class="separator" />
+    		    <span class="object" property="rdfs:label">Marc von Holzen</span>
+    			<ul>
+    				<li rel="rdfs:Class" about=":blank2" property="rdfs:label">
+    				    <span class="predicate">subclass</span>
+    				    <span class="separator" />
+    				    <span class="object">Entrepreneur</span>
+    				</li>
+    			</ul>
+    		</li>
+    	</ul>
+    </div>
+

@@ -6,34 +6,34 @@
 <script src="../external/jquery-1.7.2.js" type="text/javascript" ></script>
 <script src="../external/jquery-ui.js" type="text/javascript" ></script>
 <link href="../external/jquery-ui.css" rel="stylesheet" type="text/css" media="screen" />
+<script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
 
 <script src="../notepad/notepad.js" type="text/javascript" ></script>
+<script src="../notepad/sparql.js" type="text/javascript"></script>
 <link href="../css/notepad.css" rel="stylesheet" type="text/css" media="screen" />
 <script>
-	$(document).ready(function() {
-		$("#notepad").notepad();
-	});
+$(function() {
+    $("#notepad").notepad();
+    $("#notepad").data('notepad').endpoint = new FusekiEndpoint("http://localhost:3030");
+    $("#save").click(function() {
+        var sparql = triplesToDatabank($("#notepad").notepad('triples')).sparqlu();
+        $("#rdf").text(sparql);        
+        $.post('http://localhost:3030/ds/update', {update: sparql}, function(data) {
+            $("#results").text(data);
+        })
+    });
+});
 </script>
 </head>
 <body>
     <h3>Notepad</h3>
 	<div id="notepad"></div>
-	<div id="documentation">
-        <h3>Overview</h3>
-        <p>The above 'sequence: none' is an editable, multi level bullet list where the relationship between a child node and its parent
-            can be specified. Every line has a predicate section (the relationship type, before the ':') and an object section (the value, after the ':').
-            With the parent constituting the subject, those three values form a triple.</p>
-        <p>The root node exists, but is hidden.  The default predicate for the children of the root node is 'sequence'.
-             This predicate would most likely not be displayed in the final UI.  The default predicate for any other child nodes is 'more specifically' (subclassing)</p>
-        <p>The focus control, and key events are clearly buggy.
-            </p>
-	    <h3>Things to try</h3>
-	    <ul>
-	        <li>Type something in the 'object' section of a new line (where it says 'none').  Hit Enter.  New element added. The line is grayed to indicate that it has received a URI (and will be later saved)</li>
-	        <li>Create two lines.  In the second line, hit Tab (Shift tab) to indent (unindent) or attach the second line to the parent above.  (must actually hit twice).</li>
-	        <li>Type something in the 'predicate' section of a line.  Autocomplete is turned on.  Select all then type 'e' to see the list of options.</li>
-	        <li>Create a few nodes.  Then create child node.  Select 'more generally' as the predicate.  Then autocomplete on the object field is turned on and allows you to select any other node you have already created.</li>
-	    </ul>
-	</div>
+	<button id="save">Save</button>
+
+	<h4>SPARQLU</h4>
+	<pre id="rdf"></pre>
+
+	<h4>Results</h4>
+	<pre id="results"></pre>
 </body>
 </html>

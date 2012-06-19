@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="../external/qunit.js" type="text/javascript"></script>
+<link href="../external/qunit.css" type="text/css" rel="stylesheet" media="screen" />
+
+<script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
+<script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
+<script src="../notepad/sparql.js" type="text/javascript"></script>
+
+<script>
+    $(document).ready(function() {
+
+        module("rdfquery.js");
+
+        test("can create a URI", function() {
+            var uri = $.uri('http://example.com/resource#fragment');
+            equal(uri,'http://example.com/resource#fragment');
+        });
+
+        test("can create a resource", function() {
+            var resource = $.rdf.resource('rdf:foo', {namespaces: {rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}});
+            equal(resource.value.toString(), "http://www.w3.org/1999/02/22-rdf-syntax-ns#foo");
+        });
+
+        test("can create a CURIE", function() {
+            var uri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#foo";
+            var curie = $.createCurie(uri, {namespaces: {rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}});
+            equal(curie,'rdf:foo');
+        });
+
+        test("can create a new triple", function() {
+            expect(4);
+            var triple = $.rdf.triple($.rdf.blank('[]'), $.rdf.label, $.rdf.literal('"foo"'));
+            equal(triple.subject.type,'bnode');
+            equal(triple.property,$.rdf.label);
+            equal(triple.object.value,'foo');
+            
+            triple = $.rdf.triple($.rdf.resource('<http://example.com/foo>'), $.rdf.label, $.rdf.literal('"foo"'));
+            equal(triple.subject.type,'uri');
+        
+        });
+
+        // test("can create a new triple with well known namespaces", function() {
+        //     var triple = $.rdf.triple($.rdf.blank('[]'), 'rdfs:label', $.rdf.literal('"foo"'));
+        //     equal(triple.property,$.rdf.label);
+        // });
+
+        function getTriple(label) {
+            if (label===undefined) {
+                label = "label";
+            }
+            return $.rdf.triple($.rdf.blank('[]'), $.rdf.label, $.rdf.literal('"'+label+'"'));
+        }
+        
+        test("can add triples to a triplestore", function() {    
+            var graph = $.rdf.databank();
+            equal(graph.size(),0);
+            graph.add(getTriple());
+            equal(graph.size(),1);
+            deepEqual(graph.triples()[0].subject.type,'bnode');
+            graph.add(getTriple('label2'));
+            equal(graph.size(),2);
+        });
+
+        test("can iterate over triples in a graph", function() {
+            var graph = $.rdf.databank();
+            graph.add(getTriple());
+            equal(graph.triples().length,1, "triples are not of length 1" + graph.triples());
+        });
+        
+        test("can convert triples to SparqlU", function() {    
+            var graph = $.rdf.databank();
+
+            graph.add( getTriple('label1') );
+
+            var sparqlu = graph.sparqlu();
+            
+            ok(sparqlu.indexOf('INSERT') != -1, "can't find INSERT in "+sparqlu);
+            ok(sparqlu.indexOf('label1') != -1, "can't find literal label1 in "+sparqlu);
+
+            graph.add( getTriple('label2') );
+            sparqlu = graph.sparqlu();
+            ok(sparqlu.indexOf('label2') != -1, "can't find literal label2 in "+sparqlu);
+        });
+        
+    });
+</script>
+
+</head>
+<body>
+    <h1 id="qunit-header">QUnit example</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture">test markup, will be hidden</div>
+    <div id="notepad-container"><div id="notepad"/></div>
+</body>
+
+</html>

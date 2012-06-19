@@ -10,10 +10,6 @@
 	content: ": ";
 }
 
-#status {
-	display: none;
-}
-
 .notepad textarea {
     resize: none;
     border: none;
