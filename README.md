@@ -7,12 +7,9 @@ Prerequisites
 
 * SPARQL Endpoint: [Apache Jena Fuseki](http://jena.apache.org/documentation/serving_data/index.html)
 
-  * [Download](http://www.apache.org/dist/incubator/jena/jena-fuseki-0.2.1-incubating/)
+ * [Download](http://www.apache.org/dist/incubator/jena/jena-fuseki-0.2.1-incubating/)
 
-  * [Get started](http://jena.apache.org/documentation/serving_data/index.html#getting-started-with-fuseki)
-
-    * Download (this includes the server and the SOH scripts)
-    * Unzip
-    * (Linux) chmod +x fuseki-server s-\*
-    * Run a server
-        fuseki-server --update --mem /ds
+ * [Get started](http://jena.apache.org/documentation/serving_data/index.html#getting-started-with-fuseki)
+   * Unzip
+   * (Linux) `chmod +x fuseki-server s-\*`
+   * Run a server: `fuseki-server --update --mem /ds`
