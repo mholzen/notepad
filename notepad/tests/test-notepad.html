@@ -2,20 +2,22 @@
 <html>
 <head>
 
+<!-- Test infrastructure -->
 <script src="../external/qunit.js" type="text/javascript"></script>
-<link href="../external/qunit.css" type="text/css" rel="stylesheet" media="screen" />
+<link  href="../external/qunit.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jsmockito-1.0.4.js" type="text/javascript"></script>
 <script src="../external/jshamcrest-0.5.2.js" type="text/javascript"></script>
 
+<!-- External Dependencies of the code under test -->
 <script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
 <script src="../external/jquery-ui.js" type="text/javascript"></script>
-<link href="../external/jquery-ui.css" type="text/css" rel="stylesheet" media="screen" />
-
-<script src="../notepad/notepad.js" type="text/javascript"></script>
-<link href="../css/notepad.css" type="text/css" rel="stylesheet" media="screen" />
-
+<link  href="../external/jquery-ui.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
+<script src="../external-modules/jquery-caret/jquery.caret.js" type="text/javascript"></script>
 
+<!-- Code under test -->
+<link  href="../css/notepad.css" type="text/css" rel="stylesheet" media="screen" />
+<script src="../notepad/notepad.js" type="text/javascript"></script>
 <script src="../notepad/sparql.js" type="text/javascript"></script>
 
 <script>
@@ -23,6 +25,37 @@
 
         JsMockito.Integration.QUnit();
         
+
+        /**
+         * testAsyncStepsWithPause
+         * Executes any number of async Qunit tests with a pause between each step
+         *
+         * Author: Matthew O'Riordan, http://mattheworiordan.com
+         *
+         * Params:
+         * @timeToWait: milliseconds between running method and running tests
+         * @methods: 1+ function arguments passed in the format:
+         *   function() {
+         *      // execute code here which requires the tests to wait for @timeToWait
+         *      return function() {
+         *        // execute assertions here, will be executed after @timeToWait
+         *      }
+         *   }, ...
+         */
+        function testAsyncStepsWithPause(pause) {
+          var args = arguments;
+          if (args.length > 1) {
+            stop();
+            var asyncTestFunction = args[1]();
+            setTimeout(function() {
+              asyncTestFunction();
+              start();
+              var params = [pause].concat(Array.prototype.slice.call(args, 2));
+              testAsyncStepsWithPause.apply(this, params);
+            }, pause)
+          }
+        }
+
         module("resources and triples" );
         test("triples and resources", function() {
             equal(new Resource("a"),"a");
@@ -56,15 +89,16 @@
 
             var r = new Resource(':123');
             equal(r.toString(),':123', "default prefix should be preserved");
-            
+
+            ok(new Triple(':1', ':2', ':3').equals(new Triple(':1', ':2', ':3')), "two identical triples should be identical");
+
             var triples = Triples([[':1', ':2', ':3'], [':4', ':5', ':6']]);
             equal(triples[0].subject, ':1');
             equal(triples[0].predicate, ':2');
             equal(triples[0].object, ':3');
             equal(triples[1].subject, ':4');
             equal(triples[1].predicate, ':5');
-            equal(triples[1].object, ':6');
-            
+            equal(triples[1].object, ':6');            
         });
         test("resources from FusekiEndpoint", function() {
             var bnode1 = new Resource({type: 'bnode', value:'a'});
@@ -78,135 +112,232 @@
 
         });
 
-        module("notepad - given a new div");
-        test("a new notepad should be destroyed cleanly", function() {
-            $("#notepad").notepad();
-            ok($("#notepad").data('notepad'),"a notepad should provide its widget");
+        module("given a new div", {
+            setup: function() {
+                this.div = $("#notepad");
+            },
+            teardown: function() {
+                this.div.notepad('destroy');
+            }
+        });
+        test("when I create a notepad, it should have initial components", function(){
+           this.div.notepad();
 
-            $("#notepad").notepad('destroy');
+           equal(this.div.find("li").length, 1, "should have one line element");
+           // TODO: reference to .object makes this too highly coupled?
+           equal(this.div.find("li .object").val(), "", "the first line should be empty");
 
-            equal($("#notepad").children().length,0,"it leaves children element");
-            ok(!$("#notepad").hasClass('notepad'),"it leaves the class 'notepad'");
-            ok(!$("#notepad").attr('about'),"it leaves the attribute 'about'");
+           var notepad = this.div.data('notepad');
+           ok(notepad,"it should have a widget");
+           equal(notepad.triples().length,2,"should have two triples");
+
+           ok(notepad.contains(notepad.triples()[0]),"it should contain the first of its triples");
+           ok(notepad.contains(notepad.triples()[1]),"it should contain the first of its triples");
+           ok(!notepad.contains(new Triple(':a',':b','c')), "it should not contain a random triple");
+           
+           // The following tests may be too highly coupled
+           equal(notepad.getLines().length,1, "should have one line widget");
+           ok(this.div.find('li').data('line'), "a line should provide it's widget");
+           ok(this.div.find("li .predicate").attr('rel'), "the first line's predicate uri should be defined");
+           ok(this.div.find("li .predicate").val(), "the first line predicate label should be defined");
         });
 
-        module("notepad - given a new notepad", {
-            teardown: function() { $("#notepad").notepad('destroy'); }
+        module("given a new notepad", {
+            setup: function() {
+                this.div = $("#notepad").notepad();
+                this.notepad = this.div.data('notepad');
+                this.line = this.div.find('li').data('line');
+            }
         });
-        test("a new notepad should get a new notepad with one empty line", function() {
-            var n = $("#notepad").notepad();
-            ok(n,"no notepad object returned from creation");
-            equal(n.find("li").length, 1, "should have one line element");
-            equal(n.data('notepad').getLines().length,1, "should have one line widget");
-            ok(n.find('li').data('line'), "a line should provide it's widget");
-            equal(n.find("li .predicate").attr('rel'), "rdf:Seq", "line's predicate uri should be 'rdf:Seq'");
-            equal(n.find("li .predicate").val(), "sequence", "line's predicate label should be 'sequence'");
-            equal(n.find("li .object").val(), "", "the first line should be empty");
+        test("when I destroy it, it should be destroyed cleanly", function() {
+            this.notepad.destroy();
+
+            equal(this.div.children().length,0,"it leaves children element");
+            ok(!this.div.hasClass('notepad'),"it leaves the class 'notepad'");
+            ok(!this.div.attr('about'),"it leaves the attribute 'about'");
         });
 
+        module("given a notepad", {
+            setup: function() {
+                this.div = $("#notepad").notepad();
+                this.notepad = this.div.data('notepad');
+                this.line = this.div.find('li').data('line');
+            },
+            teardown: function() { this.notepad.destroy(); }    
+        });
         function enterNewLine(div) {
             var target = div.find("li .object");
             target.val('Test a widget');
+            target.caretToEnd();
             target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
         }
-        
-        test("a new notepad should get a new line on enter", function() {
-            var div = $("#notepad").notepad();
+        test("when create a new line, then it should have two lines", function() {
+            enterNewLine(this.div);
+            
+            equal(this.div.find("li").length, 2, "should have 2 lines");
+            equal(this.notepad.triples().length, 4, "it should have four triples"); 
 
-            enterNewLine(div);
-
-            equal(div.find("li").length, 2, "should have 2 lines");
-            var line = div.find("li:first").data('line');
-            equal(line.getLineLiteral(), "Test a widget", "Line literal should be the typed text");                        
-        });
-        test("should have two triples", function() {
-            var notepad = $("#notepad").notepad().data('notepad');
-            var line = $("#notepad li").data('line');
+            var line = this.div.find("li:first").data('line');
             equal(line.triples().length, 2, "a new line should have two triples");
-            equal(notepad.triples().length,2,"a new notepad should have two triples");
+            equal(line.getLineLiteral(), "Test a widget", "Line literal should be the typed text");
 
-            equal(line._getContainerUri(), notepad.getUri(), "container URI should be the notepad URI");
-            equal(line.getContainerTriple().subject, notepad.getUri(), "subject of the container triple should be the notepad URI");
-            equal(line.getContainerTriple().predicate, 'rdf:Seq', "predicate should be sequence");
+            equal(line._getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
+            equal(line.getContainerTriple().subject, this.notepad.getUri(), "subject of the container triple should be the notepad URI");
+            ok(line.getContainerTriple().predicate, 'rdf:member', "predicate should be member-of");
             equal(line.getContainerTriple().object, line.getUri(), "object should be the line URI");
 
             equal(line.getLineTriple().subject, line.getUri(), "subject of line tripe should be the line URI");
             equal(line.getLineTriple().predicate, 'rdfs:label', "line triple predicate should be rdfs:label");
-            equal(line.getLineTriple().object, '', "line triple object should be empty");
-
-            enterNewLine($("#notepad"));
-            equal(line.getLineTriple().object,'Test a widget', "line triple object should be set");
+            equal(line.getLineTriple().object, line.getLineLiteral(), "line literal object should be empty");
         });
-        test("a notepad with two lines should have 4 triples", function() {
-            var notepad = $("#notepad").notepad().data('notepad');
-            enterNewLine(notepad.element);
-            equal(notepad.triples().length, 4); 
+        test("when i place the cursor at the beginning of the line", function() {
+            var target = this.div.find("li:first .object");
+            target.val('text');
+            target.caretToStart();
+            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+            
+            equal(this.div.find("li:first .object").val(), "", "the first line should be empty");
+            equal(this.div.find("li:last .object").val(), "text", "the second line should be where the text remained");
         });
-        test("a new notepad should be unaffected by unrelated RDF", function() {
-            var div = $("#notepad");
-            var notepad = div.notepad().data('notepad');
-            var uri = '_:notepadUri';
+        test("when I toggle the predicate", function() {
+            expect(4);
+            equal(this.line.predicate.css('display'),'none', "this predicate should not be displayed initially");
+            ok(this.line.predicateToggle, "the toggle should be available");
+            
+            var line = this.line;
+            testAsyncStepsWithPause(200,
+                function() {
+                    line.predicateToggle.trigger(jQuery.Event("click"));
+                    return function() {
+                        notEqual(line.predicate.css('display'),'none', "this predicate should be displayed after a click");    
+                    };
+                },
+                function() {
+                    line.predicateToggle.trigger(jQuery.Event("click"));
+                    return function() {
+                        equal(line.predicate.css('display'),'none', "this predicate should not be displayed after two clicks");    
+                    }
+                });
+        });
+        test("when set RDF with cycles, then it should not display a triple twice", function() {
+            stop();
+            var uri = this.notepad.getUri();
 
-            notepad.setRdf(Triples([['_:aUri','_:aPredicate','_:anotherUri']]));
+            var triples = Triples([
+                [uri,'rdfs:member','_:line1'],
+                ['_:line1','rdfs:member','_:line1'],
+            ]);
+            
+            this.notepad.endpoint = mock(FusekiEndpoint);
+            when(this.notepad.endpoint).getRdfBySubject(JsHamcrest.Matchers.anything()).then( function(t,callback) {
+                start();
+                callback(triples);
+            });
+            this.notepad.setRdf(triples);
+            
+            var line = this.notepad.getLines()[1]; // TODO: needs 'contains'
+            equal(line.getUri(), '_:line1', "the 2nd line should be the newly added line");
+            equal(line.getLines().length, 1, "this line should have one child")
 
-            equal(notepad.getLines().length,1);
-            equal(notepad.triples().length, 2);
+            verify(this.notepad.endpoint, times(2)).getRdfBySubject('_:line1');
+
+            // triples = Triples([
+            //     [uri,'rdf:member','_:line1'],
+            //     ['_:line1','rdf:member','_:line2'],
+            //     ['_:line2','rdf:member','_:line1'],
+            // ]);
+            // 
+            // this.notepad.setRdf(triples);
+            // 
+            // var line = this.notepad.getLines()[2]; // TODO: needs 'contains'
+            // equal(line.getUri(), '_:line2', "the 2nd line should be the newly added line");
+            // equal(line.getLines().length, 2, "this line should have one child")
+            // 
+            // ok(false, 'test with this...')
+
+        });
+
+        module("given a notepad with two lines", {
+            setup: function() {
+                this.div = $("#notepad").notepad();
+                this.notepad = this.div.data('notepad');
+                enterNewLine(this.div);
+                this.firstLine = this.div.find("li:first").data('line');
+                this.line = this.firstLine;
+                this.lastLine = this.div.find("li:last").data('line');
+            },
+            teardown: function() { this.notepad.destroy(); }    
+        });
+        function indentSecondLine(div) {
+            var target = div.find("li:last .object");
+            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.TAB }) );
+        }
+        test("when I indent the second line,", function() {
+            indentSecondLine(this.div);
+            equal(
+                this.lastLine._getContainerUri(),
+                this.firstLine.getUri(),
+                "second line should be under the first");
+            
+            equal(this.notepad.triples().length,4,"graph length after a new line should be 4");
+        });
+        test("when I set unrelated RDF,", function() {
+            var triplesPrior = this.notepad.triples();
+
+            this.notepad.setRdf(Triples([['_:aUri','_:aPredicate','_:anotherUri']]));
+
+            deepEqual(this.notepad.triples(), triplesPrior, "the triples should remain the same");
         });
         test("a new line should update labels from RDF", function() {
-            var div = $("#notepad");
-            var notepad = div.notepad().data('notepad');
-            var line = notepad.getLines()[0];
-
-            line._setUri('_:lineUri');
-            notepad.getList()._updateLabelsFromRdf( [ new Triple('_:lineUri','rdfs:label','line label') ] );
-            equal(line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
+            this.line._setUri('_:lineUri');
+            this.notepad.getList()._updateLabelsFromRdf( [ new Triple('_:lineUri','rdfs:label','line label') ] );
+            equal(this.line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
         });
         test("a new line should display RDF when setting its URI", function() {
             expect(1);
-            var div = $("#notepad");
-            var notepad = div.notepad().data('notepad');
-            var line = notepad.getLines()[0];
-            notepad.endpoint = mock(FusekiEndpoint);
-            when(notepad.endpoint).getRdfBySubject('_:lineUri').then( function() { start(); return ['_:lineUri','rdfs:label','line label']; } );
-
+            this.notepad.endpoint = mock(FusekiEndpoint);
+            when(this.notepad.endpoint).getRdfBySubject('_:lineUri').then( function() { 
+                start();
+                return ['_:lineUri','rdfs:label','line label'];
+            });
             stop();
-            line.setUri('_:lineUri');
+            this.line.setUri('_:lineUri');
 
-            verify(notepad.endpoint).getRdfBySubject('_:lineUri');
+            verify(this.notepad.endpoint).getRdfBySubject('_:lineUri');
             ok(true, "test complete");
             // TODO: figure out how (and when) to test that the line label was properly set
             // equal(line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
         });
         test("a notepad should display line RDF", function() {
-            var div = $("#notepad");
-            var notepad = div.notepad().data('notepad');
-            var lineUri = notepad.getLines()[0].getUri();
-            notepad.setRdf([ new Triple(lineUri, 'rdfs:label', 'new label') ]);
-            equal(div.find('li .object').val(), 'new label', "RDF for line1's label should set the line text");
+            this.notepad.setRdf([ new Triple(this.line.getUri(), 'rdfs:label', 'new label') ]);
+            equal(this.div.find('li .object').val(), 'new label', "RDF for line1's label should set the line text");
         });
         test("a notepad should display RDF", function() {
-            var div = $("#notepad");
-            var notepad = div.notepad().data('notepad');       
-            var uri = notepad.getUri();
-            notepad.endpoint = new FusekiEndpoint('http://localhost:3030');
-            notepad.setRdf( Triples([[uri,'rdf:Seq','_:line1']]) );
-            equal(div.find('li').length,2);
-            ok(div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
-            equal(div.find('li .object').text(), '', "First line should be empty");
-       
-            notepad.setRdf( Triples([[uri,'rdf:Seq','_:line1']]) );
-            equal(div.find('li').length,2, "Same RDF should produce the same content");
-       
-            notepad.setRdf([[uri,'rdf:Seq','_:line1']]);
-            notepad.setRdf([[uri,'rdf:Seq','_:line2']]);
-            equal(div.find('li').length,2, "Open world assumptions means we should have both triples");
+            var uri = this.notepad.getUri();
 
-            // Two different triples for the same subject and objects
-            notepad.setRdf(Triples([[uri,'rdf:Seq','_:line1'], [uri,'rdfs:label','_:line1']]));
-            //ok(false, "how should this behave?");
+            this.notepad.endpoint = mock(FusekiEndpoint);
+            when(this.notepad.endpoint).getRdfBySubject('_:line1').then( function() {
+                start();
+                return ['_:line1','rdfs:label','line label'];
+            });
 
-            // Three triples for the same subject and objects
-            notepad.setRdf(Triples([[uri,'rdf:Seq','_:line1'], ['_:line1','rdf:Seq','_:line2'], [uri,'rdf:Seq','_:line2']]));
+            this.notepad.setRdf( Triples([[uri,'rdf:Seq','_:line1']]) );
+            ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
+            equal(this.div.find('li[about="_:line1"] .object').text(), '', "First line should be empty");
+       
+            // notepad.setRdf( Triples([[uri,'rdf:Seq','_:line1']]) );
+            // equal(div.find('li').length,2, "Same RDF should produce the same content");
+            //        
+            // notepad.setRdf([[uri,'rdf:Seq','_:line1']]);
+            // notepad.setRdf([[uri,'rdf:Seq','_:line2']]);
+            // equal(div.find('li').length,2, "Open world assumptions means we should have both triples");
+            // 
+            // // Two different triples for the same subject and objects
+            // notepad.setRdf(Triples([[uri,'rdf:Seq','_:line1'], [uri,'rdfs:label','_:line1']]));
+            // //ok(false, "how should this behave?");
+            // 
+            // // Three triples for the same subject and objects
+            // notepad.setRdf(Triples([[uri,'rdf:Seq','_:line1'], ['_:line1','rdf:Seq','_:line2'], [uri,'rdf:Seq','_:line2']]));
             //ok(false, "how should this behave?");
        
             // notepad.setRdf( Triples([
@@ -221,29 +352,9 @@
             // ]);         
             // equal(div.find('li .object:last').val(), 'A line', "Line RDF should be ignored");
         });
-
-        function indentSecondLine(div) {
-            var target = div.find("li:last .object");
-            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.TAB }) );
-        }
-        
-        test("a notepad should handle tab", function() {
-            var notepad = $("#notepad").notepad().data('notepad');
-            enterNewLine($("#notepad"));
-            indentSecondLine($("#notepad"));
-            $("#notepad").find("li:last .object").val('second line');
-            equal(
-                $("#notepad").find("li:last").data('line')._getContainerUri(),
-                $("#notepad").find("li:first").data('line').getUri(),
-                "second line should be under the first");
-            
-            equal(notepad.triples().length,4,"graph length after a new line should be 4");
-        });
-        
         test("a notepad should convert RDF to SPARQLU", function() {
-            var notepad = $("#notepad").notepad().data('notepad');
-            var databank = triplesToDatabank(notepad.triples());
-            equal(databank.triples().length,2,"graph length should be 2");
+            var databank = triplesToDatabank(this.notepad.triples());
+            equal(databank.triples().length,4,"graph length should be 4");
             
             var sparqlu = databank.sparqlu();
             equal(sparqlu.indexOf("INSERT"),0,"sparqlu should start with INSERT");
@@ -276,23 +387,6 @@
                 });
             }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
         });
- 
-
-        // test("a notepad should display complex RDF", function() {
-        //     var div = $("#notepad");
-        //     var n = div.notepad().data('notepad');
-        //     var uri = '_:notepadUri';
-        //     n.setRdf([
-        //         [uri,'rdf:Seq','_:blank2'],
-        //         [uri,'rdf:Seq','_:blank3'],
-        //         ['_:blank2','rdfs:label','First line'],
-        //         ['_:blank3','rdfs:label','Second line']
-        //     ]);         
-        //     equal(div.find('li .object')[0].textContent, 'First line');
-        //     equal(div.find('li .object')[1].textContent, 'Second line');
-        // });
-
-
     });
 </script>
 

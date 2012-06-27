@@ -86,19 +86,31 @@
     Resource.prototype.toRdfResource = function() {
         return this.resource;
     };
-
+    Resource.prototype.equals = function(resource) {
+        return this.toString() === resource.toString();
+    };
     Triple = function(subject,predicate,object) {
         this.subject = new Resource(subject);
         this.predicate = new Resource(predicate);
         this.object = new Resource(object);
     };
+    Triple.prototype.toString = function() {
+        return this.subject + ' ' + this.predicate + ' ' + this.object + '.';
+    };
+    Triple.prototype.equals = function(triple) {
+        return this.subject.equals(triple.subject) && this.predicate.equals(triple.predicate) && this.object.equals(triple.object);
+    };
     Triples = function(triples) {
         return $.map(triples, function(e,i) { return new Triple(e[0], e[1], e[2]); });
-    }
+    };
 
     var CONTAINER_DEFAULT_PREDICATE_ATTR = 'container-default-predicate';
 
     $.widget("notepad.container", {
+
+        getNotepad: function() {
+            return this.element.parents('.notepad').data("notepad");
+        },
 
         getLines: function() {
             return this.element.children('li').map(function(index, line) { return $(line).data('line'); } );
@@ -116,7 +128,7 @@
         getDefaultPredicate: function() {
             var predicate = this.element.attr(CONTAINER_DEFAULT_PREDICATE_ATTR);
             if (predicate===undefined) {
-                predicate = 'rdf:Seq';
+                predicate = 'rdfs:member';
             }
             return predicate;
         },
@@ -132,6 +144,9 @@
             var container = this;
             $.each(triples, function(index,triple) {
                 if (triple.subject != container.getUri()) {
+                    return; // This triple will not affect this container
+                }
+                if (container.getNotepad().contains(triple)) {
                     return;
                 }
 
@@ -238,7 +253,6 @@
         _getContainerUri: function() {
             return this._getContainer().getUri();
         },
-        // TODO: CHANGE
         _getContainerDefaultPredicate: function() {
             return this._getContainer().getDefaultPredicate();
         },
@@ -286,7 +300,6 @@
         },
         
         // Line representation
-        
         _getLinePredicateUri: function() {
             return "rdfs:label";
         },
@@ -331,13 +344,20 @@
             }
             return ul.data('container').appendLine(li);
         },
+        insertLineAfter: function() {
+            var li = $('<li>').insertAfter(this.element).line();
+            return li.data('line');            
+        },
+        insertLineBefore: function() {
+            var li = $('<li>').insertBefore(this.element).line();
+            return li.data('line');            
+        },
         
         childTriples: function() {
             return this.getLines().map(function(index,li) {
                 return $(li).data('line').triples();
             });
         },
-
         triples: function() {
             var triples = [this.getContainerTriple(), this.getLineTriple()];
             var childTriples = this.childTriples();            
@@ -348,15 +368,19 @@
         },
 
         focus: function() {
-            return this.element.find(".object").focus();
+            return this.element.children(".object").focus();
         },
-        
+
+        getNotepad: function() {
+            // TODO: remove duplicate with container.notepad
+            return this.element.parents('.notepad').data("notepad");
+        },
         // Set up the widget
         _create : function() {
-            var self = this;
-            this.foo = true;
+            var line = this;
+
             // Find parent notepad for use by getPredicateBy _predicateMap
-            this.notepad = this.element.parents('.notepad').data("notepad");
+            this.notepad = this.getNotepad();
             if (!this.notepad) {
                 throw "when creating a new line, should find a parent notepad";
             }
@@ -367,14 +391,24 @@
             }
             
             this.element.addClass("line");
-            this._setUri(this.notepad._getNewUri());
+            this._setUri(this.getNotepad()._getNewUri());
             
+            // Predicate toggle
+            this.predicateToggle = $('<a>').addClass('predicateToggle hidden');
+            this.predicateToggle.click(function(){
+                $(this).toggleClass("hidden");
+                $(this).parent().find(".predicate").toggle('drop', {}, 100);
+                $(this).parent().find(".separator").toggle('drop', {}, 100);
+            });
+            this.element.append(this.predicateToggle);
+
+            // Predicate
             this.predicate = $('<textarea rows="1">').addClass('predicate');
             this.setContainerPredicateUri(this._getContainerDefaultPredicate());
 
             var notepad = this;
             this.predicate.change(function(event) { 
-                self._setContainerPredicateUri(
+                line._setContainerPredicateUri(
                     notepad._getContainerPredicateUriByLabel( $(event.target).val() )
                 );
             });
@@ -383,7 +417,7 @@
             // Must turn on autocomplete *after* the element has
             // been added to the document
             this.predicate.autocomplete({
-                source : Object.keys(this.notepad._predicateMap),
+                source : Object.keys(this.getNotepad()._predicateMap),
                 select : function(event,ui) {
                     var line = $(event.target).parent('li').data('line');
                     line.setContainerPredicateLabel(ui.item.label)
@@ -395,11 +429,16 @@
             var separator = $('<span>').addClass('separator');
             this.element.append(separator);
             
+            // Initial state of predicate and separator is hidden
+            this.predicate.css('display', 'none');
+            separator.css('display', 'none');
+
+
             // Object
-            this.object = $('<textarea rows="1" cols="40">').addClass('object');
+            this.object = $('<textarea rows="1" cols="80">').addClass('object');
             this.element.append(this.object);
 
-            var notepad = this.notepad;
+            var notepad = this.getNotepad();
             this.object.autocomplete({
                 source: function(term,callback) {
                     notepad.endpoint.getSubjectsLabelsByLabel(term.term,callback);
@@ -438,6 +477,7 @@
             'synonym' : 'owl:sameAs',
             'i.e.' : 'owl:sameAs',
             'e.g.' : 'owl:sameAs',
+            'member': 'rdfs:member',
             'sequence' : 'rdf:Seq',
             'to' : 'log:implies',
             'more generally' : '-rdfs:Class',
@@ -483,11 +523,22 @@
             this.getList().appendLine();  // Start with one empty line
             
             this.element.on("keydown.notepad", function(event) {
+                if($(event.target).data('autocomplete').menu.active) {
+                    // The autocomplete menu is active, do nothing here
+                    return;
+                }
+
                 var keyCode = $.ui.keyCode;
                 switch (event.keyCode) {
                 case keyCode.ENTER:
                 case keyCode.NUMPAD_ENTER:
                     return self._return(event);
+                    break;
+                case keyCode.UP:
+                    return self._up(event);
+                    break;
+                case keyCode.DOWN:
+                    return self._down(event);
                     break;
                 case keyCode.TAB:
                     if (!event.shiftKey) {
@@ -503,13 +554,17 @@
             });
                         
             // Uncomment to disable autocomplete based on the predicate
-            // this.element.on("focusin focus", function(event) {
+            // this.element.on("focusin focus", function(event) '{
             //  var el = $(event.target);
             //  if (el.hasClass('object')) {
             //      self._updateObjectAutocomplete(el.parent('li'));
             //  }
             // });
             
+        },
+        _destroy : function() {
+            this.element.removeClass("notepad").removeAttr('about').unbind();
+            this.element.children().remove();
         },
         
         // TODO: not currently in use
@@ -523,18 +578,52 @@
             }
         },
 
+        _up : function(event) {
+            var target = $(event.target);
+            var li = target.parent('li');
+            // Get the list of lines
+            var lines = li.data('line').notepad.element.find('li');
+            var i;
+            for (i=0; i<lines.length; i++) {
+                if (lines[i] == li[0]) {
+                    break;
+                }
+            }
+            if (i>0) {
+                $(lines[i-1]).data('line').focus();
+            }
+            return false;   // Prevent default behaviour
+        },
+        _down : function(event) {
+            var target = $(event.target);
+            var li = target.parent('li');
+
+            // Get the list of lines
+            var lines = li.data('line').notepad.element.find('li');
+            var i;
+            for (i=0; i<lines.length; i++) {
+                if (lines[i] == li[0]) {
+                    break;
+                }
+            }
+            if (i<lines.length-1) {
+                $(lines[i+1]).data('line').focus();
+            }
+            return false;   // Prevent default behaviour
+        },
         _return : function(event) {
             var target = $(event.target);
             var li = target.parent('li');
             var ul = li.parent('ul');
             
-            // find or create the next line
-            var next = li.next().data('line');
-            if (!next) {
-                next = ul.data('container').appendLine();
+            var newLine;
+            if (target.caret() == 0) {
+                newLine = li.data('line').insertLineBefore();
+                li.focus();         // Focus on the line that moved down
+            } else {
+                newLine = li.data('line').insertLineAfter();
+                newLine.focus();
             }
-            // move focus to new line
-            next.focus();
             
             return false;
         },
@@ -553,6 +642,9 @@
 
             // Move current line to newParent
             newParentLine.data('line').appendLine(li);
+
+            li.find('.object').focus();
+            return false;
         },
         _unindent : function(event) {
             if ($(event.target).hasClass('object')) {
@@ -590,9 +682,6 @@
         },
         setRdf: function(triples) {
             this.getList()._updateFromRdf(triples);
-            this.getLines().each(function(index,line){
-                line._updateFromRdf(triples);
-            });
         },
         
         _getNewUri: function() {
@@ -605,10 +694,14 @@
         triples: function(){
             return this.getList().triples();
         },
-        
-        _destroy : function() {
-            this.element.removeClass("notepad").removeAttr('about').unbind();
-            this.element.children().remove();
+        contains: function(triple) {
+            var triples = this.triples();
+            for(var i=0; i<triples.length; i++) {
+                if (triple.equals(triples[i])) {
+                    return true;
+                }
+            }
+            return false;
         }
     });
 

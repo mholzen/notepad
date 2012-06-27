@@ -1,0 +1,3 @@
+[submodule "notepad/external-modules/jquery-caret"]
+	path = notepad/external-modules/jquery-caret
+	url = https://github.com/DrPheltRight/jquery-caret.git

@@ -5,7 +5,46 @@
 }
 .notepad textarea {
     font-size: large;
+    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
 }
+.notepad .predicateToggle {
+    padding: 2px 4px;
+    margin-right: 10px;
+    border-radius: 10px;      
+    cursor: pointer;
+    font-size: xx-small;
+    
+    /* shown */
+	background: #ccc;
+    border-top: solid 2px #777;
+    border-left: solid 2px #777;
+    border-bottom:solid 2px  #eaeaea;
+    border-right: solid 2px #eaeaea;
+}
+
+.notepad .predicateToggle.hidden {
+    background: #bbb;
+    border-top: solid 2px #eaeaea;
+    border-left: solid 2px #eaeaea;
+    border-bottom: solid 2px #777;
+    border-right: solid 2px #777;
+}
+
+.notepad li {
+	list-style: none;
+}
+.notepad .ui-effects-wrapper {
+	display: inline-block;
+}
+
+.notepad .predicateToggle.hidden:before {
+	content: ">";
+}
+
+.notepad .predicateToggle:before {
+	content: "<";
+}
+
 .notepad .separator:before {
 	content: ": ";
 }
