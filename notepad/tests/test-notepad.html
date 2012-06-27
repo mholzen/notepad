@@ -254,7 +254,6 @@
             // equal(line.getLines().length, 2, "this line should have one child")
             // 
             // ok(false, 'test with this...')
-
         });
 
         module("given a notepad with two lines", {
@@ -357,9 +356,10 @@
             equal(databank.triples().length,4,"graph length should be 4");
             
             var sparqlu = databank.sparqlu();
-            equal(sparqlu.indexOf("INSERT"),0,"sparqlu should start with INSERT");
+            notEqual(sparqlu.indexOf("INSERT"),-1,"sparqlu should contain INSERT");
+            notEqual(sparqlu.indexOf("DELETE"),-1,"sparqlu should contain DELETE");
         });
-        
+
         module('FusekiEnpoint');
         test("a SPARQL endpoint should clear its content", function() {
             stop();

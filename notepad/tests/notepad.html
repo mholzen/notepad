@@ -17,6 +17,7 @@
 <script>
 $(function() {
     $("#notepad").notepad();
+    $("#notepad .object").focus();
     $("#notepad").data('notepad').endpoint = new FusekiEndpoint("http://localhost:3030");
     $("#save").click(function() {
         var sparql = triplesToDatabank($("#notepad").notepad('triples')).sparqlu();

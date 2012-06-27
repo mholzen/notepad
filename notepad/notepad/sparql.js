@@ -56,14 +56,30 @@ FusekiEndpoint.prototype = {
 }
 
 $.rdf.databank.prototype.sparqlu = function() {
-    var data = "";
-    // TODO: should be: data = this.triples().join(". \n");
+    var insertData = "";
+    var deleteUris = [];
+
+    // TODO: should be: insertData = this.triples().join(". \n");
     var triples = this.triples();  // a jquery object
 
     for (var i=0; i<triples.length; i++) {
-         data += triples[i].toString().replace(/\\/g,'') + ' \n';
+        
+        if (triples[i].property.toString() == '<http://www.w3.org/2000/01/rdf-schema#label>') {
+            deleteUris.push(triples[i].subject.toString());
+        }
+        insertData += triples[i].toString().replace(/\\/g,'') + ' \n';
     }
-    return "INSERT DATA \n{\n"+ data +"\}";
+
+    return "\
+    DELETE { ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o } WHERE \n\
+    { \n\
+        ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o \n\
+        FILTER (?s in ( " + deleteUris.join(",\n") + ") )   \n\
+    } \n\
+    INSERT DATA \n\
+    { \n\
+        " + insertData + "\n\
+    }";
 };
 
 })(jQuery);
