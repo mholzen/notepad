@@ -1,5 +1,9 @@
 @CHARSET "UTF-8";
 
+body {
+    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;    
+}
+
 .notepad .predicate {
 	font-style: italic;
 }
