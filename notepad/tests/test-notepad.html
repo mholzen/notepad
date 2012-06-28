@@ -24,7 +24,6 @@
     $(document).ready(function() {
 
         JsMockito.Integration.QUnit();
-        
 
         /**
          * testAsyncStepsWithPause
@@ -364,7 +363,7 @@
         test("a SPARQL endpoint should clear its content", function() {
             stop();
             expect(2);
-            var endpoint = new FusekiEndpoint('http://localhost:3030');
+            var endpoint = new FusekiEndpoint('http://localhost:3030/test');
             endpoint.clear( function(){
                 ok(true, "endpoint should clear");
                 endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
@@ -376,7 +375,7 @@
         test("a SPARQL endpoint should return matching nodes by label", function() {
             expect(2);
             stop();
-            var endpoint = new FusekiEndpoint('http://localhost:3030');
+            var endpoint = new FusekiEndpoint('http://localhost:3030/test');
             endpoint.clear( function(){
                 endpoint.execute("INSERT DATA { <> rdfs:label 'label' }", function(data) {
                     ok(true,"insert should be successful");

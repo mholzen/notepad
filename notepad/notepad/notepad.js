@@ -376,83 +376,83 @@
             return this.element.parents('.notepad').data("notepad");
         },
         // Set up the widget
-        _create : function() {
-            var line = this;
+            _create : function() {
+                var line = this;
 
-            // Find parent notepad for use by getPredicateBy _predicateMap
-            this.notepad = this.getNotepad();
-            if (!this.notepad) {
-                throw "when creating a new line, should find a parent notepad";
-            }
-
-            // Verify the container
-            if(!this._getContainer()) {
-                throw "when creating a new line, should find a parent container";
-            }
-            
-            this.element.addClass("line");
-            this._setUri(this.getNotepad()._getNewUri());
-            
-            // Predicate toggle
-            this.predicateToggle = $('<a>').addClass('predicateToggle hidden');
-            this.predicateToggle.click(function(){
-                $(this).toggleClass("hidden");
-                $(this).parent().find(".predicate").toggle('drop', {}, 100);
-                $(this).parent().find(".separator").toggle('drop', {}, 100);
-            });
-            this.element.append(this.predicateToggle);
-
-            // Predicate
-            this.predicate = $('<textarea rows="1">').addClass('predicate');
-            this.setContainerPredicateUri(this._getContainerDefaultPredicate());
-
-            var notepad = this;
-            this.predicate.change(function(event) { 
-                line._setContainerPredicateUri(
-                    notepad._getContainerPredicateUriByLabel( $(event.target).val() )
-                );
-            });
-            this.element.append(this.predicate);
-
-            // Must turn on autocomplete *after* the element has
-            // been added to the document
-            this.predicate.autocomplete({
-                source : Object.keys(this.getNotepad()._predicateMap),
-                select : function(event,ui) {
-                    var line = $(event.target).parent('li').data('line');
-                    line.setContainerPredicateLabel(ui.item.label)
-                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value
+                // Find parent notepad for use by getPredicateBy _predicateMap
+                this.notepad = this.getNotepad();
+                if (!this.notepad) {
+                    throw "when creating a new line, should find a parent notepad";
                 }
-            });
-            
-            // Separator
-            var separator = $('<span>').addClass('separator');
-            this.element.append(separator);
-            
-            // Initial state of predicate and separator is hidden
-            this.predicate.css('display', 'none');
-            separator.css('display', 'none');
 
-
-            // Object
-            this.object = $('<textarea rows="1" cols="80">').addClass('object');
-            this.element.append(this.object);
-
-            var notepad = this.getNotepad();
-            this.object.autocomplete({
-                source: function(term,callback) {
-                    notepad.endpoint.getSubjectsLabelsByLabel(term.term,callback);
-                },
-                select: function(event, ui) {
-                    var line = $(event.target).parent('li').data('line');
-                    line.setUri(ui.item.value);
-                    line.setLineLiteral(ui.item.label);
-                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value
+                // Verify the container
+                if(!this._getContainer()) {
+                    throw "when creating a new line, should find a parent container";
                 }
-            });
-            
-            // Create the children container
-            $('<ul>').appendTo(this.element).container();
+                
+                this.element.addClass("line");
+                this._setUri(this.getNotepad()._getNewUri());
+                
+                // Predicate toggle
+                this.predicateToggle = $('<a>').addClass('predicateToggle hidden');
+                this.predicateToggle.click(function(){
+                    $(this).toggleClass("hidden");
+                    $(this).parent().find(".predicate").toggle('drop', {}, 100);
+                    $(this).parent().find(".separator").toggle('drop', {}, 100);
+                });
+                this.element.append(this.predicateToggle);
+
+                // Predicate
+                this.predicate = $('<textarea rows="1" cols="12">').addClass('predicate');
+                this.setContainerPredicateUri(this._getContainerDefaultPredicate());
+
+                var notepad = this.getNotepad();
+                this.predicate.change(function(event) { 
+                    line._setContainerPredicateUri(
+                        line._getContainerPredicateUriByLabel( $(event.target).val() )
+                    );
+                });
+                this.element.append(this.predicate);
+
+                // Must turn on autocomplete *after* the element has
+                // been added to the document
+                this.predicate.autocomplete({
+                    source : Object.keys(this.getNotepad()._predicateMap),
+                    select : function(event,ui) {
+                        var line = $(event.target).parent('li').data('line');
+                        line.setContainerPredicateLabel(ui.item.label)
+                        event.preventDefault();  // prevent the default behaviour of replacing the text with the value
+                    }
+                });
+                
+                // Separator
+                var separator = $('<span>').addClass('separator');
+                this.element.append(separator);
+                
+                // Initial state of predicate and separator is hidden
+                this.predicate.css('display', 'none');
+                separator.css('display', 'none');
+
+
+                // Object
+                this.object = $('<textarea rows="1" cols="80">').addClass('object');
+                this.element.append(this.object);
+
+                var notepad = this.getNotepad();
+                this.object.autocomplete({
+                    source: function(term,callback) {
+                        notepad.endpoint.getSubjectsLabelsByLabel(term.term,callback);
+                    },
+                    select: function(event, ui) {
+                        var line = $(event.target).parent('li').data('line');
+                        line.setUri(ui.item.value);
+                        line.setLineLiteral(ui.item.label);
+                        event.preventDefault();  // prevent the default behaviour of replacing the text with the value
+                    }
+                });
+                
+                // Create the children container
+                $('<ul>').appendTo(this.element).container();
         },      
         _destroy : function() {
             this.element.removeClass("line").removeAttr('about');
@@ -471,15 +471,14 @@
         _predicateMap : {
             'subclass' : 'rdfs:Class',
             'more specifically' : 'rdfs:Class',
-            'part' : '-log:implies',
-            'requires': '-log:implies',
+            'requires': 'rdfs:requires',
             'source' : 'rdf:source',
             'synonym' : 'owl:sameAs',
             'i.e.' : 'owl:sameAs',
             'e.g.' : 'owl:sameAs',
             'member': 'rdfs:member',
             'sequence' : 'rdf:Seq',
-            'to' : 'log:implies',
+            'to' : 'rdfs:provide',
             'more generally' : '-rdfs:Class',
             'named' : 'rdfs:label',
         },
@@ -515,7 +514,7 @@
 
             this.element.addClass("notepad");
 
-            this.endpoint = undefined; // Test with new FusekiEndpoint('http://localhost:3030');
+            this.endpoint = undefined;
             
             this._setUri(this._getNewUri());
 

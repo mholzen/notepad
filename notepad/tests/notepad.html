@@ -18,12 +18,13 @@
 $(function() {
     $("#notepad").notepad();
     $("#notepad .object").focus();
-    $("#notepad").data('notepad').endpoint = new FusekiEndpoint("http://localhost:3030");
+    var endpoint = new FusekiEndpoint("http://localhost:3030/dev");
+    $("#notepad").data('notepad').endpoint = endpoint;
     $("#save").click(function() {
         var sparql = triplesToDatabank($("#notepad").notepad('triples')).sparqlu();
-        $("#rdf").text(sparql);        
-        $.post('http://localhost:3030/ds/update', {update: sparql}, function(data) {
-            $("#results").text(data);
+        $("#rdf").text(sparql);
+        endpoint.update(sparql, function(response) {
+            $("#results").text(response);
         })
     });
 });

@@ -11,11 +11,11 @@ FusekiEndpoint = function(uri) {
 
 FusekiEndpoint.prototype = {
     query: function(command, callback) {
-        return $.getJSON(this.uri+'/ds/query', {query: command, output:'json'}, callback);
+        return $.getJSON(this.uri+'/query', {query: command, output:'json'}, callback);
     },
 
     update: function(command, callback) {
-        return $.post(this.uri+'/ds/update', {update: command}, callback);
+        return $.post(this.uri+'/update', {update: command}, callback);
     },
 
     execute: function(command, callback) {
