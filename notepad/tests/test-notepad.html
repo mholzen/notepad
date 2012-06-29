@@ -128,10 +128,8 @@
 
            var notepad = this.div.data('notepad');
            ok(notepad,"it should have a widget");
-           equal(notepad.triples().length,2,"should have two triples");
+           equal(notepad.triples().length,0,"should have zero triples");
 
-           ok(notepad.contains(notepad.triples()[0]),"it should contain the first of its triples");
-           ok(notepad.contains(notepad.triples()[1]),"it should contain the first of its triples");
            ok(!notepad.contains(new Triple(':a',':b','c')), "it should not contain a random triple");
            
            // The following tests may be too highly coupled
@@ -167,6 +165,7 @@
         function enterNewLine(div) {
             var target = div.find("li .object");
             target.val('Test a widget');
+            target.change();
             target.caretToEnd();
             target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
         }
@@ -174,11 +173,11 @@
             enterNewLine(this.div);
             
             equal(this.div.find("li").length, 2, "should have 2 lines");
-            equal(this.notepad.triples().length, 4, "it should have four triples"); 
+            equal(this.notepad.triples().length, 2, "it should have 2 triples"); 
 
             var line = this.div.find("li:first").data('line');
             equal(line.triples().length, 2, "a new line should have two triples");
-            equal(line.getLineLiteral(), "Test a widget", "Line literal should be the typed text");
+            equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
 
             equal(line._getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
             equal(line.getContainerTriple().subject, this.notepad.getUri(), "subject of the container triple should be the notepad URI");
@@ -192,6 +191,7 @@
         test("when i place the cursor at the beginning of the line", function() {
             var target = this.div.find("li:first .object");
             target.val('text');
+            target.change();
             target.caretToStart();
             target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
             
@@ -218,8 +218,7 @@
                     }
                 });
         });
-        test("when set RDF with cycles, then it should not display a triple twice", function() {
-            stop();
+        asyncTest("when set RDF with cycles, then it should not display a triple twice", function() {
             var uri = this.notepad.getUri();
 
             var triples = Triples([
@@ -233,7 +232,7 @@
                 callback(triples);
             });
             this.notepad.setRdf(triples);
-            
+
             var line = this.notepad.getLines()[1]; // TODO: needs 'contains'
             equal(line.getUri(), '_:line1', "the 2nd line should be the newly added line");
             equal(line.getLines().length, 1, "this line should have one child")
@@ -277,7 +276,7 @@
                 this.firstLine.getUri(),
                 "second line should be under the first");
             
-            equal(this.notepad.triples().length,4,"graph length after a new line should be 4");
+            equal(this.notepad.triples().length,2,"graph length after a new line should be 2");
         });
         test("when I set unrelated RDF,", function() {
             var triplesPrior = this.notepad.triples();
@@ -352,7 +351,7 @@
         });
         test("a notepad should convert RDF to SPARQLU", function() {
             var databank = triplesToDatabank(this.notepad.triples());
-            equal(databank.triples().length,4,"graph length should be 4");
+            equal(databank.triples().length,2,"graph length should be 2");
             
             var sparqlu = databank.sparqlu();
             notEqual(sparqlu.indexOf("INSERT"),-1,"sparqlu should contain INSERT");
