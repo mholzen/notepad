@@ -11,3 +11,6 @@ Prerequisites
   * Unzip
   * (Linux) `chmod +x fuseki-server s-\*`
   * Run a server: `fuseki-server --update --mem /ds`
+
+`cd notepad/triplestore`
+`./start-triplestore`

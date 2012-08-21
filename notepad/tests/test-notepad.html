@@ -14,6 +14,7 @@
 <link  href="../external/jquery-ui.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
 <script src="../external-modules/jquery-caret/jquery.caret.js" type="text/javascript"></script>
+<script src="../external/subarray.js" type="text/javascript"></script>
 
 <!-- Code under test -->
 <link  href="../css/notepad.css" type="text/css" rel="stylesheet" media="screen" />
@@ -81,7 +82,7 @@
             deepEqual(r2, r1, "a new resource created from an existing resource should be equal");
 
             var label = new Resource("rdf:foo");
-            equal(label, "rdf:foo", "a resource should preserve CURIEs");
+            equal(label.toString(), "rdf:foo", "a resource should preserve CURIEs");
             
             var literal = new Resource("foo");
             equal(literal, "foo", "a resource should contain a string literal");
@@ -89,15 +90,33 @@
             var r = new Resource(':123');
             equal(r.toString(),':123', "default prefix should be preserved");
 
+            //equal(new Triple(':1', ':2', ':3').toString(), ":1 :2 :3.", "a new triple should default to update");
+            //equal(new Triple(':1', ':2', new Resource("foo")).toString(), ':1 :2 "foo".', "a new triple should default to update");
+            equal(new Triple(':1', ':2', ':3').operation, "update", "a new triple should default to update");
+            equal(new Triple(':1', ':2', ':3', 'delete').operation, "delete", "a new triple can be set to delete");
+
             ok(new Triple(':1', ':2', ':3').equals(new Triple(':1', ':2', ':3')), "two identical triples should be identical");
 
-            var triples = Triples([[':1', ':2', ':3'], [':4', ':5', ':6']]);
+            var triples = new Triples(new Triple(':1', ':2', ':3'), new Triple(':4', ':5', ':6'));
             equal(triples[0].subject, ':1');
             equal(triples[0].predicate, ':2');
             equal(triples[0].object, ':3');
             equal(triples[1].subject, ':4');
             equal(triples[1].predicate, ':5');
-            equal(triples[1].object, ':6');            
+            equal(triples[1].object, ':6');
+
+            equal(triples.update().length, 2, "in a new list of triples, they should all be to updateable");
+            equal(triples.delete().length, 0, "in a new list of triples, none should be to delete");
+            equal(triples.sparql().length, 1, "there should be one sparql command");
+
+            triples = new Triples(0);
+            triples.push(new Triple(':1', ':2', ':3', "delete"));
+            equal(triples.update().length, 0, "in a new list of triples, they should all be to deleted");
+            equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
+            equal(triples.sparql().length, 1, "there should be one sparql command");
+
+
+
         });
         test("resources from FusekiEndpoint", function() {
             var bnode1 = new Resource({type: 'bnode', value:'a'});
@@ -162,32 +181,6 @@
             },
             teardown: function() { this.notepad.destroy(); }    
         });
-        function enterNewLine(div) {
-            var target = div.find("li .object");
-            target.val('Test a widget');
-            target.change();
-            target.caretToEnd();
-            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
-        }
-        test("when create a new line, then it should have two lines", function() {
-            enterNewLine(this.div);
-            
-            equal(this.div.find("li").length, 2, "should have 2 lines");
-            equal(this.notepad.triples().length, 2, "it should have 2 triples"); 
-
-            var line = this.div.find("li:first").data('line');
-            equal(line.triples().length, 2, "a new line should have two triples");
-            equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
-
-            equal(line._getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
-            equal(line.getContainerTriple().subject, this.notepad.getUri(), "subject of the container triple should be the notepad URI");
-            ok(line.getContainerTriple().predicate, 'rdf:member', "predicate should be member-of");
-            equal(line.getContainerTriple().object, line.getUri(), "object should be the line URI");
-
-            equal(line.getLineTriple().subject, line.getUri(), "subject of line tripe should be the line URI");
-            equal(line.getLineTriple().predicate, 'rdfs:label', "line triple predicate should be rdfs:label");
-            equal(line.getLineTriple().object, line.getLineLiteral(), "line literal object should be empty");
-        });
         test("when i place the cursor at the beginning of the line", function() {
             var target = this.div.find("li:first .object");
             target.val('text');
@@ -221,10 +214,10 @@
         asyncTest("when set RDF with cycles, then it should not display a triple twice", function() {
             var uri = this.notepad.getUri();
 
-            var triples = Triples([
-                [uri,'rdfs:member','_:line1'],
-                ['_:line1','rdfs:member','_:line1'],
-            ]);
+            var triples = Triples(
+                    new Triple(uri,'rdfs:member','_:line1'),
+                    new Triple('_:line1','rdfs:member','_:line1')
+            );
             
             this.notepad.endpoint = mock(FusekiEndpoint);
             when(this.notepad.endpoint).getRdfBySubject(JsHamcrest.Matchers.anything()).then( function(t,callback) {
@@ -253,6 +246,32 @@
             // 
             // ok(false, 'test with this...')
         });
+        function enterNewLine(div) {
+            var target = div.find("li .object");
+            target.val('Test a widget');
+            target.change();
+            target.caretToEnd();
+            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+        }
+        test("when create a new line, then it should have two lines", function() {
+            enterNewLine(this.div);
+            
+            equal(this.div.find("li").length, 2, "should have 2 lines");
+            equal(this.notepad.triples().length, 2, "it should have 2 triples"); 
+
+            var line = this.div.find("li:first").data('line');
+            equal(line.triples().length, 2, "a new line should have two triples");
+            equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
+
+            equal(line._getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
+            equal(line.getContainerTriple().subject, this.notepad.getUri(), "subject of the container triple should be the notepad URI");
+            ok(line.getContainerTriple().predicate, 'rdf:member', "predicate should be member-of");
+            equal(line.getContainerTriple().object, line.getUri(), "object should be the line URI");
+
+            equal(line.getLineTriple().subject, line.getUri(), "subject of line tripe should be the line URI");
+            equal(line.getLineTriple().predicate, 'rdfs:label', "line triple predicate should be rdfs:label");
+            equal(line.getLineTriple().object, line.getLineLiteral(), "line literal object should be empty");
+        });
 
         module("given a notepad with two lines", {
             setup: function() {
@@ -265,6 +284,14 @@
             },
             teardown: function() { this.notepad.destroy(); }    
         });
+        test("when I delete the predicate label, it should delete the line triple", function() {
+
+            $(".predicate:first").addClass("delete");
+
+            equal(this.line.getContainerTriple().operation, "delete", "the line triple should be deleted");
+
+            deepEqual(this.notepad.deletedTriples(), [this.line.getContainerTriple()], "the line triple should be in the deleted triples");
+        })
         function indentSecondLine(div) {
             var target = div.find("li:last .object");
             target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.TAB }) );
@@ -281,7 +308,7 @@
         test("when I set unrelated RDF,", function() {
             var triplesPrior = this.notepad.triples();
 
-            this.notepad.setRdf(Triples([['_:aUri','_:aPredicate','_:anotherUri']]));
+            this.notepad.setRdf([new Triple('_:aUri','_:aPredicate','_:anotherUri')]);
 
             deepEqual(this.notepad.triples(), triplesPrior, "the triples should remain the same");
         });
@@ -318,7 +345,7 @@
                 return ['_:line1','rdfs:label','line label'];
             });
 
-            this.notepad.setRdf( Triples([[uri,'rdf:Seq','_:line1']]) );
+            this.notepad.setRdf( [ new Triple(uri,'rdf:Seq','_:line1') ] );
             ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
             equal(this.div.find('li[about="_:line1"] .object').text(), '', "First line should be empty");
        
@@ -350,13 +377,54 @@
             // equal(div.find('li .object:last').val(), 'A line', "Line RDF should be ignored");
         });
         test("a notepad should convert RDF to SPARQLU", function() {
-            var databank = triplesToDatabank(this.notepad.triples());
-            equal(databank.triples().length,2,"graph length should be 2");
+            equal(this.notepad.triples().sparql().length, 1, "it should generate one sparql update command");
+            // var databank = triplesToDatabank(this.notepad.triples());
+            // equal(databank.triples().length,2,"graph length should be 2");
             
-            var sparqlu = databank.sparqlu();
-            notEqual(sparqlu.indexOf("INSERT"),-1,"sparqlu should contain INSERT");
-            notEqual(sparqlu.indexOf("DELETE"),-1,"sparqlu should contain DELETE");
+            // var sparqlu = databank.sparqlu();
+            // notEqual(sparqlu.indexOf("INSERT"),-1,"sparqlu should contain INSERT");
+            // notEqual(sparqlu.indexOf("DELETE"),-1,"sparqlu should contain DELETE");
         });
+
+        module("given a container", {
+            setup: function() {
+                this.ul = $("<ul about='1'>").container();    
+                this.container = this.ul.data('container');
+            }
+        });
+        test("when I do nothing", function() {
+            equal(this.container.triples().length, 0, "then the new contianer should have 0 triples");
+            equal(this.container.sortBy().length,0, "then the list of available sort orders should be empty");
+            // Could the above be " this.container.sort.values.length " instead?
+            // The list could be greyed out
+        });
+        test("when I add one line", function() {
+            this.container.appendLine("first line");
+            equal(this.container.getLines().length, 1, "then the container should have 1 line");
+            equal(this.container.triples().length, 2, "then the new container should have 2 triples");
+
+            // ok(false,"then the new line should have a default predicate");
+            // ok(false,"then the new line should have a URI");
+            // equal(this.container.sortBy().length,0, "then the list of available sort orders should be empty");
+        })
+        test("when I add two lines", function() {
+            // this.ul.append("<li>line 1</li>");
+            // this.ul.append("<li>line 2</li>");
+            // ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing)");
+        })            
+        test("when I add one two lines with predicates", function() {
+            // this.ul.append('<li>Doe, Jon<ul><li rel=":firstName">Jon</li></ul></li>');
+            // this.ul.append('<li>Dane, Jane<ul><li rel=":firstName">Jane</li></ul></li>');
+            // ok(this.container.sortBy().length >= 3, "then the list of available sort orders should include sorting by the predicate");
+        })
+
+        test("when I set the sort order to something non evaluatable, then I raise an exception", function() {
+        
+        });
+        test("when I set the sort order to something evaluatable, then I raise an exception", function() {
+        
+        });
+
 
         module('FusekiEnpoint');
         test("a SPARQL endpoint should clear its content", function() {

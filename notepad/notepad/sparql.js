@@ -19,7 +19,10 @@ FusekiEndpoint.prototype = {
     },
 
     execute: function(command, callback) {
-        command = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" + command;   
+        command =
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
+            "PREFIX : <" + $.uri.base() + '#> \n' +
+            command;
         if (command.contains('SELECT') || command.contains('CONSTRUCT')) {
             return this.query(command, callback);
         } else {
@@ -51,7 +54,33 @@ FusekiEndpoint.prototype = {
             });
             callback(triples);
         });
-    }
+    },
+
+    // deleteTriples: function(triples) {
+    //     var triples = $.each(triples, function(e) { return e.toString().replace(/\\/g,''); }).join(" \n");
+    //     var command = "DELETE DATA { " + triples + " }";
+    //     return command;
+    // },
+    // updateTriples: function(triples) {
+    //     // Overwrite all triples that are receiving new rdfs:label triples
+    //     var labelTriples = $.grep(triples, function(triple) { return triple.predicate.toString() == '<http://www.w3.org/2000/01/rdf-schema#label>' });
+    //     var labelUris = $.map(labelTriples, function(triple) {return triple.object; });
+
+    //     return "\
+    //         DELETE { ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o } WHERE \n\
+    //         { \n\
+    //             ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o \n\
+    //             FILTER (?s in ( " + labelUris.join(",\n") + ") )   \n\
+    //         } \n\
+    //         INSERT DATA \n\
+    //         { \n\
+    //             " + triples.join(" \n") + "\n\
+    //         }";
+    // },
+    // triples: function(triples) {
+    //     deleteTriples( triples.delete() );
+    //     updateTriples( triples.update() );
+    // }
     
 }
 
@@ -80,7 +109,7 @@ $.rdf.databank.prototype.sparqlu = function() {
     { \n\
         " + insertData + "\n\
     }";
-};
+};  
 
 })(jQuery);
 

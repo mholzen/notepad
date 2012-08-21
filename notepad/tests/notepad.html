@@ -10,35 +10,62 @@
 <link  href="../external/jquery-ui.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
 <script src="../external-modules/jquery-caret/jquery.caret.js" type="text/javascript"></script>
+<script src="../external/subarray.js" type="text/javascript"></script>
 
 <script src="../notepad/notepad.js" type="text/javascript" ></script>
 <script src="../notepad/sparql.js" type="text/javascript"></script>
 <link href="../css/notepad.css" rel="stylesheet" type="text/css" media="screen" />
+
+<script src="../notepad/display-require-provide.js" type="text/javascript"></script>
+<script src="../notepad/suggest-line.js" type="text/javascript"></script>
+
 <script>
+var devFusekiEndpoint;
+
 $(function() {
     $("#notepad").notepad();
     $("#notepad .object").focus();
-    var endpoint = new FusekiEndpoint("http://localhost:3030/dev");
-    $("#notepad").data('notepad').endpoint = endpoint;
+    devFusekiEndpoint = new FusekiEndpoint("http://localhost:3030/dev");
+    $("#notepad").data('notepad').endpoint = devFusekiEndpoint;
     $("#save").click(function() {
-        var sparql = triplesToDatabank($("#notepad").notepad('triples')).sparqlu();
-        $("#rdf").text(sparql);
-        endpoint.update(sparql, function(response) {
-            $("#results").text(response);
-        })
+        var sparql = $("#notepad").notepad('triples').sparql();
+        $.each(sparql, function(i,command) {
+            var log = $('<tr><td class="command"/></td><td class="result"/></tr>').insertBefore("#sparql tr:first");
+            $(log).find('.command').text(command);
+            var result = $(log).find(".result");
+
+            devFusekiEndpoint.execute(command, function(response) {
+                result.text(response);
+            });
+        });
     });
+    $("#datepicker").datepicker();
+
+    $(".debug .toggle").click(function() {
+        $(this).siblings().toggleClass('hidden');
+    });
+
+
+
 });
 </script>
 </head>
 <body>
-    <h3>Notepad</h3>
-	<div id="notepad"></div>
-	<button id="save">Save</button>
+    <div id="container">
+        <h2>Notepad</h2>
+	   <div id="notepad"></div>
+	   <button id="save">Save</button>
+    </div>
 
-	<h4>SPARQLU</h4>
-	<pre id="rdf"></pre>
-
-	<h4>Results</h4>
-	<pre id="results"></pre>
+    <div class="debug">
+        <button class="toggle">Show/Hide Debug</button>
+        <div id="sparql-results" class="hidden">
+            <h4>SPARQL Commands</h4>
+            <table id="sparql">
+                <tr/>
+            </table>
+        </div>
+        <input id="datepicker"></input>
+    </div>
 </body>
 </html>

@@ -4,49 +4,38 @@ body {
     font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;    
 }
 
+#container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 95%;
+    border: solid 1px #888;
+    border-radius: 5px;
+    padding: 20px;
+}
+
+#container h2 {
+    margin-top: 0px;
+}
+
+.notepad > ul {
+    padding-left: 0;
+}
 .notepad .predicate {
 	font-style: italic;
+}
+.notepad .delete {
+    text-decoration: line-through;
 }
 .notepad textarea {
     font-size: large;
     font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
 }
-.notepad .predicateToggle {
-    padding: 2px 4px;
-    margin-right: 10px;
-    border-radius: 10px;      
-    cursor: pointer;
-    font-size: xx-small;
-    
-    /* shown */
-	background: #ccc;
-    border-top: solid 2px #777;
-    border-left: solid 2px #777;
-    border-bottom:solid 2px  #eaeaea;
-    border-right: solid 2px #eaeaea;
-}
-
-.notepad .predicateToggle.hidden {
-    background: #bbb;
-    border-top: solid 2px #eaeaea;
-    border-left: solid 2px #eaeaea;
-    border-bottom: solid 2px #777;
-    border-right: solid 2px #777;
-}
 
 .notepad li {
-	list-style: none;
+    list-style: none;
 }
 .notepad .ui-effects-wrapper {
-	display: inline-block;
-}
-
-.notepad .predicateToggle.hidden:before {
-	content: ">";
-}
-
-.notepad .predicateToggle:before {
-	content: "<";
+    display: inline-block;
 }
 
 .notepad .separator:before {
@@ -57,4 +46,97 @@ body {
     resize: none;
     border: none;
     vertical-align: middle;
+}
+
+.notepad .predicateToggle {
+    padding: 2px 4px;
+    margin-right: 10px;
+    border-radius: 10px;      
+    cursor: pointer;
+    font-family: monospace;
+    font-size: xx-small;
+    
+    /* shown */
+    /*background: #ccc;*/
+
+/*    border-top: solid 1px #777;
+    border-left: solid 1px #777;
+    border-bottom:solid 1px  #eaeaea;
+    border-right: solid 1px #eaeaea;
+*/
+    border-top: solid 1px #eaeaea;
+    border-left: solid 1px #eaeaea;
+    border-bottom: solid 1px #777;
+    border-right: solid 1px #777;
+
+
+}
+
+.notepad td {
+    vertical-align: top;
+    /* border: solid 1pt black; */
+}
+
+.notepad .predicateToggle.hidden {
+    /*background: #bbb;*/
+
+    border-top: solid 1px #eaeaea;
+    border-left: solid 1px #eaeaea;
+    border-bottom: solid 1px #777;
+    border-right: solid 1px #777;
+}
+
+.notepad .predicateToggle.hidden:before {
+    content: ">";
+}
+
+.notepad .predicateToggle:before {
+    content: "<";
+}
+
+
+.notepad .childrenToggle {
+    padding: 2px 4px;
+    margin-right: 10px;
+    border-radius: 10px;      
+    cursor: pointer;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: small;
+    
+    /* shown */
+    /*background: #ccc;*/
+/*    border-top: solid 1px #777;
+    border-left: solid 1px #777;
+    border-bottom:solid 1px  #eaeaea;
+    border-right: solid 1px #eaeaea;
+*/
+}
+
+.notepad .childrenToggle.hidden {
+    /*background: #bbb;*/
+?}
+
+// TODO: replace with triangle pointing right and down, similar to sublime text
+// display it initially, make it display on hover after a while.
+
+.notepad .childrenToggle.hidden:before {
+    content: "+";  // TODO: replace with triangle pointing right;
+}
+
+.notepad .childrenToggle:before {
+    content: "-";  // TODO: replace with triangle pointing down;
+}
+
+.debug {
+    position: absolute; bottom: 0px;
+}
+.debug .hidden {
+    display: none;
+}
+.debug td {
+    border: solid 1pt black;
+    white-space: pre;
+    font-family: courier;
+    font-size: xx-small;
 }
