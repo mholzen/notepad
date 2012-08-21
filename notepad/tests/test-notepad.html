@@ -114,9 +114,6 @@
             equal(triples.update().length, 0, "in a new list of triples, they should all be to deleted");
             equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
             equal(triples.sparql().length, 1, "there should be one sparql command");
-
-
-
         });
         test("resources from FusekiEndpoint", function() {
             var bnode1 = new Resource({type: 'bnode', value:'a'});
@@ -127,7 +124,6 @@
             
             var bnode3 = new Resource({type: 'bnode', value:'a'});
             deepEqual(bnode1, bnode3, "blank nodes created with the same values should be equal");
-
         });
 
         module("given a new div", {
@@ -408,22 +404,20 @@
             // equal(this.container.sortBy().length,0, "then the list of available sort orders should be empty");
         })
         test("when I add two lines", function() {
-            // this.ul.append("<li>line 1</li>");
-            // this.ul.append("<li>line 2</li>");
-            // ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing)");
+            this.container.appendLine("first line");
+            this.container.appendLine("second line");
+            ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing): " + this.container.sortBy());
         })            
-        test("when I add one two lines with predicates", function() {
-            // this.ul.append('<li>Doe, Jon<ul><li rel=":firstName">Jon</li></ul></li>');
-            // this.ul.append('<li>Dane, Jane<ul><li rel=":firstName">Jane</li></ul></li>');
-            // ok(this.container.sortBy().length >= 3, "then the list of available sort orders should include sorting by the predicate");
-        })
+        // test("when I add one two lines with predicates", function() {
+        //     this.ul.append('<li>Doe, Jon<ul><li rel=":firstName">Jon</li></ul></li>');
+        //     this.ul.append('<li>Dane, Jane<ul><li rel=":firstName">Jane</li></ul></li>');
+        //     ok(this.container.sortBy().length >= 3, "then the list of available sort orders should include sorting by the predicate");
+        // })
 
-        test("when I set the sort order to something non evaluatable, then I raise an exception", function() {
-        
-        });
-        test("when I set the sort order to something evaluatable, then I raise an exception", function() {
-        
-        });
+        // test("when I set the sort order to something non evaluatable, then I raise an exception", function() {        
+        // });
+        // test("when I set the sort order to something evaluatable, then I raise an exception", function() {
+        // });
 
 
         module('FusekiEnpoint');

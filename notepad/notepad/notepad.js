@@ -272,8 +272,12 @@
 
         predicateMap: defaultPredicateMap,
 
+        getUri: function() {
+            return this.element.closest('[about]').attr('about');
+        },
+
         getNotepad: function() {
-            return this.element.parents('.notepad').data("notepad");
+                return this.element.parents('.notepad').data("notepad");
         },
 
         getLines: function() {
@@ -288,10 +292,6 @@
             }
             line.appendTo(this.element).line();
             return line.data('line');
-        },
-        getUri: function() {
-            //return this.element.parents('[about]').attr('about');
-            return this.element.closest('[about]').attr('about');
         },
         getDefaultPredicate: function() {
             var predicate = this.element.attr(CONTAINER_DEFAULT_PREDICATE_ATTR);
@@ -373,7 +373,8 @@
             if (this.getLines().length <= 1) {
                 return [];
             }
-            return [ function(a,b) { return a>=b; }, function(a,b) {return b>=a; }];
+            return [ function(a,b) { return a>=b; },
+                     function(a,b) { return b>=a; }];
         }
 
     });
@@ -397,8 +398,7 @@
 
         notepad : undefined,
 
-        // Line Uri
-        
+        // Line Uri        
         getUri: function() {
             return this.element.attr("about");
         },
@@ -428,7 +428,10 @@
 
         // Container
         getContainer: function() {
-            return this.element.parents('.notepad-container').data("container");
+                return this.element.parents('.notepad-container').data("container");
+        },
+        getNotepad: function() {
+            return this.getContainer().getNotepad();
         },
         _getContainerUri: function() {
             return this.getContainer().getUri();
@@ -593,10 +596,6 @@
             return this.element.children(".object").focus();
         },
 
-        getNotepad: function() {
-            // TODO: remove duplicate with container.notepad
-            return this.element.parents('.notepad').data("notepad");
-        },
         // Set up the line widget
         _create : function() {
             var line = this;
@@ -677,7 +676,7 @@
             // Only set the URI if the line is changed. to: ensure new empty lines are not saved
             this.object.change(function(event) {
                 if (line.getUri() === undefined) {
-                    line._setUri(line.getNotepad()._getNewUri());
+                    line._setUri(getNewUri());
                 }
             });
 
@@ -768,7 +767,7 @@
 
             this.endpoint = undefined;
             
-            this._setUri(this._getNewUri());
+            this._setUri(getNewUri());
 
             var ul = $('<ul>').appendTo(this.element).container();  // Create an empty container
             this.getList().appendLine();  // Start with one empty line
@@ -918,13 +917,6 @@
             this.getList()._updateFromRdf(triples);
         },
         
-        _getNewUri: function() {
-            return new Resource(":"+guidGenerator());
-        },
-        _getBlankUri: function() {
-            return new Resource("[]");
-        },
-
         triples: function(){
             var triples = new Triples(0);
             $.merge(triples,this.getList().triples());
