@@ -78,8 +78,6 @@ body {
 }
 
 .notepad .predicateToggle.hidden {
-    /*background: #bbb;*/
-
     border-top: solid 1px #eaeaea;
     border-left: solid 1px #eaeaea;
     border-bottom: solid 1px #777;
@@ -103,29 +101,21 @@ body {
     font-family: monospace;
     font-weight: bold;
     font-size: small;
-    
-    /* shown */
-    /*background: #ccc;*/
-/*    border-top: solid 1px #777;
-    border-left: solid 1px #777;
-    border-bottom:solid 1px  #eaeaea;
-    border-right: solid 1px #eaeaea;
-*/
 }
-
-.notepad .childrenToggle.hidden {
-    /*background: #bbb;*/
-?}
 
 // TODO: replace with triangle pointing right and down, similar to sublime text
 // display it initially, make it display on hover after a while.
 
+.notepad .childrenToggle.hidden {
+    /* This is necessary to have the following pseudo selector work right */
+}
+
 .notepad .childrenToggle.hidden:before {
-    content: "+";  // TODO: replace with triangle pointing right;
+    content: "+";  /* TODO: replace with triangle pointing right; */
 }
 
 .notepad .childrenToggle:before {
-    content: "-";  // TODO: replace with triangle pointing down;
+    content: "-";  /* TODO: replace with triangle pointing down; */
 }
 
 .debug {
