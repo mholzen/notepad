@@ -15,11 +15,17 @@
 <script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
 <script src="../external-modules/jquery-caret/jquery.caret.js" type="text/javascript"></script>
 <script src="../external/subarray.js" type="text/javascript"></script>
+<script src="../external/underscore.js" type="text/javascript"></script>
 
 <!-- Code under test -->
 <link  href="../css/notepad.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../notepad/notepad.js" type="text/javascript"></script>
-<script src="../notepad/sparql.js" type="text/javascript"></script>
+<script src="../notepad/notepad-rdf.js" type="text/javascript"></script>
+<script src="../notepad/notepad-container.js" type="text/javascript"></script>
+<script src="../notepad/notepad-line.js" type="text/javascript"></script>
+<script src="../notepad/notepad-sparql.js" type="text/javascript"></script>
+<script src="../notepad/notepad-column.js" type="text/javascript"></script>
+<script src="../notepad/notepad-object.js" type="text/javascript"></script>
 
 <script>
     $(document).ready(function() {
@@ -126,6 +132,39 @@
             deepEqual(bnode1, bnode3, "blank nodes created with the same values should be equal");
         });
 
+
+        module("given a new object", {
+            setup: function() {
+                this.element = $("<p>").object();
+                this.object = this.element.data('object');
+            },
+            teardown: function() {
+                this.object.destroy();
+            }
+        });
+        test("when I provide text, it should provide a URI or a literal", function(){
+            this.element.text("a human readable label");
+            this.element.change();
+
+            ok(this.object.getObjectUri() || this.object.getObjectLiteral(), "a URI or a literal is provided");
+        });
+        test("when I provide text with special characters, it should provide a URI or a literal", function(){
+            this.element.text('a human readable label with special characters (: and ")');
+            this.element.change();
+
+            ok(this.object.getObjectUri() || this.object.getObjectLiteral(), "a URI or a literal is provided");
+        });
+
+        // test("when I provide a URI, it should retrieve the resource and display an element of it", function(){
+        //     this.element.text("http://www.google.com");
+        //     this.element.change();            
+        //     ok(false, "mock URL fetcher returns resource");
+        //     ok(this.object.response, "last response is defined");
+        //     ok(this.object.title, "title is defined");
+        // });
+
+
+
         module("given a new div", {
             setup: function() {
                 this.div = $("#notepad");
@@ -154,6 +193,8 @@
            ok(this.div.find("li .predicate").val(), "the first line predicate label should be defined");
         });
 
+
+
         module("given a new notepad", {
             setup: function() {
                 this.div = $("#notepad").notepad();
@@ -169,13 +210,16 @@
             ok(!this.div.attr('about'),"it leaves the attribute 'about'");
         });
 
-        module("given a notepad", {
+
+
+        module("given a new notepad", {
             setup: function() {
                 this.div = $("#notepad").notepad();
                 this.notepad = this.div.data('notepad');
+                this.container = this.notepad.getContainer();
                 this.line = this.div.find('li').data('line');
             },
-            teardown: function() { this.notepad.destroy(); }    
+                teardown: function() { this.notepad.destroy(); }    
         });
         test("when i place the cursor at the beginning of the line", function() {
             var target = this.div.find("li:first .object");
@@ -253,10 +297,8 @@
             enterNewLine(this.div);
             
             equal(this.div.find("li").length, 2, "should have 2 lines");
-            equal(this.notepad.triples().length, 2, "it should have 2 triples"); 
 
             var line = this.div.find("li:first").data('line');
-            equal(line.triples().length, 2, "a new line should have two triples");
             equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
 
             equal(line._getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
@@ -268,6 +310,40 @@
             equal(line.getLineTriple().predicate, 'rdfs:label', "line triple predicate should be rdfs:label");
             equal(line.getLineTriple().object, line.getLineLiteral(), "line literal object should be empty");
         });
+        test("when I add one line", function() {
+            this.container.appendLine("first line");
+            equal(this.container.getLines().length, 2, "then the container should have 1 line");
+            equal(this.container.triples().length, 3, "then the new container should have 2 triples");
+
+            // ok(false,"then the new line should have a default predicate");
+            // ok(false,"then the new line should have a URI");
+            // equal(this.container.sortBy().length,0, "then the list of available sort orders should be empty");
+        });
+        test("when I set the predicate label to a new label, then", function() {
+            this.line.element.find('.predicate').val('a new label');
+            this.line.element.find('.predicate').change();
+            this.line.element.find('.object').val('a new value');
+            ok(this.line.getPredicateLabelTriple(), "the line should generate a triple for the predicate");
+        });
+        // test("when I set the predicate label to a label that indicates an inverse predicate (e.g ':Person -rdf:type :louis .', then", function() {
+        //     ok(false,"it should save the inverse triple");
+        // });
+
+        test("when I append a column with a predicate", function() {
+            var predicateUri = "rdf:example";
+            var column = this.container.appendColumn(predicateUri);
+            ok(this.container.getColumns().length, 1, "the container should have two headers");
+            // ok(column, "this column should be defined");
+            // equal(1, column.getObjects().length, "the column should have one row");
+            // notEqual(column.getObjects()[0].element.css('display'), 'static', "the first cell should be visible");
+        })
+        test("when I add two lines", function() {
+            this.container.appendLine("first line");
+            this.container.appendLine("second line");
+            ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing): " + this.container.sortBy());
+        });
+
+
 
         module("given a notepad with two lines", {
             setup: function() {
@@ -299,7 +375,7 @@
                 this.firstLine.getUri(),
                 "second line should be under the first");
             
-            equal(this.notepad.triples().length,2,"graph length after a new line should be 2");
+            equal(this.notepad.triples().length,3,"graph length after a new line should be 3");
         });
         test("when I set unrelated RDF,", function() {
             var triplesPrior = this.notepad.triples();
@@ -310,7 +386,7 @@
         });
         test("a new line should update labels from RDF", function() {
             this.line._setUri('_:lineUri');
-            this.notepad.getList()._updateLabelsFromRdf( [ new Triple('_:lineUri','rdfs:label','line label') ] );
+            this.notepad.getContainer()._updateLabelsFromRdf( [ new Triple('_:lineUri','rdfs:label','line label') ] );
             equal(this.line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
         });
         test("a new line should display RDF when setting its URI", function() {
@@ -374,13 +450,9 @@
         });
         test("a notepad should convert RDF to SPARQLU", function() {
             equal(this.notepad.triples().sparql().length, 1, "it should generate one sparql update command");
-            // var databank = triplesToDatabank(this.notepad.triples());
-            // equal(databank.triples().length,2,"graph length should be 2");
-            
-            // var sparqlu = databank.sparqlu();
-            // notEqual(sparqlu.indexOf("INSERT"),-1,"sparqlu should contain INSERT");
-            // notEqual(sparqlu.indexOf("DELETE"),-1,"sparqlu should contain DELETE");
         });
+
+
 
         module("given a container", {
             setup: function() {
@@ -394,20 +466,16 @@
             // Could the above be " this.container.sort.values.length " instead?
             // The list could be greyed out
         });
-        test("when I add one line", function() {
-            this.container.appendLine("first line");
-            equal(this.container.getLines().length, 1, "then the container should have 1 line");
-            equal(this.container.triples().length, 2, "then the new container should have 2 triples");
 
-            // ok(false,"then the new line should have a default predicate");
-            // ok(false,"then the new line should have a URI");
-            // equal(this.container.sortBy().length,0, "then the list of available sort orders should be empty");
-        })
-        test("when I add two lines", function() {
-            this.container.appendLine("first line");
-            this.container.appendLine("second line");
-            ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing): " + this.container.sortBy());
-        })            
+        module("given a container with a empty line", {
+            setup: function() {
+                this.ul = $("<ul about='1'>").container();    
+                this.container = this.ul.data('container');
+                this.line = this.ul.find("li:first").data('line');
+            }
+        });
+
+
         // test("when I add one two lines with predicates", function() {
         //     this.ul.append('<li>Doe, Jon<ul><li rel=":firstName">Jon</li></ul></li>');
         //     this.ul.append('<li>Dane, Jane<ul><li rel=":firstName">Jane</li></ul></li>');

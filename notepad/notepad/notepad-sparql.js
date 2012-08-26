@@ -20,6 +20,7 @@ FusekiEndpoint.prototype = {
 
     execute: function(command, callback) {
         command =
+            "PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n" +
             "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
             "PREFIX : <" + $.uri.base() + '#> \n' +
             command;
@@ -44,7 +45,23 @@ FusekiEndpoint.prototype = {
             callback(subjectsLabels);
         });
     },
-    
+
+    getPredicatesLabelsByLabel: function(label, callback) {
+        var command = '\
+            SELECT DISTINCT ?pred ?label \
+            WHERE { \
+                ?pred rdfs:label ?label FILTER regex(?label, "'+label+'", "i") \
+                { ?s ?pred ?o } UNION { ?pred a rdf:Property } \
+            }';
+        this.execute(command,function(data) { 
+            var results = $.map(data.results.bindings, function(element,index) {
+                var uri = new Resource(element.pred.value).toString();
+                return { label: element.label.value, value: uri };
+            });
+            callback(results);
+        });
+    },
+  
     getRdfBySubject: function(subject, callback) {
         var s = new Resource(subject)
         var command = 'SELECT ?s ?p ?o WHERE { '+s.resource.toString() +' ?p ?o }';
@@ -56,32 +73,17 @@ FusekiEndpoint.prototype = {
         });
     },
 
-    // deleteTriples: function(triples) {
-    //     var triples = $.each(triples, function(e) { return e.toString().replace(/\\/g,''); }).join(" \n");
-    //     var command = "DELETE DATA { " + triples + " }";
-    //     return command;
-    // },
-    // updateTriples: function(triples) {
-    //     // Overwrite all triples that are receiving new rdfs:label triples
-    //     var labelTriples = $.grep(triples, function(triple) { return triple.predicate.toString() == '<http://www.w3.org/2000/01/rdf-schema#label>' });
-    //     var labelUris = $.map(labelTriples, function(triple) {return triple.object; });
-
-    //     return "\
-    //         DELETE { ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o } WHERE \n\
-    //         { \n\
-    //             ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o \n\
-    //             FILTER (?s in ( " + labelUris.join(",\n") + ") )   \n\
-    //         } \n\
-    //         INSERT DATA \n\
-    //         { \n\
-    //             " + triples.join(" \n") + "\n\
-    //         }";
-    // },
-    // triples: function(triples) {
-    //     deleteTriples( triples.delete() );
-    //     updateTriples( triples.update() );
-    // }
-    
+    getLabelsBySubject: function(subject, callback, knownLabels) {
+        var s = new Resource(subject);
+        var command = 'SELECT DISTINCT ?label WHERE { '+s.resource.toString() +' rdfs:label ?label }';
+        this.execute(command,function(data) { 
+            var labels = $.map(data.results.bindings, function(element,index) {
+                return element.label.value;
+            });
+            _.uniq(labels,knownLabels);
+            callback(labels);
+        });
+    },    
 }
 
 $.rdf.databank.prototype.sparqlu = function() {

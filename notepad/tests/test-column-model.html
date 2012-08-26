@@ -1,0 +1,126 @@
+<html>
+<head>
+	<style type="text/css">
+.col1 {
+	position: absolute;
+	left: 300px;
+	vertical-align: text-top;
+	background: #ddd;
+	display: inline;
+}
+
+.col2 {
+	position: absolute;
+	left: 600px;
+	vertical-align: text-top;
+	background: #ddd;
+	display: inline;
+}
+
+
+li {
+	width: 200px;
+}
+
+li.using-relative-fail {
+	position: relative;
+	right: -20px;
+}
+
+.list2 {
+	padding-left: 20px;
+}
+	</style>
+<body>
+	<h2>using lists</h2>
+	<ul>
+		<div> header
+			<div class="col1">col 1 header</div>
+		</div>
+		<li>line 1
+			<span class="col1">col 1</span>
+		</li>
+		<li>line 2
+			<span class="col1">col 1</span>
+			<ul>
+				<li>subline 1 <br> subline 2
+					<span class="col1">col 1</span>
+				</li>
+				<li>subline 2
+					<span class="col1">col 1</span>
+					<span class="col2">col 2</span>
+				</li>
+				<li>subline 3
+					<span class="col2">only col 2</span>
+				</li>
+
+			</ul>
+		</li>
+		<li>line 3 long line line 3 long line long line long line long line long line
+			<span style="font-size: xx-large; display: ">large font</span> end of long line.
+		<div class="col1">col 1</div>
+		</li>
+		<li>line 4
+			<ul>
+				<li>subline 1 <br> subline 2
+					<span class="col1">col 1</span>
+				</li>
+				<li>subline 2
+					<span class="col1">col 1</span>
+					<span class="col2">col 2</span>
+				</li>
+			</ul>
+			<span class="col1">col 1</span>
+		</li>
+
+		<li>a line
+			<span class="col2">col 2</span>
+		</li>
+
+	</ul>
+	<p>the row span is vertically aligned with the last line</p>
+	<p>the position of the columns has to be maintained by the model
+		<ul>
+			<li>the position of right margin of the previous column.  Which can be done setting the line's width, but requires knowing the tree depth, which can come from the DOM itself (number of LI up to the notepad) </li>
+		</ul>
+	</p>
+
+	<h2>using tables</h2>
+	<table>
+		<tr>
+			<th>lists</th>
+			<th>header 1</th>
+		</tr>
+
+		<tr>
+			<td>line 1</td>
+			<td>col 1</td>
+		</tr>
+		<tr>
+			<td>line 2</td>
+			<td>col 1</td>
+		</tr>
+		<tr>
+			<td class="list2">subline 1</td>
+			<td>col 1</td>
+		</tr>
+		<tr>
+			<td class="list2">subline 2</td>
+			<td>col 1</td>
+		</tr>
+		<tr>
+			<td>line 3 long line line 3 long line long line long line long line long line</td>
+			<td>col 1</td>
+		</tr>
+	</table>
+	<p>the model has to maintain which td is parent/child.
+		<ul>
+			<li>the indentation level of each line has to be calculated</li>
+			<li>indent/unindent a line is  ...</li>
+			<li>moving the cursor vertically is easier because it's just moving between rows</p>
+			<li>collapsing/expanding is harder</li>
+		</ul>
+	</p>
+	<p>selecting a row is easy.  selecting a column is cumbersome.</p>
+</body>
+</html>
