@@ -3,7 +3,7 @@
 	<style type="text/css">
 .col1 {
 	position: absolute;
-	left: 300px;
+	left: 400px;
 	vertical-align: text-top;
 	background: #ddd;
 	display: inline;
@@ -11,7 +11,7 @@
 
 .col2 {
 	position: absolute;
-	left: 600px;
+	left: 800px;
 	vertical-align: text-top;
 	background: #ddd;
 	display: inline;
@@ -31,11 +31,14 @@ li.using-relative-fail {
 	padding-left: 20px;
 }
 	</style>
+	<link href="../css/notepad.css" rel="stylesheet" type="text/css" media="screen" />
+
 <body>
 	<h2>using lists</h2>
 	<ul>
-		<div> header
-			<div class="col1">col 1 header</div>
+		<div class="notepad-headers-container"> header
+			<div class="notepad-column-0">col 1 header</div>
+			<span></span>
 		</div>
 		<li>line 1
 			<span class="col1">col 1</span>

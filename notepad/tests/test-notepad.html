@@ -1,18 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!DOCTYPE html> <html> <head>
 
 <!-- Test infrastructure -->
 <script src="../external/qunit.js" type="text/javascript"></script>
 <link  href="../external/qunit.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jsmockito-1.0.4.js" type="text/javascript"></script>
 <script src="../external/jshamcrest-0.5.2.js" type="text/javascript"></script>
+<script src="qunit-additions.js" type="text/javascript"></script>
 
 <!-- External Dependencies of the code under test -->
 <script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
 <script src="../external/jquery-ui.js" type="text/javascript"></script>
 <link  href="../external/jquery-ui.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
+<script src="../external/jquery.rdfquery.rules-1.0.js" type="text/javascript"></script>
 <script src="../external-modules/jquery-caret/jquery.caret.js" type="text/javascript"></script>
 <script src="../external/subarray.js" type="text/javascript"></script>
 <script src="../external/underscore.js" type="text/javascript"></script>
@@ -26,326 +26,196 @@
 <script src="../notepad/notepad-sparql.js" type="text/javascript"></script>
 <script src="../notepad/notepad-column.js" type="text/javascript"></script>
 <script src="../notepad/notepad-object.js" type="text/javascript"></script>
+<script src="../notepad/notepad-predicate.js" type="text/javascript"></script>
+
+<!-- Tests -->
+<script src="notepad-rdf.js" type="text/javascript"></script>
+<script src="notepad-object.js" type="text/javascript"></script>
+<script src="notepad-container.js" type="text/javascript"></script>
+<script src="notepad.js" type="text/javascript"></script>
 
 <script>
     $(document).ready(function() {
 
         JsMockito.Integration.QUnit();
 
-        /**
-         * testAsyncStepsWithPause
-         * Executes any number of async Qunit tests with a pause between each step
-         *
-         * Author: Matthew O'Riordan, http://mattheworiordan.com
-         *
-         * Params:
-         * @timeToWait: milliseconds between running method and running tests
-         * @methods: 1+ function arguments passed in the format:
-         *   function() {
-         *      // execute code here which requires the tests to wait for @timeToWait
-         *      return function() {
-         *        // execute assertions here, will be executed after @timeToWait
-         *      }
-         *   }, ...
-         */
-        function testAsyncStepsWithPause(pause) {
-          var args = arguments;
-          if (args.length > 1) {
-            stop();
-            var asyncTestFunction = args[1]();
-            setTimeout(function() {
-              asyncTestFunction();
-              start();
-              var params = [pause].concat(Array.prototype.slice.call(args, 2));
-              testAsyncStepsWithPause.apply(this, params);
-            }, pause)
-          }
+        module("rdf.query");
+        {
+            test("rdf.literal", function() {
+            equal($.rdf.literal('"a"').toString(), '"a"');
+
+            equal($.rdf.literal('"\\\\""').toString(), '"\\""');
+            // BUG: This test fails if the previous test is not executed
+            // http://code.google.com/p/rdfquery/issues/detail?id=30
+            equal($.rdf.literal('"\\""').toString(), '"\\""');
+            });
         }
-
-        module("resources and triples" );
-        test("triples and resources", function() {
-            equal(new Resource("a"),"a");
-            equal("a",new Resource("a"));
-            ok(new Resource("_:blank").isBlank(), "a blank node should return an rdf resource blank node");
-            ok(new Resource("http://example.com").isUri(), "a node with http:// should be of type uri");
-            equal(new Resource("Text").toRdfResource().type,'literal', "a node with text should be of type literal");
-
-            var bnode1 = new Resource("[]");
-            ok(bnode1.isBlank(), "resource created with [] should be blank");
-            var bnode2 = new Resource("[]");
-            notEqual(bnode1, bnode2, "[] should create a new blank node every time");
-
-            var bnode1 = new Resource("_:blank");
-            ok(bnode1.isBlank(), "resource created with _: should be blank");
-            var bnode2 = new Resource("_:blank");
-            deepEqual(bnode1, bnode2, "_:id should create identical blank nodes");
-
-            var bnode3 = bnode1;
-            equal(bnode3.toRdfResource(),bnode1.toRdfResource());
-            
-            var r1 = new Resource("_:blank");
-            var r2 = new Resource(r1);
-            deepEqual(r2, r1, "a new resource created from an existing resource should be equal");
-
-            var label = new Resource("rdf:foo");
-            equal(label.toString(), "rdf:foo", "a resource should preserve CURIEs");
-            
-            var literal = new Resource("foo");
-            equal(literal, "foo", "a resource should contain a string literal");
-
-            var r = new Resource(':123');
-            equal(r.toString(),':123', "default prefix should be preserved");
-
-            //equal(new Triple(':1', ':2', ':3').toString(), ":1 :2 :3.", "a new triple should default to update");
-            //equal(new Triple(':1', ':2', new Resource("foo")).toString(), ':1 :2 "foo".', "a new triple should default to update");
-            equal(new Triple(':1', ':2', ':3').operation, "update", "a new triple should default to update");
-            equal(new Triple(':1', ':2', ':3', 'delete').operation, "delete", "a new triple can be set to delete");
-
-            ok(new Triple(':1', ':2', ':3').equals(new Triple(':1', ':2', ':3')), "two identical triples should be identical");
-
-            var triples = new Triples(new Triple(':1', ':2', ':3'), new Triple(':4', ':5', ':6'));
-            equal(triples[0].subject, ':1');
-            equal(triples[0].predicate, ':2');
-            equal(triples[0].object, ':3');
-            equal(triples[1].subject, ':4');
-            equal(triples[1].predicate, ':5');
-            equal(triples[1].object, ':6');
-
-            equal(triples.update().length, 2, "in a new list of triples, they should all be to updateable");
-            equal(triples.delete().length, 0, "in a new list of triples, none should be to delete");
-            equal(triples.sparql().length, 1, "there should be one sparql command");
-
-            triples = new Triples(0);
-            triples.push(new Triple(':1', ':2', ':3', "delete"));
-            equal(triples.update().length, 0, "in a new list of triples, they should all be to deleted");
-            equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
-            equal(triples.sparql().length, 1, "there should be one sparql command");
-        });
-        test("resources from FusekiEndpoint", function() {
-            var bnode1 = new Resource({type: 'bnode', value:'a'});
-            ok(bnode1.isBlank(), "resource created with a {} should be blank");
-
-            var bnode2 = new Resource({type: 'bnode', value:'b'});
-            notEqual(bnode1, bnode2, "blank nodes created with different values should not be equal");
-            
-            var bnode3 = new Resource({type: 'bnode', value:'a'});
-            deepEqual(bnode1, bnode3, "blank nodes created with the same values should be equal");
-        });
-
-
-        module("given a new object", {
-            setup: function() {
-                this.element = $("<p>").object();
-                this.object = this.element.data('object');
-            },
-            teardown: function() {
-                this.object.destroy();
-            }
-        });
-        test("when I provide text, it should provide a URI or a literal", function(){
-            this.element.text("a human readable label");
-            this.element.change();
-
-            ok(this.object.getObjectUri() || this.object.getObjectLiteral(), "a URI or a literal is provided");
-        });
-        test("when I provide text with special characters, it should provide a URI or a literal", function(){
-            this.element.text('a human readable label with special characters (: and ")');
-            this.element.change();
-
-            ok(this.object.getObjectUri() || this.object.getObjectLiteral(), "a URI or a literal is provided");
-        });
-
-        // test("when I provide a URI, it should retrieve the resource and display an element of it", function(){
-        //     this.element.text("http://www.google.com");
-        //     this.element.change();            
-        //     ok(false, "mock URL fetcher returns resource");
-        //     ok(this.object.response, "last response is defined");
-        //     ok(this.object.title, "title is defined");
-        // });
-
-
 
         module("given a new div", {
             setup: function() {
                 this.div = $("#notepad");
-            },
-            teardown: function() {
-                this.div.notepad('destroy');
             }
         });
-        test("when I create a notepad, it should have initial components", function(){
-           this.div.notepad();
+        {
+            test("when I create a notepad, it should have initial components", function(){
+               this.div.notepad();
 
-           equal(this.div.find("li").length, 1, "should have one line element");
-           // TODO: reference to .object makes this too highly coupled?
-           equal(this.div.find("li .object").val(), "", "the first line should be empty");
+               equal(this.div.find("li").length, 1, "should have one line element");
+               // TODO: reference to .object makes this too highly coupled?
+               equal(this.div.find("li .notepad-object").val(), "", "the first line should be empty");
 
-           var notepad = this.div.data('notepad');
-           ok(notepad,"it should have a widget");
-           equal(notepad.triples().length,0,"should have zero triples");
+               var notepad = this.div.data('notepad');
+               ok(notepad,"it should have a widget");
+               equal(notepad.triples().length,0,"should have zero triples");
 
-           ok(!notepad.contains(new Triple(':a',':b','c')), "it should not contain a random triple");
-           
-           // The following tests may be too highly coupled
-           equal(notepad.getLines().length,1, "should have one line widget");
-           ok(this.div.find('li').data('line'), "a line should provide it's widget");
-           ok(this.div.find("li .predicate").attr('rel'), "the first line's predicate uri should be defined");
-           ok(this.div.find("li .predicate").val(), "the first line predicate label should be defined");
-        });
+               ok(!notepad.contains(new Triple(':a',':b','c')), "it should not contain a random triple");
+               
+               // The following tests may be too highly coupled
+               equal(notepad.getLines().length,1, "should have one line widget");
+               ok(this.div.find('li').data('line'), "a line should provide it's widget");
+               ok(this.div.find("li .notepad-predicate").attr('rel'), "the first line's predicate uri should be defined");
+               ok(this.div.find("li .notepad-predicate").val(), "the first line predicate label should be defined");
 
-
-
-        module("given a new notepad", {
-            setup: function() {
-                this.div = $("#notepad").notepad();
-                this.notepad = this.div.data('notepad');
-                this.line = this.div.find('li').data('line');
-            }
-        });
-        test("when I destroy it, it should be destroyed cleanly", function() {
-            this.notepad.destroy();
-
-            equal(this.div.children().length,0,"it leaves children element");
-            ok(!this.div.hasClass('notepad'),"it leaves the class 'notepad'");
-            ok(!this.div.attr('about'),"it leaves the attribute 'about'");
-        });
-
-
-
-        module("given a new notepad", {
-            setup: function() {
-                this.div = $("#notepad").notepad();
-                this.notepad = this.div.data('notepad');
-                this.container = this.notepad.getContainer();
-                this.line = this.div.find('li').data('line');
-            },
-                teardown: function() { this.notepad.destroy(); }    
-        });
-        test("when i place the cursor at the beginning of the line", function() {
-            var target = this.div.find("li:first .object");
-            target.val('text');
-            target.change();
-            target.caretToStart();
-            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
-            
-            equal(this.div.find("li:first .object").val(), "", "the first line should be empty");
-            equal(this.div.find("li:last .object").val(), "text", "the second line should be where the text remained");
-        });
-        test("when I toggle the predicate", function() {
-            expect(4);
-            equal(this.line.predicate.css('display'),'none', "this predicate should not be displayed initially");
-            ok(this.line.predicateToggle, "the toggle should be available");
-            
-            var line = this.line;
-            testAsyncStepsWithPause(200,
-                function() {
-                    line.predicateToggle.trigger(jQuery.Event("click"));
-                    return function() {
-                        notEqual(line.predicate.css('display'),'none', "this predicate should be displayed after a click");    
-                    };
-                },
-                function() {
-                    line.predicateToggle.trigger(jQuery.Event("click"));
-                    return function() {
-                        equal(line.predicate.css('display'),'none', "this predicate should not be displayed after two clicks");    
-                    }
-                });
-        });
-        asyncTest("when set RDF with cycles, then it should not display a triple twice", function() {
-            var uri = this.notepad.getUri();
-
-            var triples = Triples(
-                    new Triple(uri,'rdfs:member','_:line1'),
-                    new Triple('_:line1','rdfs:member','_:line1')
-            );
-            
-            this.notepad.endpoint = mock(FusekiEndpoint);
-            when(this.notepad.endpoint).getRdfBySubject(JsHamcrest.Matchers.anything()).then( function(t,callback) {
-                start();
-                callback(triples);
+               this.div.notepad('destroy');
             });
-            this.notepad.setRdf(triples);
+            test("when I create a notepad, it should be destroyed cleanly", function() {
+                this.div.notepad();
+                var notepad = this.div.data('notepad');
+                notepad.destroy();
 
-            var line = this.notepad.getLines()[1]; // TODO: needs 'contains'
-            equal(line.getUri(), '_:line1', "the 2nd line should be the newly added line");
-            equal(line.getLines().length, 1, "this line should have one child")
-
-            verify(this.notepad.endpoint, times(2)).getRdfBySubject('_:line1');
-
-            // triples = Triples([
-            //     [uri,'rdf:member','_:line1'],
-            //     ['_:line1','rdf:member','_:line2'],
-            //     ['_:line2','rdf:member','_:line1'],
-            // ]);
-            // 
-            // this.notepad.setRdf(triples);
-            // 
-            // var line = this.notepad.getLines()[2]; // TODO: needs 'contains'
-            // equal(line.getUri(), '_:line2', "the 2nd line should be the newly added line");
-            // equal(line.getLines().length, 2, "this line should have one child")
-            // 
-            // ok(false, 'test with this...')
-        });
-        function enterNewLine(div) {
-            var target = div.find("li .object");
-            target.val('Test a widget');
-            target.change();
-            target.caretToEnd();
-            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+                equal(this.div.children().length,0,"it leaves children element");
+                ok(!this.div.hasClass('notepad'),"it leaves the class 'notepad'");
+                ok(!this.div.attr('about'),"it leaves the attribute 'about'");
+            });
         }
-        test("when create a new line, then it should have two lines", function() {
-            enterNewLine(this.div);
-            
-            equal(this.div.find("li").length, 2, "should have 2 lines");
 
-            var line = this.div.find("li:first").data('line');
-            equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
+        module("given a notepad with one line of text", {
+            setup: function() {
+                this.div = $("#notepad").notepad();
+                this.notepad = this.div.data('notepad');
+                this.firstLineElement = this.div.find("li:first");
+                this.firstObject = this.div.find("li:first .notepad-object");
+                this.firstObject.val("first line").change();
 
-            equal(line._getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
-            equal(line.getContainerTriple().subject, this.notepad.getUri(), "subject of the container triple should be the notepad URI");
-            ok(line.getContainerTriple().predicate, 'rdf:member', "predicate should be member-of");
-            equal(line.getContainerTriple().object, line.getUri(), "object should be the line URI");
-
-            equal(line.getLineTriple().subject, line.getUri(), "subject of line tripe should be the line URI");
-            equal(line.getLineTriple().predicate, 'rdfs:label', "line triple predicate should be rdfs:label");
-            equal(line.getLineTriple().object, line.getLineLiteral(), "line literal object should be empty");
+                this.firstLine = this.div.find("li:first").data('line');
+                this.line = this.firstLine;
+                this.lastLine = this.div.find("li:last").data('line');
+            },
+            teardown: function() { this.notepad.destroy(); }    
         });
-        test("when I add one line", function() {
-            this.container.appendLine("first line");
-            equal(this.container.getLines().length, 2, "then the container should have 1 line");
-            equal(this.container.triples().length, 3, "then the new container should have 2 triples");
-
-            // ok(false,"then the new line should have a default predicate");
-            // ok(false,"then the new line should have a URI");
-            // equal(this.container.sortBy().length,0, "then the list of available sort orders should be empty");
-        });
-        test("when I set the predicate label to a new label, then", function() {
-            this.line.element.find('.predicate').val('a new label');
-            this.line.element.find('.predicate').change();
-            this.line.element.find('.object').val('a new value');
-            ok(this.line.getPredicateLabelTriple(), "the line should generate a triple for the predicate");
-        });
-        // test("when I set the predicate label to a label that indicates an inverse predicate (e.g ':Person -rdf:type :louis .', then", function() {
-        //     ok(false,"it should save the inverse triple");
-        // });
-
-        test("when I append a column with a predicate", function() {
-            var predicateUri = "rdf:example";
-            var column = this.container.appendColumn(predicateUri);
-            ok(this.container.getColumns().length, 1, "the container should have two headers");
-            // ok(column, "this column should be defined");
-            // equal(1, column.getObjects().length, "the column should have one row");
-            // notEqual(column.getObjects()[0].element.css('display'), 'static', "the first cell should be visible");
-        })
-        test("when I add two lines", function() {
-            this.container.appendLine("first line");
-            this.container.appendLine("second line");
-            ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing): " + this.container.sortBy());
-        });
-
-
+        {
+            test("when I indent the first line, then it should not move", function() {
+                var parentBefore = this.firstLineElement.parent();
+                var result = this.firstLine.indent();
+                ok(!result, "it should return false");
+                var parentAfter = this.firstLineElement.parent();
+                deepEqual(parentAfter, parentBefore, "the parent element of the line should not changed");
+            });
+            test("when I unindent the first line, then it should not move", function() {
+                var parentBefore = this.firstLineElement.parent();
+                var result = this.firstLine.unindent();
+                ok(!result, "it should return false");
+                var parentAfter = this.firstLineElement.parent();
+                deepEqual(parentAfter, parentBefore, "the parent element of the line should not changed");
+            });
+        }
 
         module("given a notepad with two lines", {
+            setup: function() {
+                this.div = $("#notepad").notepad();
+                this.notepad = this.div.data('notepad');
+                this.firstObject = this.div.find("li:first .notepad-object");
+                this.firstObject.val("first line").change();
+
+                this.firstObject.caretToEnd();
+                this.firstObject.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+
+                this.lastObject = this.div.find("li:last .notepad-object")
+                this.lastObject.val("second line").change();
+
+                this.firstLine = this.div.find("li:first").data('line');
+                this.line = this.firstLine;
+                this.lastLine = this.div.find("li:last").data('line');
+            },
+            teardown: function() { this.notepad.destroy(); }    
+        });
+        {
+            test("when I delete the predicate label, it should delete the line triple", function() {
+
+                $(".notepad-predicate:first").addClass("delete");
+
+                equal(this.line.getContainerTriple().operation, "delete", "the line triple should be deleted");
+
+                deepEqual(this.notepad.deletedTriples(), [this.line.getContainerTriple()], "the line triple should be in the deleted triples");
+            })
+            function indentSecondLine(div) {
+                var target = div.find("li:last .notepad-object");
+                target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.TAB }) );
+            }
+            test("when I indent the second line,", function() {
+                indentSecondLine(this.div);
+                equal(
+                    this.lastLine._getContainerUri(),
+                    this.firstLine.getUri(),
+                    "second line should be under the first");
+            });
+            test("when I set unrelated RDF,", function() {
+                var triplesPre = this.notepad.triples();
+
+                this.notepad.setRdf([new Triple(':aUri',':aPredicate',':anotherUri')]);
+                deepEqual(this.notepad.triples(), triplesPre, "the triples should remain the same");
+            });
+            test("a new line should update labels from RDF", function() {
+                this.line._setUri('_:lineUri');
+                this.notepad.getContainer()._updateLabelsFromRdf( [ new Triple('_:lineUri','rdfs:label','line label') ] );
+                equal(this.line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
+            });
+            test("a new line should display RDF when setting its URI", function() {
+                expect(1);
+                this.notepad.endpoint = mock(FusekiEndpoint);
+                when(this.notepad.endpoint).getRdf('_:lineUri').then( function() { 
+                    start();
+                    return ['_:lineUri','rdfs:label','line label'];
+                });
+                stop();
+                this.line.setUri('_:lineUri');
+
+                verify(this.notepad.endpoint).getRdf('_:lineUri');
+                ok(true, "test complete");
+                // TODO: figure out how (and when) to test that the line label was properly set
+                // equal(line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
+            });
+            test("a notepad should display line RDF", function() {
+                this.notepad.setRdf([ new Triple(this.line.getUri(), 'rdfs:label', 'new label') ]);
+                equal(this.div.find('li .notepad-object').val(), 'new label', "RDF for line1's label should set the line text");
+            });
+            test("a notepad should display RDF", function() {
+                var uri = this.notepad.getUri();
+
+                this.notepad.endpoint = mock(FusekiEndpoint);
+                when(this.notepad.endpoint).getRdfBySubjectObject('_:line1').then( function() {
+                    start();
+                    return ['_:line1','rdfs:label','line label'];
+                });
+
+                this.notepad.setRdf( [ new Triple(uri,'rdf:Seq','_:line1') ] );
+                ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
+                equal(this.div.find('li[about="_:line1"] .notepad-object').text(), '', "First line should be empty");
+            });
+            test("a notepad should convert RDF to SPARQLU", function() {
+                equal(this.notepad.triples().sparql().length, 1, "it should generate one sparql update command");
+            });
+            test("when I hit enter at the end of the first line, then it should add a newline before the second line", function() {
+                this.firstObject.caretToEnd();
+                this.firstObject.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+
+                equal(this.div.find("li:eq(0)").data('line').getLineLiteral(),"first line");
+                equal(this.div.find("li:eq(1)").data('line').getLineLiteral(),"");
+                equal(this.div.find("li:eq(2)").data('line').getLineLiteral(),"second line");
+            });
+        }
+
+        module("given a notepad with two lines (first empty, second with a label)", {
             setup: function() {
                 this.div = $("#notepad").notepad();
                 this.notepad = this.div.data('notepad');
@@ -354,167 +224,64 @@
                 this.line = this.firstLine;
                 this.lastLine = this.div.find("li:last").data('line');
             },
-            teardown: function() { this.notepad.destroy(); }    
+            teardown: function() { this.notepad.destroy(); }
         });
-        test("when I delete the predicate label, it should delete the line triple", function() {
-
-            $(".predicate:first").addClass("delete");
-
-            equal(this.line.getContainerTriple().operation, "delete", "the line triple should be deleted");
-
-            deepEqual(this.notepad.deletedTriples(), [this.line.getContainerTriple()], "the line triple should be in the deleted triples");
-        })
-        function indentSecondLine(div) {
-            var target = div.find("li:last .object");
-            target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.TAB }) );
+        {
+            skippedTest("when I save, then the empty line should save because it has a child", function() {
+            });
         }
-        test("when I indent the second line,", function() {
-            indentSecondLine(this.div);
-            equal(
-                this.lastLine._getContainerUri(),
-                this.firstLine.getUri(),
-                "second line should be under the first");
-            
-            equal(this.notepad.triples().length,3,"graph length after a new line should be 3");
-        });
-        test("when I set unrelated RDF,", function() {
-            var triplesPrior = this.notepad.triples();
 
-            this.notepad.setRdf([new Triple('_:aUri','_:aPredicate','_:anotherUri')]);
-
-            deepEqual(this.notepad.triples(), triplesPrior, "the triples should remain the same");
+        module("given a notepad with a line and a child line", {
         });
-        test("a new line should update labels from RDF", function() {
-            this.line._setUri('_:lineUri');
-            this.notepad.getContainer()._updateLabelsFromRdf( [ new Triple('_:lineUri','rdfs:label','line label') ] );
-            equal(this.line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
-        });
-        test("a new line should display RDF when setting its URI", function() {
-            expect(1);
-            this.notepad.endpoint = mock(FusekiEndpoint);
-            when(this.notepad.endpoint).getRdfBySubject('_:lineUri').then( function() { 
-                start();
-                return ['_:lineUri','rdfs:label','line label'];
+        {
+            skippedTest("when I unindent the second line, then the second line relatinoship to the first line should be deleted", function() {
             });
-            stop();
-            this.line.setUri('_:lineUri');
-
-            verify(this.notepad.endpoint).getRdfBySubject('_:lineUri');
-            ok(true, "test complete");
-            // TODO: figure out how (and when) to test that the line label was properly set
-            // equal(line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
-        });
-        test("a notepad should display line RDF", function() {
-            this.notepad.setRdf([ new Triple(this.line.getUri(), 'rdfs:label', 'new label') ]);
-            equal(this.div.find('li .object').val(), 'new label', "RDF for line1's label should set the line text");
-        });
-        test("a notepad should display RDF", function() {
-            var uri = this.notepad.getUri();
-
-            this.notepad.endpoint = mock(FusekiEndpoint);
-            when(this.notepad.endpoint).getRdfBySubject('_:line1').then( function() {
-                start();
-                return ['_:line1','rdfs:label','line label'];
-            });
-
-            this.notepad.setRdf( [ new Triple(uri,'rdf:Seq','_:line1') ] );
-            ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
-            equal(this.div.find('li[about="_:line1"] .object').text(), '', "First line should be empty");
-       
-            // notepad.setRdf( Triples([[uri,'rdf:Seq','_:line1']]) );
-            // equal(div.find('li').length,2, "Same RDF should produce the same content");
-            //        
-            // notepad.setRdf([[uri,'rdf:Seq','_:line1']]);
-            // notepad.setRdf([[uri,'rdf:Seq','_:line2']]);
-            // equal(div.find('li').length,2, "Open world assumptions means we should have both triples");
-            // 
-            // // Two different triples for the same subject and objects
-            // notepad.setRdf(Triples([[uri,'rdf:Seq','_:line1'], [uri,'rdfs:label','_:line1']]));
-            // //ok(false, "how should this behave?");
-            // 
-            // // Three triples for the same subject and objects
-            // notepad.setRdf(Triples([[uri,'rdf:Seq','_:line1'], ['_:line1','rdf:Seq','_:line2'], [uri,'rdf:Seq','_:line2']]));
-            //ok(false, "how should this behave?");
-       
-            // notepad.setRdf( Triples([
-            //     [uri,'rdf:Seq','_:line2'],
-            //     ['_:line2','rdfs:label','A line']
-            // ]));
-            // equal(div.find('li').length,3, "should have 2 lines ");
-            // equal(div.find('li .object:last').val(), 'A line', "Line RDF should be applied");
-            //        
-            // notepad.setRdf([
-            //     ['_:a-non-existent-uri','rdfs:label','Ignore this line']
-            // ]);         
-            // equal(div.find('li .object:last').val(), 'A line', "Line RDF should be ignored");
-        });
-        test("a notepad should convert RDF to SPARQLU", function() {
-            equal(this.notepad.triples().sparql().length, 1, "it should generate one sparql update command");
-        });
-
-
-
-        module("given a container", {
-            setup: function() {
-                this.ul = $("<ul about='1'>").container();    
-                this.container = this.ul.data('container');
-            }
-        });
-        test("when I do nothing", function() {
-            equal(this.container.triples().length, 0, "then the new contianer should have 0 triples");
-            equal(this.container.sortBy().length,0, "then the list of available sort orders should be empty");
-            // Could the above be " this.container.sort.values.length " instead?
-            // The list could be greyed out
-        });
-
-        module("given a container with a empty line", {
-            setup: function() {
-                this.ul = $("<ul about='1'>").container();    
-                this.container = this.ul.data('container');
-                this.line = this.ul.find("li:first").data('line');
-            }
-        });
-
-
-        // test("when I add one two lines with predicates", function() {
-        //     this.ul.append('<li>Doe, Jon<ul><li rel=":firstName">Jon</li></ul></li>');
-        //     this.ul.append('<li>Dane, Jane<ul><li rel=":firstName">Jane</li></ul></li>');
-        //     ok(this.container.sortBy().length >= 3, "then the list of available sort orders should include sorting by the predicate");
-        // })
-
-        // test("when I set the sort order to something non evaluatable, then I raise an exception", function() {        
-        // });
-        // test("when I set the sort order to something evaluatable, then I raise an exception", function() {
-        // });
-
+        }
 
         module('FusekiEnpoint');
-        test("a SPARQL endpoint should clear its content", function() {
-            stop();
-            expect(2);
-            var endpoint = new FusekiEndpoint('http://localhost:3030/test');
-            endpoint.clear( function(){
-                ok(true, "endpoint should clear");
-                endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
-                    equal(subjects.length,0, "endpoint should be empty after clear");
-                    start();
-                });
-            }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
-        });
-        test("a SPARQL endpoint should return matching nodes by label", function() {
-            expect(2);
-            stop();
-            var endpoint = new FusekiEndpoint('http://localhost:3030/test');
-            endpoint.clear( function(){
-                endpoint.execute("INSERT DATA { <> rdfs:label 'label' }", function(data) {
-                    ok(true,"insert should be successful");
+        {
+            test("a SPARQL endpoint should clear its content", function() {
+                stop();
+                expect(2);
+                var endpoint = new FusekiEndpoint('http://localhost:3030/test');
+                endpoint.clear( function(){
+                    ok(true, "endpoint should clear");
                     endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
-                        equal(subjects.length,1, "endpoint should have one label");
+                        equal(subjects.length,0, "endpoint should be empty after clear");
                         start();
                     });
-                });
-            }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
+                }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
+            });
+            test("a SPARQL endpoint should return matching nodes by label", function() {
+                expect(2);
+                stop();
+                var endpoint = new FusekiEndpoint('http://localhost:3030/test');
+                endpoint.clear( function(){
+                    endpoint.execute("INSERT DATA { <> rdfs:label 'label' }", function(data) {
+                        ok(true,"insert should be successful");
+                        endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
+                            equal(subjects.length,1, "endpoint should have one label");
+                            start();
+                        });
+                    });
+                }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
+            });
+        }
+
+        module("rdf extensions", {
+            setup: function() {
+                this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
+            },
         });
+        {
+            skippedTest("given a predicate p, when I post a triple with that predicate, then I can retrieve the collection of triples where p is the predicate", function(){
+                this.endpoint.post(":a :pred :b", function() {
+                    this.endpoint.get(":pred", function(triples) {
+                        ok(triples.sparql("SELECT ?collection WHERE { :pred rdfs:member ?collection . ?collection rdfs:member :a }"));
+                    });
+                });
+            });
+        }
     });
 </script>
 

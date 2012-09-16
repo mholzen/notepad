@@ -1,0 +1,6 @@
+PREFIX owl: 	<http://www.w3.org/2002/07/owl#>
+PREFIX : 		<file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
+
+INSERT DATA {
+	:7970df87-8506-c3ef-5ce6-f9f485d44d33 owl:sameAs :fc4312a8-96c7-2529-3283-f440c43271ac .
+}

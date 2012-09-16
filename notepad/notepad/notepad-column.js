@@ -27,6 +27,9 @@
             line.appendTo(this.element).object();
             return line.data('object');
         },
+        getCssClass: function() {
+            return "notepad-column-" + this.getContainer().getHeaderPosition(this.element);
+        },
         getObjects: function() {
             return this.element.children('li').map(function(index, line) { return $(line).data('object'); } );      // TODO: refactor with container.getLines()
         },
@@ -35,18 +38,25 @@
         _create : function() {
             this.element.addClass("notepad-column");
 
-            // the predecessor container defines the list of subject URI for this column
+            // Turn the header element into a predicate
+            this.element.predicate();
+
+            this.element.addClass(this.getCssClass());
+
+            // We need a container to get lines
             if (this.getContainer() === undefined) {
                 throw "Cannot find a source container for this column";
             }
 
             var column = this;
-            _.each( this.getContainer().getLines(), function(line) {
-                var objectElement = $('<div>');
-                line.element.append(objectElement);
+            _.each( this.getContainer().getAllLines(), function(line) {
+                var objectElement = $('<div>').insertAfter(line.element.find('.notepad-object')[0]);
 
-                objectElement.object();
-                objectElement.data('object').setPredicate(column.element);
+                // Display this object within a column
+                objectElement.addClass(column.getCssClass());
+
+                var object = objectElement.object().data('object');
+                object.setPredicate(column.element);
             });
         },
         _destroy : function() {

@@ -7,10 +7,23 @@
 
 <script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
 <script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
+<script src="../external/jquery.rdfquery.rules-1.0.js" type="text/javascript"></script>
 <script src="../notepad/sparql.js" type="text/javascript"></script>
 
 <script>
     $(document).ready(function() {
+
+        var ns = {
+            rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            rdfs: "http://www.w3.org/2000/01/rdf-schema#",
+            xsd: "http://www.w3.org/2001/XMLSchema#",
+            dc: "http://purl.org/dc/elements/1.1/",
+            foaf: "http://xmlns.com/foaf/0.1/",
+            cc: "http://creativecommons.org/ns#",
+            vcard: "http://www.w3.org/2001/vcard-rdf/3.0#",
+            ex: "http://www.example.com/",
+            owl: "http://www.w3.org/2002/07/owl#",
+        };
 
         module("rdfquery.js");
 
@@ -69,6 +82,15 @@
             graph.add(getTriple());
             equal(graph.triples().length,1, "triples are not of length 1" + graph.triples());
         });
+
+        test("can query triples in a graph", function() {
+            var graph = $.rdf.databank();
+            graph.add(getTriple());
+            var rdf = $.rdf( {databank: graph });
+            console.log(rdf.databank.size());
+            equal(rdf.where('?s ?p ?o').length, 1, "the rdf object should contain one triple");
+        });
+
         
         test("can convert triples to SparqlU", function() {    
             var graph = $.rdf.databank();
@@ -83,6 +105,17 @@
             graph.add( getTriple('label2') );
             sparqlu = graph.sparqlu();
             ok(sparqlu.indexOf('label2') != -1, "can't find literal label2 in "+sparqlu);
+        });
+
+        test("can reason with sameAs", function() {
+            var rule = $.rdf.rule(['?subject1 owl:sameAs ?subject2', '?subject1 ?p ?o'], '?subject2 ?p ?o', { namespaces: ns });
+            data = $.rdf.databank().prefix('owl', ns.owl).prefix('ex', ns.ex);
+            data.add('<#me> ex:pred "123"');
+            data.add('<#me> owl:sameAs <#me2>');
+            equal(data.size(), 2);
+            rule.run(data);
+            equal(data.size(), 4);
+            equal(data.triples()[2], $.rdf.triple('<#me2> ex:pred "123"', { namespaces: ns }));
         });
         
     });

@@ -9,6 +9,7 @@
         },
         setSubject: function(subject) {
             this.subject = subject;
+            return this;
         },
         getSubject: function() {
             return this.subject;
@@ -29,6 +30,7 @@
 
         setPredicate: function(predicate) {
             this.predicate = predicate;
+            return this;
         },
         getPredicateUri: function() {
             if (this.predicate === undefined) {
@@ -66,12 +68,21 @@
         },
         _updateFromRdf: function(triples) {
             var object = this;
-            $.each(triples, function(index,triple) {
-                if (triple.subject != object.getUri() || triple.predicate != 'rdfs:label') {
+            _.each(triples, function(triple) {
+                if (triple.subject != object.getObjectUri() || triple.predicate != 'rdfs:label') {
                     return;
                 }
                 object.setObjectLabel(triple.object);
             });
+
+            // Update any elements that depend on this URI
+            // TODO: implement this with events
+            var line = this.element.closest(".notepad-line").data('line');
+            if (container !== undefined) {
+                line.getList().data('container')._updateFromRdf(triples);
+                //container._updateFromRdf(triples);
+            }
+
         },
 
         getObjectLiteral: function() {
@@ -116,6 +127,7 @@
         },
         _destroy : function() {
             this.element.removeClass("notepad-object").removeAttr('contenteditable');
+            this.element.autocomplete('destroy');
         },
 
     });

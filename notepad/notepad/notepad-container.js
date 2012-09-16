@@ -5,15 +5,39 @@
 
     $.widget("notepad.container", {
 
+        // Set up the widget
+        _create : function() {
+            this.element.addClass("notepad-container");
+
+            this._createHeadersContainer();
+
+            if (this.getUri() === undefined) {
+                throw "Cannot find a URI for this container";
+            }
+        },
+
+        _destroy : function() {
+            this.element.removeClass("notepad-container").removeAttr('about');
+        },
+
         getUri: function() {
             return this.element.closest('[about]').attr('about');
         },
         getNotepad: function() {
             return this.element.parents('.notepad').data("notepad");
         },
+        getEndpoint: function() {
+            if (this.endpoint) {
+                return this.endpoint;
+            }
+            return this.getNotepad().getEndpoint();
+        },
 
         getLines: function() {
             return this.element.children('li').map(function(index, line) { return $(line).data('line'); } );
+        },
+        getAllLines: function() {
+          return this.element.find('li').map(function(index, line) { return $(line).data('line'); } );  
         },
         appendLine: function(line) {
             if (line === undefined) {
@@ -23,7 +47,19 @@
                 line = $('<li>').text(line);
             }
             line.appendTo(this.element).line();
+
             return line.data('line');
+        },
+        appendUri: function(uri) {
+        },
+        add: function(triple) {
+            if (triple.subject !== this.getUri() || triple.object !== this.getUri()) {
+                return;
+            }
+            if (this.expresses(triple)) {
+                return;
+            }
+            var lineSelector = '['
         },
         getDefaultPredicate: function() {
             var predicate = this.element.attr(CONTAINER_DEFAULT_PREDICATE_ATTR);
@@ -34,41 +70,65 @@
         },
         
         triples: function() {
-            return this.getLines().map(function(index,line) {
-                return line.triples();
+            var triples = [];
+            _.each(this.getLines(), function(line) {
+                $.merge(triples, line.triples());
             });
+            return triples;
         },
         
         _updateFromRdf: function(triples) {
             // Update the immediate descendant children
             var container = this;
             $.each(triples, function(index,triple) {
-                if (triple.subject != container.getUri()) {
-                    return; // This triple will not affect this container
+                //if (container.getNotepad().contains(triple)) {
+                if (container.getNotepad().expresses(triple)) {
+                    // This triple is already displayed
+                    return;
                 }
-                if (container.getNotepad().contains(triple)) {
+                if (container.getNotepad().triples().length >= 50) {
+                    // Limit to 50 triples per notepad
+                    return;
+                }
+                if (triple.object.isLiteral()) {
+                    // TODO: handle literals somehow
                     return;
                 }
 
-                // Update a line based on the object
-                if (!triple.object.isLiteral()) {
-                    var selector = 'li[about="'+triple.object+'"]';
-                    var lines = container.element.find(selector);
+                var childUri;
+                var direction;
+                if (triple.subject == container.getUri()) {
+                    childUri = triple.object;
+                    direction = FORWARD;
+                } else if (triple.object == container.getUri())  {
+                    childUri = triple.subject;
+                    direction = BACKWARD;
+                } else
+                if (!childUri) {
+                    // This triple does not relate to this container
+                    return;
+                }
 
-                    // If there are multiple lines, we need additional triples to identify the lines to find or create
-                    if (lines.length > 1) {
-                        throw "multiple lines of identical RDF: requires more triples to distinguish them";
-                    }
-                    var line;
-                    if (lines.length == 1) {
-                        line = $(lines[0]).data('line');
-                    } else {
-                        line = container.appendLine();
-                        // TODO: decide: a: should this trigger refreshing its children or b: should we build up a list
-                        // TEST: a
-                        line.setUri(triple.object);
-                    }
-                    line.setContainerPredicateUri(triple.predicate);  // TODO: handle multiple
+                var selector = 'li[about="'+childUri+'"]';
+                var childLines = container.element.find(selector);
+
+                if (childLines.length > 1) {
+                    throw "cannot update multiple occurence of the childUri";
+                }
+                var line;
+                if (childLines.length == 1) {
+                    line = $(childLines[0]).data('line');
+
+                    //TODO: what about direction?
+                    line.setContainerPredicateUri(triple.predicate, direction);  // TODO: handle multiple
+
+                } else {
+                    line = container.appendLine();
+                    line.setContainerPredicateUri(triple.predicate, direction);  // TODO: handle multiple
+
+                    // TODO: decide: a: should this trigger refreshing its children or b: should we build up a list
+                    // TEST: a
+                    line.setUri(childUri);
                 }
             });
             this._updateLabelsFromRdf(triples);
@@ -87,20 +147,6 @@
             });
         },
         
-        // Set up the widget
-        _create : function() {
-            this.element.addClass("notepad-container");
-
-            this._createHeadersContainer();
-
-            if (this.getUri() === undefined) {
-                throw "Cannot find a URI for this container";
-            }
-        },
-        _destroy : function() {
-            this.element.removeClass("notepad-container").removeAttr('about');
-        },
-
         sort : function() {
             throw "not yet"
         },
@@ -112,24 +158,6 @@
                      function(a,b) { return b>=a; }];
         },
 
-        // headers: function() {
-        //     return this.element.children('.notepad-header');
-        // },
-        // createHeaders: function() {
-        //     var headers = $('<div>').addClass('notepad-headers');
-        //     this.element.prependTo(headers);
-        //     return headers;
-        // },
-
-        // header: function(id) {
-        //     return headers().find('.notepad-header-'+id);
-        // },
-        // createHeader: function(id) {
-        //     var header = $('<div>').addClass('notepad-column-'+id);
-        //     this.getHeaders().appendTo(header);
-        //     return header
-        // },
-
         _createHeadersContainer: function() {
             this.element.prepend($('<div>').addClass('notepad-headers-container'));
         },
@@ -137,25 +165,30 @@
             return this.element.children('.notepad-headers-container');
         },
         getHeaders: function() {
-            return this.getHeadersContainer().children('.notepad-header');
-        },
-        appendHeader: function() {
-            var header = $('<div>').addClass('notepad-header'); // maybe this should come from the column object
-            header.appendTo(this.getHeadersContainer());
-            return header;
+            return this.getHeadersContainer().children('.notepad-column'); // Shouldn't this come from notepad-column?
         },
         getColumns: function() {
             return _.map(this.getHeaders(), function(header) { return $(header).data('column'); });
         },
-        getColumnPosition: function(column) {
-            return 1;   // TODO: incomplete
+        getHeaderPosition: function(header) {
+            return this.getHeaders().index(header);
         },
 
         appendColumn: function(predicateUri) {
-            var header = this.appendHeader();
-            var column = header.column();
+            this.getHeadersContainer().append('<div class="notepad-subjects" style="display: inline-block;">Subjects</div>');
+            // create header element
+            var header = $('<div>').appendTo(this.getHeadersContainer());
 
-            return column.data('column');
+            header.text('example');
+
+            // Turn into a column
+            header.column();
+            header.text(predicateUri);
+
+            // The following appears necessary to: layout the header on the same line as the subject head
+            this.getHeadersContainer().css('display','inline');
+            this.getHeadersContainer().css('display','block');
+            return header.data('column');
         }
     });
 

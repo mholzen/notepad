@@ -7,6 +7,8 @@
         rdf:  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         rdfs: "http://www.w3.org/2000/01/rdf-schema#",
         owl:  "http://www.w3.org/2002/07/owl#",
+        ex:   "http://ex.com/#",
+        '':   $.uri.base(),
     };
 
     function guidGenerator() {
@@ -36,7 +38,7 @@
             // TODO: make more specific
             return $.rdf.resource(value.toString(), {namespaces: DEFAULT_NAMESPACES} );
         }        
-        return $.rdf.literal('"'+value.toString()+'"');
+        return $.rdf.literal('"' + value.toString().replace(/"/g, '\\"') + '"');
     };
     _fusekiToRdfResource = function(value) {
         if (value.type == 'bnode' && value.value ) {
@@ -52,6 +54,9 @@
     };
     
     Resource = function(value) {
+        if (value === undefined) {
+            throw "cannot create a resource with an undefined value";
+        }
         if ( value.type && value.value ) {
             this.resource = _fusekiToRdfResource(value);
         } else if ( value.resource ) {
@@ -62,6 +67,10 @@
         if ( value.element ) {
             this.element = value.element;
         }
+        if (this.resource === undefined) {
+            throw "cannot determine a value for a resource";
+        }
+
         return this;
     };
     Resource.prototype = {
@@ -97,6 +106,9 @@
             return this.resource;
         },
         equals: function(resource) {
+            // if ( resource === undefined ) {
+            //     return false;
+            // }
             return this.toString() === resource.toString();
         },
     };
@@ -110,12 +122,36 @@
         this.predicate = new Resource(predicate);
         this.object = new Resource(object);
         this.operation = operation || "update";
+        if ( this.subject === undefined ) {
+            throw "triple with no subject";
+        }
+        if ( this.predicate === undefined ) {
+            throw "triple with no predicate";
+        }
+        if ( this.object === undefined ) {
+            throw "triple with no object";
+        }
     };
     Triple.prototype = {
         toString: function() {
+            return this.subject.toString()+' '+this.predicate.toString()+' '+this.object.toString()+' .';
+        },
+        toSparqlString: function() {
             return this.subject.toSparqlString()+' '+this.predicate.toSparqlString()+' '+this.object.toSparqlString()+' .';
         },
         equals: function(triple) {
+            if ( triple === undefined ) {
+                return false;
+            }
+            if ( triple.subject === undefined ) {
+                throw "triple with no subject";
+            }
+            if ( triple.predicate === undefined ) {
+                throw "triple with no predicate";
+            }
+            if ( triple.object === undefined ) {
+                throw "triple with no object";
+            }
             return this.subject.equals(triple.subject) && this.predicate.equals(triple.predicate) && this.object.equals(triple.object);
         },
     };
@@ -145,14 +181,15 @@
                 });
 
                 if (labelUris.length) {
-                    sparql = sparql + "DELETE { ?s " + rdfsLabel + " ?o } WHERE {\n"+
+                    sparql = sparql +
+                        "DELETE { ?s " + rdfsLabel + " ?o } WHERE {\n"+
                         "   ?s "+ rdfsLabel + " ?o\n" +
                         "   FILTER (?s in ( " + labelUris.join(",\n") + ") )\n" + 
                         "} \n";
                 }
-                var updateTriples = this.update();
-                if (updateTriples.length) {
-                    sparql = sparql + "INSERT DATA {\n" + this.update().join(" \n") + "\n}";    
+                var updateTriplesSparql = _.map( this.update(), function(triple) { return triple.toSparqlString(); } );
+                if (updateTriplesSparql.length) {
+                    sparql = sparql + "INSERT DATA {\n" + updateTriplesSparql.join(" \n") + "\n}";    
                 }
                 return sparql;
             } },
@@ -175,6 +212,34 @@
                 }
                 return sparql;
             } },
+            contains: { value: function(triple) {
+                for(var i=0; i<this.length; i++) {
+                    if (triple.equals(this[i])) {
+                        return true;
+                    }
+                }
+                return false;
+            } },
+            toDatabank: { value: function() {
+                var databank = $.rdf.databank([], {namespaces: DEFAULT_NAMESPACES });
+                _.each(this.update(), function(t) {
+                    databank.add(t.toSparqlString());
+                });
+                return databank;
+            } },
+            expresses: { value: function(triple) {
+                var sameAsRuleset = $.rdf.ruleset([], { namespaces: DEFAULT_NAMESPACES });
+                sameAsRuleset.add(['?u1 owl:sameAs ?u2'], '?u2 owl:sameAs ?u1');
+                sameAsRuleset.add(['?s1 owl:sameAs ?s2', '?s1 ?p ?o'], '?s2 ?p ?o');
+                sameAsRuleset.add(['?p1 owl:sameAs ?p2', '?s ?p1 ?o'], '?s ?p2 ?o');
+                sameAsRuleset.add(['?o1 owl:sameAs ?o2', '?s ?p ?o1'], '?s ?p ?o2');
+                var databank = this.toDatabank();
+                sameAsRuleset.run(databank);
+                var rdf = jQuery.rdf({ databank: databank });
+                var matches = rdf.where(triple.toSparqlString());
+                return (matches.length > 0);
+            } },
+
         };
 
         return function() {
