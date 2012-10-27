@@ -3,54 +3,107 @@
     FORWARD = 0;    // TODO: put in a namespace
     BACKWARD = 1;
 
+    getAttrName = $.fn.getAttrName = function(direction) {
+        return ( direction === undefined || direction === FORWARD ? "rel" : "inrel" );
+    }
+
+
+    // A line matcher, based on the container uri and the triple
+    Selector = $.fn.Selector = function(uri, triple) {
+        var lineUri, direction;
+        if (uri == triple.subject) {
+            this.direction = FORWARD;
+            this.lineUri = triple.object;
+        } else if (uri == triple.object) {
+            this.direction = BACKWARD;
+            this.lineUri = triple.subject;
+        } else {
+            return undefined;
+        }
+        this.predicate = triple.predicate;
+        return this;
+    }
+
+    Selector.prototype = {
+        toString: function() {
+            var selector = "";
+            if (this.predicate) {
+                selector = selector + '[' + getAttrName(direction) + '="' + this.predicate +'"]';
+            }
+            if (this.lineUri) {
+                selector = selector + '[about="' + this.lineUri +'"]';
+            }
+            return selector;
+        }
+    }
+
     $.widget("notepad.line", {
 
-        // A line is a widget representing 
-        //  1 - a URI (get/setUri)
-        //  2 - an optional representation as text (get/setLineLiteral, get/setLineTriple)
-        //  3 - a relationship to a container (get/setContainerTriple, get/setContainer)
-        //  4 - a collection of other lines for which it is the container (getList)
-                
-        // A new line should have a URI but no representation.
-        
-        // The container defines
-        //    - a container URI
-        //    - a container default predicate
-        
+        // See notepad.js for interface
+
         options : {
+            query: "CONSTRUCT { ?s rdfs:label ?label } WHERE { ?s rdfs:label ?label FILTER sameTerm(?s, {{{about}}} ) }",
+            // Alternatives are:
+            // any property that inherits from rdfs:label
+            // a list of triples, not just ?s rdfs:label ?label, such as
+            // "CONSTRUCT { ?s rdfs:label ?label } WHERE { ?s rdfs:label ?label FILTER sameTerm(?s, {{{about}}} ) }",
         },
 
-        notepad : undefined,
-
-        getAttrName: function(direction) {
-            return ( direction === undefined || direction === FORWARD ? "rel" : "inrel" );
+        getNotepad: function() {
+            return this.getContainer().getNotepad();
         },
+
+
+        getEndpoint: function () {
+            return this.element.findEndpoint();
+        },
+
+        // endpoint: undefined,
+        // getEndpoint: function() {
+        //     if (this.endpoint) {
+        //         return this.endpoint;
+        //     }
+        //     if (this.getContainer() && this.getContainer().getEndpoint()) {
+        //         return this.getContainer().getEndpoint();    
+        //     }
+        //         return this.getNotepad().getEndpoint();            
+        // },
         getDirection: function() {
-            if (this.predicate.attr(this.getAttrName(FORWARD))) {
+            if (this.predicate.attr(getAttrName(FORWARD))) {
                 return FORWARD;
-            } else if (this.predicate.attr(this.getAttrName(BACKWARD))) {
+            } else if (this.predicate.attr(getAttrName(BACKWARD))) {
                 return BACKWARD;
             }
-            return undefined;
+            return FORWARD;
+        },
+        hasObjectUri: function() {
+            return (this.getUri() !== undefined);
+        },
+        hasObjectLiteral: function() {
+            return !this.hasObjectUri();
         },
 
         // Line Uri        
         getUri: function() {
-            return this.element.attr("about");
+            return this.getObject().getObjectUri();
         },
         _setUri: function(uri) {
             this.element.attr('about',uri);
             return this;
         },      
         setUri: function(uri) {
-            this._setUri(uri);
-            
-            // Setting the URI should update the line representation and any children
+            this.getObject().setObjectUri(uri);
+        },
+        load: function() {
+            // TODO: refactor with container.load
+            var aboutResource = new Resource(this.getUri());
+            var sparql = Mustache.render(this.options.query, {about: aboutResource.toSparqlString()});
             var line = this;
-            this.getNotepad().getRdf(uri, function(triples) {
+            this.getEndpoint().execute(sparql, function(triples) {
                 line._updateFromRdf(triples);
             });
         },
+
         _updateFromRdf: function(triples) {
             var line = this;
             $.each(triples, function(index,triple) {
@@ -59,15 +112,11 @@
                 }
                 line.setLineLiteral(triple.object);
             });
-            line.getList().data('container')._updateFromRdf(triples);
         },
 
-        // Container
+        // Container Membership
         getContainer: function() {
             return this.element.parents('.notepad-container').data("container");
-        },
-        getNotepad: function() {
-            return this.getContainer().getNotepad();
         },
         _getContainerUri: function() {
             return this.getContainer().getUri();
@@ -75,21 +124,29 @@
         _getContainerDefaultPredicate: function() {
             return this.getContainer().getDefaultPredicate();
         },
-        setContainerPredicateUri: function(uri, direction) {
+        setContainerPredicateUri: function(uri, direction, triple) {
+            direction = (direction !== undefined) ? direction : this.getDirection();
+
             this._setContainerPredicateUri(uri, direction);
 
+            // if (triple === undefined && this.getContainerPredicateLabel() !== undefined) {
+            //     // TODO: fix: 
+            //     return;
+            // }
+
             var line = this;
-            this.getNotepad().getPredicateLabels(uri, function(labels) {
+            this.getEndpoint().getLabels(uri, function(labels) {
                 if (labels.length == 0) {
-                    throw "Can't find a label given a predicate uri ("+uri+")";
+                    log.debug("Can't find a label given a predicate uri ("+uri+")");
+                    labels[0] = '';
                 }
                 if (labels.length > 1) {
-                    console.log("Warning: more than one ("+labels.length+") label ["+labels+"] for a given uri ("+uri+").  Picking first ("+labels[0]+")");
+                    log.debug("Warning: more than one ("+labels.length+") label ["+labels+"] for a given uri ("+uri+").  Picking first ("+labels[0]+")");
                 }
                 var label = labels[0];
-                
+
                 line._setContainerPredicateLabel(label);
-                if ((uri === 'rdfs:member' || label === 'member') && direction === FORWARD) {
+                if ((uri.toString() == 'rdfs:member' || label == 'member') && direction === FORWARD) {
                     line.hideContainerPredicate();
                 } else {
                     line.showContainerPredicate();
@@ -97,22 +154,22 @@
             });
         },
         _setContainerPredicateUri: function(uri, direction) {
-            this.predicate.removeAttr(this.getAttrName(FORWARD));
-            this.predicate.removeAttr(this.getAttrName(BACKWARD));
-            this.predicate.attr(this.getAttrName(direction),uri);
+            this.predicate.removeAttr(getAttrName(FORWARD));
+            this.predicate.removeAttr(getAttrName(BACKWARD));
+            this.predicate.attr(getAttrName(direction),uri);
         },
         setContainerPredicateLabel: function(label) {
             this._setContainerPredicateLabel(label);
             var line = this;
-            this.getNotepad().getPredicatesLabelsByLabel(label,function(results) {
+            this.getEndpoint().getPredicatesLabelsByLabel(label,function(results) {
                 var uri;
                 if (results.length == 0) {
-                    uri = $.fn.notepad.getNewUri();
+                    uri = $.notepad.getNewUri();
                 } else {
                     uri = results[0].value;
                 }
                 if (results.length > 1) {
-                    console.log("Warning: more than one ("+results.length+") uri ["+results.toString()+"] for a given label ("+label+").  Picking first ("+uri+")");
+                    log.debug("Warning: more than one ("+results.length+") uri ["+results.toString()+"] for a given label ("+label+").  Picking first ("+uri+")");
                 }
                 line._setContainerPredicateUri(uri);
             });
@@ -124,12 +181,18 @@
             return this.predicate.val();
         },
         getContainerPredicateUri: function() {
-            var predicateUri = {
-                uri: this.predicate.attr(this.getAttrName(FORWARD)) || this.predicate.attr(this.getAttrName(BACKWARD)),
-                element: this.predicate
-            };
-            predicateUri.__proto__.toString = function() { return this.uri; }
-            return predicateUri;
+            if (this.getDirection()===FORWARD) {
+                return this.predicate.attr(getAttrName(FORWARD));
+            } else {
+                return this.predicate.attr(getAttrName(BACKWARD));
+            }
+
+            // var predicateUri = {
+            //     uri: this.predicate.attr(getAttrName(FORWARD)) || this.predicate.attr(getAttrName(BACKWARD)),
+            //     element: this.predicate
+            // };
+            // predicateUri.__proto__.toString = function() { return this.uri; }
+            // return predicateUri;
         },
         _getContainerPredicateUriByLabel: function(label) {
             var uri = this.getContainer().predicateMap[label];
@@ -147,23 +210,44 @@
             }
             throw "cannot find a label from the URI "+uri;
         },
+        subject: function() {
+            if (this.getDirection() === FORWARD) {
+                return this._getContainerUri();
+            } else if (this.getDirection() === BACKWARD) {
+                if (this.getUri() === undefined) {
+                    throw "a backward triple requires a URI";
+                }
+                return this.getUri();
+            }
+            return undefined;
+        },
         getContainerTriple: function() {
-            if (this.getUri() === undefined) {
+            if (this.predicate.hasClass("delete")) {
+                return new Triple(
+                    this.subject(),
+                    this.getContainerPredicateUri(),
+                    this.getObject().value(),
+                    // If the object is a literal, then we should call this.object().getPreviousLiteral()
+                    //this.getPreviousLiteral(),
+                    "delete"
+                );
+            }
+            if ( this.getObject().value() === undefined ) {
+                // An object can have an undefined value, for example when the literal() is empty
                 return undefined;
             }
-            var subject, object;
+            var tripleObject;
+
             if (this.getDirection() === FORWARD) {
-                subject = this._getContainerUri();
-                object = this.getUri();
+                tripleObject = this.getObject().value();
             } else {
-                subject = this.getUri();
-                object = this._getContainerUri();
+                tripleObject = this._getContainerUri();
             }
             return new Triple(
-                subject,
+                this.subject(),
                 this.getContainerPredicateUri(),
-                object,
-                this.predicate.hasClass("delete") ? "delete" : "update"
+                tripleObject,
+                "update"                
             );
         },
         showContainerPredicate: function() {
@@ -191,30 +275,38 @@
                 this.getContainerPredicateLabel()
                 );
         },
+        getObjectElement: function () {
+            return this.element.find('.notepad-object');
+        },
+        getObject: function() {
+            return this.getObjectElement().data('notepad-object');
+        },
 
-
-        // Line representation
-        _getLinePredicateUri: function() {
+        // Object representation
+        getLinePredicateUri: function() {
             return "rdfs:label";
         },
         _setLinePredicateUri: function() {
             throw "not yet implemented";
         },
         getLineLiteral: function() {
-            return this.object.val();
+            return this.getObject().getObjectLiteral();
         },
         setLineLiteral: function(text) {
-            this.object.val(text);
+            this.getObject().setObjectLiteral(text);
             return this;
         },
         getLineTriple: function() {
+            if (this.hasObjectLiteral()) {
+                return undefined;
+            }
             if (this.getLineLiteral() == '') {
                 return undefined;
             }
 
             return new Triple(
                 this.getUri(),
-                this._getLinePredicateUri(),
+                this.getLinePredicateUri(),
                 this.getLineLiteral()
                 );
         },
@@ -223,23 +315,22 @@
             if (triple.predicate !== 'rdfs:label') {
                 throw "line triple predicate is not rdfs:label";
             }
-            //this._setObjectPredicate('');  // rdfs:label
             this._setLiteral(triple.object);
         },
 
         // Children elements
-        getList: function() {
-            return this.element.children('ul');
+        getChildList: function() {
+            return this.element.find('ul');  // use find instead of children because jqueryui can move the element during transitions
         },
         getChildContainer: function() {
-            return this.getList().data('container');
+            return this.getChildList().data('container');
         },
         getLines: function() {
             return this.getChildContainer().getLines();
         },
         appendLine: function(li) {
             // Find or create list
-            var ul = this.getList();
+            var ul = this.getChildList();
             if (ul.length==0) {
                 ul = $('<ul>').appendTo(this.element).container();
             }
@@ -253,25 +344,33 @@
             var li = $('<li>').insertBefore(this.element).line();
             return li.data('line');
         },
-        
+
         childTriples: function() {
+            if (this.getUri() === undefined) {
+                return [];
+            }
+            if (this.getChildContainer() === undefined) {
+                throw "somehow, we can't find a child container anymore";
+            }
             return this.getChildContainer().triples();
         },
         triples: function() {
-            var triples = [];
+            var triples = new Triples(0);
 
-            var line = this.getLineTriple();
-            if (line !== undefined) {
-                triples.push(line);
+            var container = this.getContainerTriple();
+            if (container !== undefined) {
+                triples.push(container);
             }
             var predicate = this.getPredicateLabelTriple();
             if (predicate !== undefined) {
                 triples.push(predicate);
             }
-            var container = this.getContainerTriple();
-            if (container !== undefined) {
-                triples.push(container);
+
+            var line = this.getLineTriple();
+            if (line !== undefined) {
+                triples.push(line);
             }
+
             var childTriples = this.childTriples();            
             if (childTriples.length) {
                 $.merge(triples, childTriples);
@@ -280,9 +379,8 @@
         },
 
         focus: function() {
-            return this.element.children(".notepad-object").focus();
+            return this.getObject().focus();
         },
-
         indent : function() {
             // when the line is top level, then don't move
             var newParentLine = this.element.prev('li');
@@ -307,8 +405,11 @@
         },
 
 
+        _setupContextMenu: function() {
+        },
+
         // Set up the line widget
-        _create : function() {
+        _create: function() {
             var line = this;
 
             // Verify the container
@@ -321,10 +422,6 @@
             // Save the initial content of the line to later initialize the object with it.
             var objectText = this.element.text();
             this.element.text("");
-
-            // Find whether this line has a predecessorPredicate
-            var predecessor = $(this.element).prev().data('line');
-            var predecessorPredicate = predecessor && predecessor.getContainerPredicateUri();
             
             // Predicate toggle
             this.predicateToggle = $('<a>').addClass('predicateToggle');
@@ -334,17 +431,33 @@
 
             // Predicate
             this.predicate = $('<textarea rows="1" cols="8">').addClass('notepad-predicate');
-            var predicate = predecessorPredicate || this._getContainerDefaultPredicate();
+            this.predicate.contextMenu( {menu: 'predicateMenu'}, 
+                function(action, ele, pos) {
+                    if (action == 'delete') {
+                        ele.toggleClass('delete');
+                        return;
+                    }
+                    throw ("unknown action from contextmenu", action);
+                });
+
+            // Find whether this line has a predecessorPredicate
+            var predecessorLine = $(this.element).prev().data('line');
+            var predicate;
+            if (predecessorLine) {
+                predicate = predecessorLine.getContainerPredicateUri();
+            } else {
+                predicate = this._getContainerDefaultPredicate();
+            }
             this.setContainerPredicateUri(predicate);
 
-            var notepad = this.getNotepad();
-            this.predicate.change(function(event) { 
-                line.setContainerPredicateLabel( $(event.target).val() );
+            this.predicate.change(function(event) {
+                line.setContainerPredicateLabel($(event.target).val());
             });
             this.element.append(this.predicate);
 
             // Must turn on autocomplete *after* the element has
             // been added to the document
+            var notepad = this.getNotepad();
             this.predicate.autocomplete({
                 source: function(term,callback) {
                     notepad.getPredicatesLabelsByLabel(term.term,callback);
@@ -366,46 +479,19 @@
             this.element.append(this.predicateToggle);
             
             // Set the initial state of predicate and separator
-            var prevPredicateToggleHidden = predecessor && predecessor.element.find('.predicateToggle').hasClass('hidden');
-            var newlinePredicateHidden = prevPredicateToggleHidden !== undefined ? prevPredicateToggleHidden : true;
+            var newlinePredicateHidden;
+            if ( predecessorLine ) {
+                newlinePredicateHidden = predecessorLine.element.find('.predicateToggle').hasClass('hidden');
+            } else {
+                newlinePredicateHidden = true;
+            }
+            newlinePredicateHidden = true;
             if ( newlinePredicateHidden ) {
                 this.predicateToggle.addClass('hidden');
                 this.predicate.css('display', 'none');
                 separator.css('display', 'none');
             }
             
-            // TODO: refactor from notepad-object.js
-
-            // Object
-            this.object = $('<textarea rows="1" cols="80">').addClass('notepad-object');
-            this.element.append(this.object);
-
-            // Only set the URI if the line is changed. to: ensure new empty lines are not saved
-            this.object.change(function(event) {
-                if (line.getUri() === undefined) {
-                    line._setUri($.fn.notepad.getNewUri());
-                }
-            });
-
-
-            var notepad = this.getNotepad();
-            this.object.autocomplete({
-                source: function(term,callback) {
-                    notepad.endpoint.getSubjectsLabelsByLabel(term.term,callback);
-                },
-                select: function(event, ui) {
-                    var line = $(event.target).parent('li').data('line');
-                    line.setUri(ui.item.value);
-                    line.setLineLiteral(ui.item.label);
-                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value
-                }
-            });
-
-            if (objectText) {
-                this.object.val(objectText);
-                this.object.change();
-            }
-
             // For all columns, create objects
             var line = this;
             _.each( this.getContainer().getColumns(), function(column) {
@@ -419,22 +505,61 @@
                 object.setSubject(line);
             });
 
-            
-            // Children container
-            $('<ul>').appendTo(this.element).container();
+
+            // OBJECT
+            var objectElement = $('<div>').text(objectText);
+            objectElement.appendTo(this.element);                   // WORKS
+            objectElement.object();
+
+            // CHILD CONTAINER
+            var childContainerElement = $('<ul>').appendTo(this.element).container();
+            var childContainer = childContainerElement.data('container');
+
+            { // TODO: refactor into container( {param: objectElement});
+                // set the URI on the child container to: get it to load based on the notepad-object
+                childContainer.option('uriElement', objectElement);
+                objectElement.bind("objecturichange", function() {
+                    if (!line.collapsed()) {
+                        childContainer.load();
+                    }
+                });
+            }
 
             // Children collapse/expand
-            this.childrenToggle = $('<a>').addClass('childrenToggle');
-            this.childrenToggle.click(function() {
-                $(this).toggleClass("hidden");
-                $(this).parent().find(".notepad-container").toggle('blind', {}, 100);
+            var childrenToggle = $('<a>').addClass('childrenToggle');
+            childrenToggle.click(function(event) {
+                line.childrenToggle();
             });
-            this.element.prepend(this.childrenToggle);
+            this.element.prepend(childrenToggle);
 
-        },      
+            // Initial state depends on the container
+            var childrenCollapsed = this.getContainer().option('collapsed');
+            this.childrenToggle(childrenCollapsed);
+        },
+
+        getChildrenToggle: function() {
+            return this.element.children('.childrenToggle');
+        },
+        collapsed: function() {
+            return this.getChildrenToggle().hasClass('collapsed');
+        },
+        childrenToggle: function(collapse) {
+            var toggleElement = this.getChildrenToggle();
+            if (collapse === undefined) {
+                collapse = ! this.collapsed();
+                log.debug(collapse);
+            }
+            if (collapse) {
+                toggleElement.addClass('collapsed');
+                this.getChildList().hide('blind', {}, 100);
+            } else {  // expand
+                toggleElement.removeClass('collapsed');
+                this.getChildList().show('blind', {}, 100);
+                this.getChildContainer().refresh();
+            }
+        },
         _destroy : function() {
             this.element.removeClass("notepad-line").removeAttr('about');
-            this.object.unbind().remove();
             this.predicate.remove();
             this.subject.unbind().remove();
         },

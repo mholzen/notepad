@@ -1,0 +1,8 @@
+CONSTRUCT { ?s ?p ?o }
+
+WHERE {
+    { ?s ?p ?o FILTER ( sameTerm(?s, %about) ) }
+    UNION
+    { ?s ?p ?o FILTER ( sameTerm(?o, %about) ) }
+    OPTIONAL { ?p owl:sameAs ?p2 }
+}

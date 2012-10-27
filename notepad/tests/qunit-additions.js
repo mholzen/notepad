@@ -30,3 +30,20 @@ function testAsyncStepsWithPause(pause) {
 }
 
 skippedTest = function(label, code) {};
+
+var equalToObject = function(expected) {
+    return new JsHamcrest.SimpleMatcher({
+        matches: function(actual) {
+            return actual.equals(expected);
+        },
+
+        describeTo: function(description) {
+            description.append('equal to ').appendLiteral(expected);
+        }
+    });
+};
+
+var here = function() {
+  console.log('here');  
+}
+var c = console;

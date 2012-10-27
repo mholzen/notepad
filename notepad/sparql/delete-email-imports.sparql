@@ -1,0 +1,12 @@
+REFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX fn:   <http://www.w3.org/2005/xpath-functions#> 
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX : 	 <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
+
+delete { ?s ?p ?o }
+where {
+ ?s ?label ?desc FILTER ( regex(?desc, "Emails, imported", "i") ).
+ ?s ?p ?o .
+}

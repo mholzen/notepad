@@ -39,7 +39,7 @@
                     throw "More than one predicate with the same label ("+results+")";
                 }
                 if (results.length == 0) {
-                    uri = $.fn.notepad.getNewUri();
+                    uri = $.notepad.getNewUri();
                 }
                 line._setPredicateUri(uri);
             });

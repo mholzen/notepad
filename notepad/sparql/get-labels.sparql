@@ -1,0 +1,30 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+CONSTRUCT { ?subject ?predicate ?label }
+WHERE
+{
+	?subject ?predicate ?label .
+	{
+		?subject rdfs:label ?label
+		UNION
+		?predicate rdfs:subPropertyOf rdfs:label .
+	}
+
+ 	# add a constraint on ?subject if a subject is provided
+ 	# FILTER (?subject in ( %uri ))
+
+ 	# add a constraint on the class of ?subject if provided
+ 	# ?subject a rdf:Property
+
+ 	# add a constraint on ?label if a label fragment is provided
+ 	# FILTER regex(?label, "%label", "i")
+
+ 	# add a constraint on the language if provided, which applies to ?predicate
+ 	# ?predicate rdfs:language %language
+}
+
+labelQuery = new LabelQuery({ subject: uri, class: uri, label: text, language: uri });
+labelQuery.query(endpoint, callback);
+labelQuery.get(triples);
+
+labelQuery = new LabelQuery(triples);

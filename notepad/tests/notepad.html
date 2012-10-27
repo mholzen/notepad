@@ -13,10 +13,14 @@
 <script src="../external-modules/jquery-caret/jquery.caret.js" type="text/javascript"></script>
 <script src="../external/subarray.js" type="text/javascript"></script>
 <script src="../external/underscore.js" type="text/javascript"></script>
+<script src="../external/mustache.js" type="text/javascript"></script>
+<script src="../external/log4js.js" type="text/javascript"></script>
+<script src="../external/jquery.contextMenu.js" type="text/javascript"></script>
+<link  href="../external/jquery.contextMenu.css" type="text/css" rel="stylesheet" media="screen" />
 
 <!-- Notepad code -->
-<script src="../notepad/notepad.js" type="text/javascript"></script>
 <script src="../notepad/notepad-rdf.js" type="text/javascript"></script>
+<script src="../notepad/notepad.js" type="text/javascript"></script>
 <script src="../notepad/notepad-container.js" type="text/javascript"></script>
 <script src="../notepad/notepad-line.js" type="text/javascript"></script>
 <script src="../notepad/notepad-sparql.js" type="text/javascript"></script>
@@ -33,23 +37,20 @@
 var devFusekiEndpoint;
 var notepad;
 var container;
-var line1;
-var log = function(l) { 
-    console.log(l.toString());
-}
+var line;
+var object;
+var log = new Log(Log.INFO, Log.consoleLogger);
+
 $(function() {
     $("#notepad").notepad();
     notepad = $("#notepad").data('notepad');
     container = notepad.getContainer();
-    line1 = notepad.getLines()[0];
+    line = notepad.getLines()[0];
+    object = line.getObject();
 
     $("#notepad .notepad-object").focus();
     devFusekiEndpoint = new FusekiEndpoint("http://localhost:3030/dev");
     $("#notepad").data('notepad').endpoint = devFusekiEndpoint;
-
-    // if ( (uri=window.location.hash.length) > 0) {
-    //     notepad.setUri(uri);
-    // }
     
     $("#save").click(function() {
         var sparql = $("#notepad").notepad('triples').sparql();
@@ -69,8 +70,7 @@ $(function() {
         $(this).siblings().toggleClass('hidden');
     });
 
-    //  WHY is this failing?
-    //container.appendColumn();
+    line.focus();
 });
 </script>
 </head>
@@ -91,5 +91,29 @@ $(function() {
         </div>
         <input id="datepicker"></input>
     </div>
+
+    
+
+    <ul id="predicateMenu" class="contextMenu">
+    <!-- <li class="edit">
+        <a href="#edit">Edit</a>
+    </li>
+    <li class="cut separator">
+        <a href="#cut">Cut</a>
+    </li>
+    <li class="copy">
+        <a href="#copy">Copy</a>
+    </li>
+    <li class="paste">
+        <a href="#paste">Paste</a>
+    </li> -->
+    <li class="delete">
+        <a href="#delete">Delete</a>
+    </li>
+    <!-- <li class="quit separator">
+        <a href="#quit">Quit</a>
+    </li> -->
+</ul>
+
 </body>
 </html>

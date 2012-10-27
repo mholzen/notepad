@@ -4,19 +4,53 @@
 
 <script src="../external/qunit.js" type="text/javascript"></script>
 <link href="../external/qunit.css" type="text/css" rel="stylesheet" media="screen" />
+<script src="../external/jsmockito-1.0.4.js" type="text/javascript"></script>
+<script src="../external/jshamcrest-0.5.2.js" type="text/javascript"></script>
+<script src="qunit-additions.js" type="text/javascript"></script>
 
 <script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
+<script src="../external/jquery-ui.js" type="text/javascript"></script>
 
 <script>
 $(document).ready(function() {
+
+    JsMockito.Integration.QUnit();
+    JsHamcrest.Integration.QUnit();
+
         
-    test("strings should tell whether they contain another string", function() {
-       ok("abc".contains('a'),"... at its beginning");
-       ok("abc".contains('c'),"... at its end");
-       ok("abc".contains('b'),"... in its middle");
-       ok(!"abc".contains('z'),"... when it doesn't");
-       ok(!"".contains('foo'),"... when it doesn't");
+    $.widget("notepad.aWidget", {
+
+        options: {
+          'anOption': 'a default value'
+        },
+
+        _setOption: function(key, value) {
+            this._super(key, value);        // We have jquery-ui 1.9
+        },
+        _create: function() {
+            console.log(this.options.anOption);
+        }
     });
+
+    test("when I set options", function() {
+      var element = $('<p>').aWidget();
+      var widget = element.data('aWidget');
+      assertThat(widget.options['anOption'], equalTo('a default value'));
+      assertThat(widget.option('anOption'), equalTo('a default value'));
+
+      widget.option('anOption', "foo");
+      assertThat(widget.options['anOption'], equalTo('foo'));
+      assertThat(widget.option('anOption'), equalTo('foo'));
+    });
+
+    test("when I create a widget with initial options", function() {
+      var element = $('<p>').aWidget({anOption: 'bar'});
+      var widget = element.data('aWidget');
+      assertThat(widget.options.anOption, equalTo('bar'));
+      assertThat(widget.options['anOption'], equalTo('bar'));
+      assertThat(widget.option('anOption'), equalTo('bar'));
+    });
+
 
 });
 </script>

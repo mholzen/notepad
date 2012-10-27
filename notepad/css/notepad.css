@@ -41,6 +41,11 @@ body {
     width: 600px;
 }
 
+textarea.notepad-object {
+    /* Turn display off to test notepad-object in line */
+    display: none;
+}
+
 .notepad .delete {
     text-decoration: line-through;
 }
@@ -50,10 +55,10 @@ body {
 }
 
 div.notepad-object {
-    line-height: 24px;
+    line-height: 28px;
     font-size: 18px;
-    vertical-align: text-bottom;
-
+    /*vertical-align: text-bottom;*/
+    display: inline-block;
 }
 
 .notepad li {
@@ -119,14 +124,21 @@ div.notepad-object {
 }
 
 .notepad-column-0 {
-    width: 200px;
+    width: 400px;
     position: absolute;
-    left: 800px;
+    left: 700px;
     display: inline-block;
 }
 
 .notepad-column-0.notepad-object {
     border: solid 1pt black;
+}
+
+.notepad-column-1 {
+    width: 400px;
+    position: absolute;
+    left: 1200px;
+    display: inline-block;
 }
 
 
@@ -145,11 +157,11 @@ div.notepad-object {
   display it initially, make it display on hover after a while.
 */
 
-.notepad .childrenToggle.hidden {
+.notepad .childrenToggle.collapsed {
     /* This is necessary to have the following pseudo selector work right */
 }
 
-.notepad .childrenToggle.hidden:before {
+.notepad .childrenToggle.collapsed:before {
     content: "+";  /* TODO: replace with triangle pointing right; */
 }
 
@@ -158,6 +170,7 @@ div.notepad-object {
 }
 
 .debug {
+    display: none;  /* turns this off */
     position: absolute; bottom: 0px;
 }
 .debug .hidden {
@@ -180,5 +193,12 @@ div.notepad-object {
 }
 
 
+.notepad-object-old {
+    display: none;
+}
 
-
+.uri {
+    color: #aaa;
+    font-family: courier, sans-serif;
+    font-weight: 100;
+}

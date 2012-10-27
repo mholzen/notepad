@@ -1,0 +1,5 @@
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#> 
+PREFIX nmo: <http://www.semanticdesktop.org/ontologies/nmo/#> 
+
+select ?s ?p fn:substring(?o,0,100)
+where { ?s nmo:content ?o }

@@ -1,40 +1,99 @@
 (function($) {
 
-    var DEFAULT_PREFIXES =
-        "PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n" +
-        "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
-        "PREFIX owl:  <http://www.w3.org/2002/07/owl#> \n";
+    // TODO: move somewhere general (req: figure out JS dependencies)
+    String.prototype.contains = function(text) {
+        return (this.indexOf(text)!=-1);
+    };
 
+    $.notepad = $.notepad || {};
 
-// TODO: move somewhere general (req: figure out JS dependencies)
-String.prototype.contains = function(text) {
-    return (this.indexOf(text)!=-1);
-};
+    // var DEFAULT_SPARQL = "CONSTRUCT { ?s ?p ?o } WHERE { { ?s ?p ?o FILTER sameTerm(?s, {{{about}}} ) } UNION { ?s ?p ?o FILTER sameTerm(?o, {{{about}}} ) } }",  // an alternative is (?s=about or ?o=about)
+
+    // var Query = function(element, sparql, endpoint) {
+    //     var endpoint = endpoint || ( element.getEndpoint ? element.getEndpoint() : undefined );
+    //     var sparql = sparql || DEFAULT_SPARQL;
+    //     var about = new Resource(element.attr('about'));
+    //     var parameters = {about: about.toSparqlString()};
+    //     var sparql = Mustache.render(value, parameters);
+    //     endpoint.execute(sparql, callback);
+    // };
+
+    $.notepad.queryFromObject = function(element) {
+        var endpoint = element.findEndpoint();
+        var uri = element.data('object') ? element.data('object').getUri() : element.attr('about');
+        return function(callback) {
+            endpoint.describe(uri, callback);
+        }
+    }
+    $.notepad.queryFromContainer = function(container) {
+        return function(callback) {
+            callback(container.triples());
+        }
+    }
+
 
 FusekiEndpoint = function(uri) {
     this.uri = uri;
+    this.graph = 'default';
 }
 
 FusekiEndpoint.prototype = {
+    prefixes: function() {
+        var prefixes = "";
+        for (var prefix in $.notepad.DEFAULT_NAMESPACES) {
+            prefixes += "PREFIX " + prefix + ": <" + $.notepad.DEFAULT_NAMESPACES[prefix] + ">\n";
+        }
+        return prefixes;
+    },
+    updateUri: function() {
+        return this.uri + "/update";
+    },
+    queryUri: function() {
+        return this.uri + "/query";
+        //return this.uri + "Inferred" + "/query";
+    },
     query: function(command, callback) {
-        return $.getJSON(this.uri+'/query', {query: command, output:'json'}, callback);
+        var options = { query: command, output:'json'};
+        if (this.graph != 'default') {
+            options['default-graph-uri'] = this.graph;
+        }
+        return $.getJSON(this.queryUri(), options, callback);
     },
-
     update: function(command, callback) {
-        return $.post(this.uri+'/update', {update: command}, callback);
-    },
+        return $.post(this.updateUri(), {update: command}, function() {
+            // There is a delay before the updates are available in the query server.
+            // So we force the client to wait for this delay here.
+            setTimeout(callback, 100);
+        });
 
+        // ALTERNATIVE: use a query parameter to set the default graph, instead of a GRAPH patter.  Could not get FUSEKI to work with it.
+        // return $.post(this.uri+'/update', {update: command, 'using-named-graph-uri':this.graph}, callback);
+    },
+    queryReturningGraph: function(command, callback) {
+        return this.query(command, function(graph) {
+            var triples = new Triples(0);
+            for(s in graph) {
+                for(p in graph[s]) {
+                    for(i in graph[s][p]) {
+                        triples.push(new Triple(s,p,graph[s][p][i].value));
+                    }
+                }
+            }
+            callback(triples);
+        });
+    },
     execute: function(command, callback) {
-        command = DEFAULT_PREFIXES +
+        command = this.prefixes() +
             "PREFIX : <" + $.uri.base() + '#> \n' +
             command;
-        if (command.contains('SELECT') || command.contains('CONSTRUCT') || command.contains('DESCRIBE')) {
+        if (command.toLowerCase().contains('construct') || command.toLowerCase().contains('describe')) {
+            return this.queryReturningGraph(command, callback);
+        } else if (command.toLowerCase().contains('select') ) {
             return this.query(command, callback);
         } else {
             return this.update(command, callback);
         }
     },
-
     clear: function(callback) {
         return this.update('DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }',callback);
     },
@@ -42,16 +101,22 @@ FusekiEndpoint.prototype = {
         // Not yet implemented
     },
     getSubjectsLabelsByLabel: function(label, callback) {
-        var command = 'SELECT ?s ?o WHERE { ?s rdfs:label ?o FILTER regex(?o, "'+label.replace(/"/g, '\\"')+'", "i") }';
+        // rdfs:subPropertyOf is reflexive (ie. "?x rdfs:subPropertyOf ?x ." is true)
+        // However, even though it is reflexive, I am adding the UNION clause below to ensure that rdfs:label is returned, even when we run against a triplestore without rules
+        var command = 
+        'SELECT DISTINCT ?subject ?label \
+        WHERE {  \
+            ?subject ?labelPredicate ?label FILTER regex(?label, "'+label.replace(/"/g, '\\"')+'", "i") \
+        }';
+        // { ?labelPredicate rdfs:subPropertyOf rdfs:label } UNION { ?subject rdfs:label ?label } 
         this.execute(command,function(data) { 
-            var subjectsLabels = $.map(data.results.bindings, function(element,index) {
-                var value = new Resource(element.s.value).toString();
-                return { label: element.o.value, value: value };
+            var subjectsLabels = _.map(data.results.bindings, function(binding) {
+                var subject = new Resource(binding.subject);
+                return { label: binding.label.value, value: subject.toString() };
             });
             callback(subjectsLabels);
         });
     },
-
     getPredicatesLabelsByLabel: function(label, callback, knownSet) {
         var command = '\
             SELECT DISTINCT ?pred ?label \
@@ -68,22 +133,20 @@ FusekiEndpoint.prototype = {
             callback(results);
         });
     },
-  
     getRdf: function(uri, callback) {
-        this.describe(uri,callback);
-        //this.getRdfBySubjectObject(uri,callback);
+        this.getRdfBySubject(uri,callback);
+        //this.describe(uri,callback);
     },
     getRdfBySubject: function(subject, callback) {
         var s = new Resource(subject)
         var command = 'SELECT ?s ?p ?o WHERE { '+s.resource.toString() +' ?p ?o }';
         this.execute(command,function(data) { 
-            var triples = $.map(data.results.bindings, function(element,index) {
-                return new Triple(subject, element.p.value, element.o.value );
+            var triples = _.map(data.results.bindings, function(binding) {
+                return new Triple(subject, binding.p, binding.o);
             });
             callback(triples);
         });
     },
-
     getRdfBySubjectObject: function(uri, callback) {
         var r = new Resource(uri)
         var command = 'SELECT ?s ?p ?o WHERE { ' +
@@ -100,30 +163,19 @@ FusekiEndpoint.prototype = {
         });
     },
     describe: function(uri, callback) {
-        var r = new Resource(uri);
-        var command = 'DESCRIBE ?s ?p ' +
-            'WHERE {' +
-                '{ ?s ?p ?o FILTER ( ?s in ( ' + r.toSparqlString() + ') ) } UNION ' +
-                '{ ?s ?p ?o FILTER ( ?o in ( ' + r.toSparqlString() + ') ) } ' +
-                'OPTIONAL { ?p owl:sameAs ?p2 } ' +
-            '}';
-        this.execute(command, function(data) {
-            console.log(data);
-            var triples = new Triples(0);
-            for(s in data) {
-                for(p in data[s]) {
-                    for(i in data[s][p]) {
-                        triples.push(new Triple(s,p,data[s][p][i].value));
-                    }
-                }
-            }
-            console.log(triples);
-            callback(triples);
-        });
+        if (uri === undefined) {
+            throw "cannot describe without a URI";
+        }
+        var about = new Resource(uri);
+        if (about.isBlank()) {
+            throw "cannot describe a blank node " + uri;
+        }
+        var command = "CONSTRUCT { ?s ?p ?o } WHERE { { ?s ?p ?o FILTER sameTerm(?s, {{{about}}} ) } UNION { ?s ?p ?o FILTER sameTerm(?o, {{{about}}} ) } }";
+        var sparql = Mustache.render(command, {about: about.toSparqlString()});
+        this.execute(sparql, callback);
     },
-
     getLabels: function(subject, callback, knownLabels) {
-        var labels = _.clone(knownLabels);
+        var labels = _.clone(knownLabels) || [];
         var subjectResource = new Resource(subject);
         var command = 'SELECT DISTINCT ?label WHERE { '+ subjectResource.toSparqlString() +' rdfs:label ?label }';
         this.execute(command,function(data) {
@@ -134,34 +186,20 @@ FusekiEndpoint.prototype = {
             callback(labels);
         });
     },
+    insertData: function(triples, callback) {
+        var sparql = '{' + triples.update().join('\n') + '}';
+        if ( this.graph != 'default') {
+            sparql = '{ GRAPH <' + this.graph + '>' + sparql + '}';
+        }
+        sparql = 'INSERT DATA ' + sparql;
+        this.execute(sparql,callback);
+    },
+    constructAll: function(callback) {
+        var sparql = '{ ?s ?p ?o }';
+        sparql = 'CONSTRUCT { ?s ?p ?o } WHERE ' + sparql;
+        this.execute(sparql, callback);
+    },
+
 }
 
-// $.rdf.databank.prototype.sparqlu = function() {
-//     var insertData = "";
-//     var deleteUris = [];
-
-//     // TODO: should be: insertData = this.triples().join(". \n");
-//     var triples = this.triples();  // a jquery object
-
-//     for (var i=0; i<triples.length; i++) {
-        
-//         if (triples[i].property.toString() == '<http://www.w3.org/2000/01/rdf-schema#label>') {
-//             deleteUris.push(triples[i].subject.toString());
-//         }
-//         insertData += triples[i].toString().replace(/\\/g,'') + ' \n';
-//     }
-
-//     return "\
-//     DELETE { ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o } WHERE \n\
-//     { \n\
-//         ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o \n\
-//         FILTER (?s in ( " + deleteUris.join(",\n") + ") )   \n\
-//     } \n\
-//     INSERT DATA \n\
-//     { \n\
-//         " + insertData + "\n\
-//     }";
-// };  
-
 })(jQuery);
-

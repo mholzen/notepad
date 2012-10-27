@@ -32,6 +32,23 @@
             equal(uri,'http://example.com/resource#fragment');
         });
 
+        test("can create a literal", function() {
+            var literal = $.rdf.literal('1');
+            equal(literal.toString(), '"1"^^<http://www.w3.org/2001/XMLSchema#integer>');
+
+            literal = $.rdf.literal('"a"');
+            equal(literal.toString(), '"a"');
+
+            literal = $.rdf.literal('"---\\"---"');
+            equal(literal.toString(), '"---\\"---"');
+            equal($.rdf.literal('"\\\\""').toString(), '"\\""');
+
+            // BUG: The following test fails if the previous test is not executed right before it
+            // http://code.google.com/p/rdfquery/issues/detail?id=30
+            equal($.rdf.literal('"\\""').toString(), '"\\""');
+            });
+        });
+
         test("can create a resource", function() {
             var resource = $.rdf.resource('rdf:foo', {namespaces: {rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}});
             equal(resource.value.toString(), "http://www.w3.org/1999/02/22-rdf-syntax-ns#foo");
@@ -87,7 +104,7 @@
             var graph = $.rdf.databank();
             graph.add(getTriple());
             var rdf = $.rdf( {databank: graph });
-            console.log(rdf.databank.size());
+            log.debug(rdf.databank.size());
             equal(rdf.where('?s ?p ?o').length, 1, "the rdf object should contain one triple");
         });
 

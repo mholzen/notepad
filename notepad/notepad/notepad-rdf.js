@@ -1,15 +1,18 @@
 (function($, undefined) {
 
-    $.fn.notepad = $.fn.notepad || {};
+    $.notepad = $.notepad || {};
 
     var DEFAULT_NAMESPACES = {
-        xsd:  "http://www.w3.org/2001/XMLSchema#",
-        rdf:  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-        rdfs: "http://www.w3.org/2000/01/rdf-schema#",
-        owl:  "http://www.w3.org/2002/07/owl#",
-        ex:   "http://ex.com/#",
-        '':   $.uri.base(),
+        xsd:        "http://www.w3.org/2001/XMLSchema#",
+        rdf:        "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        rdfs:       "http://www.w3.org/2000/01/rdf-schema#",
+        owl:        "http://www.w3.org/2002/07/owl#",
+        ex:         "http://example.com/#",
+        nmo:        "http://www.semanticdesktop.org/ontologies/nmo/#",
+        notepad:    "http://www.vonholzen.org/notepad#",
+        '':         $.uri.base() + '#',
     };
+    $.notepad.DEFAULT_NAMESPACES = DEFAULT_NAMESPACES;
 
     function guidGenerator() {
         var S4 = function() {
@@ -19,7 +22,6 @@
     }
 
     // Resource and Triple abstract the interface between Notepad and an RDF library
-    // TODO: "import Resource, Triple"
     _stringToRdfResource = function(value) {
         if (value.indexOf('[]')==0) {
             return $.rdf.blank('_:'+guidGenerator());
@@ -34,23 +36,30 @@
         if ( value.indexOf(':') == 0) {
             return $.rdf.resource('<' + $.uri.base() + '#' + value.toString().slice(1) + '>' );
         }
-        if ( value.indexOf(':') != -1) {
-            // TODO: make more specific
-            return $.rdf.resource(value.toString(), {namespaces: DEFAULT_NAMESPACES} );
+        if ( value.indexOf(':') > 0) {
+            try {
+                return $.rdf.resource(value.toString(), {namespaces: DEFAULT_NAMESPACES} );
+            }
+            catch(error) {
+                // We couldn't make it a URI, let's make it a Literal
+            }
         }        
         return $.rdf.literal('"' + value.toString().replace(/"/g, '\\"') + '"');
     };
-    _fusekiToRdfResource = function(value) {
-        if (value.type == 'bnode' && value.value ) {
-            return $.rdf.blank("_:" + value.value);
+    _fusekiToRdfResource = function(binding) {
+        if(!binding.value) {
+            throw "missing 'value' from a Fuseki binding";
         }
-        if (value.type == 'uri' && value.value ) {
-            return $.rdf.resource('<' + this._string + '>', {namespaces: DEFAULT_NAMESPACES} );
+        if (binding.type == 'bnode') {
+            return $.rdf.blank("_:" + binding.value);
         }
-        if (value.type == 'literal' && value.value ) {
-            return$.rdf.literal('"'+value.value.toString()+'"');
+        if (binding.type == 'uri') {
+            return $.rdf.resource('<' + binding.value + '>', {namespaces: DEFAULT_NAMESPACES} );
         }
-        throw "cannot create an RDF resource from a Fuseki object";
+        if (binding.type == 'literal') {
+            return $.rdf.literal('"' + binding.value.replace(/"/g, '\\"') + '"');
+        }
+        throw "unknown type "+binding.type;
     };
     
     Resource = function(value) {
@@ -96,24 +105,24 @@
                 }
             }
             if (this.isLiteral()) {
-                return this.toSparqlString().slice(1,-1); // Remove encapsulating double quotes ""
+                return this.resource.toString().slice(1,-1); // Remove encapsulating double quotes ""
             }
         },
         toSparqlString: function() {
+            if ( this.isLiteral() ) {
+                return '"' + this.resource.toString().slice(1,-1).replace(/"/g,'\\"') +'"';  // BUG
+            }
             return this.resource.toString();
         },
         toRdfResource: function() {
             return this.resource;
         },
         equals: function(resource) {
-            // if ( resource === undefined ) {
-            //     return false;
-            // }
             return this.toString() === resource.toString();
         },
     };
 
-    $.fn.notepad.getNewUri = function() {
+    $.notepad.getNewUri = function() {
         return new Resource(":"+guidGenerator());
     };
 
@@ -158,16 +167,12 @@
 
     Triples = (function() {
         var methods = {
-            update: {
-                value: function() {
+            update: { value: function() {
                     return $.grep(this, function(triple) { return triple.operation == "update"; });
-                }
-            },
-            delete: {
-                value: function() {
+            } },
+            delete: { value: function() {
                     return $.grep(this, function(triple) { return triple.operation == "delete"; });
-                }
-            },
+            } },
             updateSparql: { value: function() {
                 var sparql = "";
                 var rdfsLabel = '<http://www.w3.org/2000/01/rdf-schema#label>';
@@ -220,6 +225,18 @@
                 }
                 return false;
             } },
+            filter: { value: function(f) {
+                var filteredTriples = new Triples(0);
+                $.merge(filteredTriples, _.filter(this, f));
+                return filteredTriples;
+            } },
+            triples: { value: function(subject, predicate, object) {
+                return this.filter(function(triple) {
+                    return (subject == undefined || triple.subject.equals(subject)) &&
+                        (predicate == undefined || triple.predicate.equals(predicate)) &&
+                        (object == undefined || triple.object.equals(object));
+                });
+            } },
             toDatabank: { value: function() {
                 var databank = $.rdf.databank([], {namespaces: DEFAULT_NAMESPACES });
                 _.each(this.update(), function(t) {
@@ -239,7 +256,31 @@
                 var matches = rdf.where(triple.toSparqlString());
                 return (matches.length > 0);
             } },
+            getLabels: { value: function(uri, callback) {
+                var labels = this.filter(function(t) {
+                    // filter by predicate and uri
+                    return t.subject == uri && t.predicate == "rdfs:label";
+                });
+                if (callback) {
+                    callback(labels);
+                }
+                return labels;
+            } },
+            getPredicatesLabelsByLabel: { value: function(label, callback) {
+                log.debug("warn: getPredicatesLabelsByLabel on an endpoint of triples not implemented");
+                var results = [];
+                if (callback) {
+                    callback(results);
+                }
+                return results;
+            } },
+            execute: { value: function(sparql, callback) {
+                log.warn( "execute on an endpoint of triples not implemented ("+sparql+")");
+            } },
 
+            subjects: { value: function() {
+                return _.map(this, function(triple) { return triple.subject; });
+            } },
         };
 
         return function() {
@@ -252,5 +293,30 @@
             return arr;
         };
     })();
+
+    $.notepad.cluster = function(triples) {
+        var clusters = {};
+        _.each(triples, function(triple) {
+            clusters[triple.predicate] = clusters[triple.predicate] || {};
+            clusters[triple.predicate][triple.object] = clusters[triple.predicate][triple.object] || {};
+            clusters[triple.predicate][triple.object][triple.subject] = 1;
+        });
+        var clusterTriples = new Triples(0);
+        for (var predicate in clusters) {
+            for (var object in clusters[predicate]) {
+                var clusterUri = $.notepad.getNewUri();
+                clusterTriples.push(
+                    new Triple(clusterUri, "rdfs:label", predicate + "=" + object)
+                );
+                for (var memberUri in clusters[predicate][object]) {
+                    clusterTriples.push(
+                        new Triple(clusterUri, "rdfs:member", memberUri)
+                    );
+                }
+            }
+        }
+        // It will need to fetch more information about the URIs, so it will need an endpoint
+        return clusterTriples;
+    };
 
 }(jQuery));
