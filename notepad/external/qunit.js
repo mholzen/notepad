@@ -334,6 +334,9 @@ var QUnit = {
 				details.source = source;
 				msg += '<table><tr class="test-source"><th>Source: </th><td><pre>' + escapeInnerText(source) + '</pre></td></tr></table>';
 			}
+			if (config.throwonfail) {
+				throw msg;
+			}
 		}
 		runLoggingCallbacks( 'log', QUnit, details );
 		config.current.assertions.push({
@@ -482,7 +485,7 @@ var config = {
 	// by default, modify document.title when suite is done
 	altertitle: true,
 
-	urlConfig: ['noglobals', 'notrycatch'],
+	urlConfig: ['noglobals', 'notrycatch', 'throwonfail'],
 
 	//logging callback queues
 	begin: [],
