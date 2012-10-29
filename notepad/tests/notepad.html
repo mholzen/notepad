@@ -39,18 +39,18 @@ var notepad;
 var container;
 var line;
 var object;
-var log = new Log(Log.INFO, Log.consoleLogger);
+var log = new Log(Log.DEBUG, Log.consoleLogger);
 
 $(function() {
-    $("#notepad").notepad();
+    devFusekiEndpoint = new FusekiEndpoint("http://localhost:3030/dev");
+    $("#notepad").notepad({endpoint: devFusekiEndpoint});
+
     notepad = $("#notepad").data('notepad');
     container = notepad.getContainer();
     line = notepad.getLines()[0];
     object = line.getObject();
 
     $("#notepad .notepad-object").focus();
-    devFusekiEndpoint = new FusekiEndpoint("http://localhost:3030/dev");
-    $("#notepad").data('notepad').endpoint = devFusekiEndpoint;
     
     $("#save").click(function() {
         var sparql = $("#notepad").notepad('triples').sparql();
