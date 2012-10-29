@@ -22,10 +22,10 @@
 
             this.getNotepad().getLabels(uri, function(labels) {
                 if (labels.length > 1) {
-                    throw "More than one label for a given uri ("+labels+")";
+                    throw new Error("More than one label for a given uri ("+labels+")");
                 }
                 if (labels.length == 0) {
-                    throw "Can't find a label for a predicate uri";
+                    throw new Error("Can't find a label for a predicate uri");
                 }
                 line._setPredicateLabel(labels[0]);
             });
@@ -36,7 +36,7 @@
             this.getNotepad().getPredicatesLabelsByLabel(label,function(results) {
                 var uri;
                 if (results.length > 1) {
-                    throw "More than one predicate with the same label ("+results+")";
+                    throw new Error("More than one predicate with the same label ("+results+")");
                 }
                 if (results.length == 0) {
                     uri = $.notepad.getNewUri();

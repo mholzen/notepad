@@ -48,7 +48,7 @@
     };
     _fusekiToRdfResource = function(binding) {
         if(!binding.value) {
-            throw "missing 'value' from a Fuseki binding";
+            throw new Error("missing 'value' from a Fuseki binding");
         }
         if (binding.type == 'bnode') {
             return $.rdf.blank("_:" + binding.value);
@@ -64,7 +64,7 @@
     
     Resource = function(value) {
         if (value === undefined) {
-            throw "cannot create a resource with an undefined value";
+            throw new Error("cannot create a resource with an undefined value");
         }
         if ( value.type && value.value ) {
             this.resource = _fusekiToRdfResource(value);
@@ -77,7 +77,7 @@
             this.element = value.element;
         }
         if (this.resource === undefined) {
-            throw "cannot determine a value for a resource";
+            throw new Error("cannot determine a value for a resource");
         }
 
         return this;
@@ -132,13 +132,13 @@
         this.object = new Resource(object);
         this.operation = operation || "update";
         if ( this.subject === undefined ) {
-            throw "triple with no subject";
+            throw new Error("triple with no subject");
         }
         if ( this.predicate === undefined ) {
-            throw "triple with no predicate";
+            throw new Error("triple with no predicate");
         }
         if ( this.object === undefined ) {
-            throw "triple with no object";
+            throw new Error("triple with no object");
         }
     };
     Triple.prototype = {
@@ -153,13 +153,13 @@
                 return false;
             }
             if ( triple.subject === undefined ) {
-                throw "triple with no subject";
+                throw new Error("triple with no subject");
             }
             if ( triple.predicate === undefined ) {
-                throw "triple with no predicate";
+                throw new Error("triple with no predicate");
             }
             if ( triple.object === undefined ) {
-                throw "triple with no object";
+                throw new Error("triple with no object");
             }
             return this.subject.equals(triple.subject) && this.predicate.equals(triple.predicate) && this.object.equals(triple.object);
         },

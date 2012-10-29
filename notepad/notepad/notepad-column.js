@@ -45,7 +45,7 @@
 
             // We need a container to get lines
             if (this.getContainer() === undefined) {
-                throw "Cannot find a source container for this column";
+                throw new Error("Cannot find a source container for this column");
             }
 
             var column = this;

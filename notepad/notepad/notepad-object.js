@@ -47,6 +47,7 @@
         getSubjectUri: function() {
             if (this.subject === undefined) {
                 throw "no subject defined";
+                throw new Error("no subject defined");
             }
             if (this.subject.getUri) {
                 // subject is a widget
@@ -56,6 +57,7 @@
                 return this.subject.attr['about'];
             }
             throw "cannot determine subject's uri";
+            throw new Error("cannot determine subject's uri");
         },
 
         setPredicate: function(predicate) {
@@ -65,6 +67,7 @@
         getPredicateUri: function() {
             if (this.predicate === undefined) {
                 throw "no predicate defined";
+                throw new Error("no predicate defined");
             }
             if (this.predicate.getUri) {
                 // predicate is a widget
@@ -74,6 +77,7 @@
                 return this.predicate.attr['rel'];
             }
             throw "cannot determine predicate's uri";
+            throw new Error("cannot determine predicate's uri");
         },
 
         // Object or Literal

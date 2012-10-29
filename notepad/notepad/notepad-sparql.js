@@ -165,6 +165,7 @@ FusekiEndpoint.prototype = {
     describe: function(uri, callback) {
         if (uri === undefined) {
             throw "cannot describe without a URI";
+            throw new Error("cannot describe without a URI");
         }
         var about = new Resource(uri);
         if (about.isBlank()) {
