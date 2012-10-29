@@ -46,7 +46,6 @@
         },
         getSubjectUri: function() {
             if (this.subject === undefined) {
-                throw "no subject defined";
                 throw new Error("no subject defined");
             }
             if (this.subject.getUri) {
@@ -56,7 +55,6 @@
             if (this.subject.attr['about']) {
                 return this.subject.attr['about'];
             }
-            throw "cannot determine subject's uri";
             throw new Error("cannot determine subject's uri");
         },
 
@@ -66,7 +64,6 @@
         },
         getPredicateUri: function() {
             if (this.predicate === undefined) {
-                throw "no predicate defined";
                 throw new Error("no predicate defined");
             }
             if (this.predicate.getUri) {
@@ -76,7 +73,6 @@
             if (this.predicate.attr['rel']) {
                 return this.predicate.attr['rel'];
             }
-            throw "cannot determine predicate's uri";
             throw new Error("cannot determine predicate's uri");
         },
 

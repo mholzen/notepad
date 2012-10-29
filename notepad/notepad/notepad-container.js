@@ -15,10 +15,10 @@
         _setOption: function(key, value) {
             this._super(key, value);        // We have jquery-ui 1.9
         },
-        _create : function() {
+        _create: function() {
             this.element.addClass("notepad-endpoint");
         },
-        _destroy : function() {
+        _destroy: function() {
             this.element.removeClass("notepad-endpoint");
         },
         getEndpoint: function() {
@@ -29,7 +29,7 @@
     $.fn.findEndpoint = function() {
         var element = this.closest(":notepad-endpoint");
         if (element.length === 0) {
-            throw "cannot find an element defining an endpoint";
+            throw new Error("cannot find an element defining an endpoint");
         }
         return element.data('endpoint').getEndpoint();
     }
@@ -49,12 +49,13 @@
         _setOption: function(key, value) {
             this._super(key, value);        // We have jquery-ui 1.9
         },
-        _create : function() {
+        _create: function() {
             this.element.addClass("notepad-container");
 
             this._createHeadersContainer();
         },
-        _destroy : function() {
+
+        _destroy: function() {
             this.element.removeClass("notepad-container").removeAttr('about');
         },
         getQuery: function() {
@@ -70,7 +71,7 @@
             if (this.element.closest('[about]').length !== 0) {
                 return this.element.closest('[about]');
             }
-            return this.element;
+            throw new Error("cannot determine my source element");
         },
         getUri: function() {
             return this.getUriElement().attr('about');
@@ -134,10 +135,10 @@
             }
             var lines = this.element.find(lineSelector);
             if (lines.length != 0) {
-                throw "triple not expressed by container yet appears in it";
+                throw new Error("triple not expressed by container yet appears in it");
             }
             if (lineSelector.direction === BACKWARD && triple.object.isLiteral()) {
-                throw "cannot add a backward triple with a literal";
+                throw new Error("cannot add a backward triple with a literal");
             }
             var line = this.appendLine();
             line.setContainerPredicateUri(triple.predicate, lineSelector.direction);
@@ -240,7 +241,7 @@
 
                 var childLines = container.element.find(lineSelector);
                 if (childLines.length > 1) {
-                    throw "cannot update multiple occurence of the childUri";
+                    throw new Error("cannot update multiple occurence of the childUri");
                 }
                 var line;
                 if (childLines.length == 1) {
