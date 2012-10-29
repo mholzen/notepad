@@ -184,19 +184,19 @@
         },
 
         getEndpoint: function() {
-            return this.element.data('endpoint').getEndpoint();
+            return this.option('endpoint');
         },
         getRdf: function(uri, callback) {
-            return this.endpoint.getRdf(uri,callback);
+            return this.getEndpoint().getRdf(uri,callback);
         },
         getRdfBySubject: function(uri, callback) {
-            this.endpoint.getRdfBySubject(uri, callback);
+            this.getEndpoint().getRdfBySubject(uri, callback);
         },
         getRdfBySubjectObject: function(uri, callback) {
-            this.endpoint.getRdfBySubjectObject(uri, callback);
+            this.getEndpoint().getRdfBySubjectObject(uri, callback);
         },
         getSubjectsLabelsByLabel: function(label, callback) {
-            return this.endpoint.getSubjectsLabelsByLabel(label, callback);
+            return this.getEndpoint().getSubjectsLabelsByLabel(label, callback);
         },   
 
         _getNotepadPredicateLabels: function(uri) {
@@ -216,10 +216,10 @@
             // get labels from notepad-endpoint
             // merge
             var notepadPredicateLabels = this._getNotepadPredicateLabels(uri);
-            if (this.endpoint === undefined) {
+            if (this.getEndpoint() === undefined) {
                 return callback(notepadPredicateLabels);
             }
-            this.endpoint.getLabels(uri, callback, notepadPredicateLabels);
+            this.getEndpoint().getLabels(uri, callback, notepadPredicateLabels);
             return notepadPredicateLabels;
         },
 
@@ -236,10 +236,10 @@
         }, 
         getPredicatesLabelsByLabel: function(label, callback) {
             var notepadPredicateLabels = this._getNotepadPredicatesLabelsByLabel(label);
-            if (this.endpoint === undefined) {
+            if (this.getEndpoint() === undefined) {
                 return callback(notepadPredicateLabels);
             }
-            this.endpoint.getPredicatesLabelsByLabel(label, callback, notepadPredicateLabels);
+            this.getEndpoint().getPredicatesLabelsByLabel(label, callback, notepadPredicateLabels);
         },
         setRdf: function(triples) {
             this.getContainer()._updateFromRdf(triples);
