@@ -34,6 +34,7 @@ skippedTest = function(label, code) {};
 var equalToObject = function(expected) {
     return new JsHamcrest.SimpleMatcher({
         matches: function(actual) {
+            if (actual === undefined) { return false; }
             return actual.equals(expected);
         },
 
