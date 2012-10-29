@@ -14,6 +14,7 @@ test("when I create a new notepad with options", function() {
     equal(this.div.data('notepad').getEndpoint(), endpoint, "the notepad should provide the endpoint");
 });
 
+
 module("given a new div", {
     setup: function() {
         this.div = $("#notepad");
@@ -50,6 +51,7 @@ test("when I create a notepad, it should be destroyed cleanly", function() {
     ok(!this.div.hasClass('notepad'),"it leaves the class 'notepad'");
     ok(!this.div.attr('about'),"it leaves the attribute 'about'");
 });
+
 
 module("given a new notepad", {
     setup: function() {
@@ -96,28 +98,6 @@ test("when I toggle the predicate", function() {
             }
         });
 });
-
-
-// function testWithTriples(name, triples, testfunction) {
-//     this.notepad.endpoint = new FusekiEndpoint('http://localhost:3030/test');
-//     this.notepad.endpoint.graph = 'ex' + $.notepad.getNewUri();
-//     this.notepad.endpoint.insertData(triples, function() {
-//         asyncTest(name, testfunction);
-//     });
-// };
-
-// testWithTriples("when I set ...",
-//     new Triples(
-//         new Triple(':line1', 'rdfs:label', 'line1'),
-//         new Triple(':line2', 'rdfs:label', 'line2')
-//     ),
-//     function() {
-//         this.notepad.constructAll(function(triples) {
-//             assertThat(triples.length, equalTo(2));
-//         });
-//     }
-// );
-
 test("when set RDF with cycles, then it should not display a triple twice", function() {
     expect(6);
     var uri = this.notepad.getUri();
@@ -145,7 +125,6 @@ test("when set RDF with cycles, then it should not display a triple twice", func
                 assertThat(test.line.getLines()[0].getUri(), ':line1', "the child line should be the uri :line1");                
             }
         });
-
 });
 // depends on displaying reverse triples
 skippedTest("when set RDF with a reverse relationship, then it should display it once", function() {
@@ -177,7 +156,6 @@ skippedTest("when set RDF with a reverse relationship, then it should display it
         }
     );
 });
-
 function enterNewLine(div) {
     var target = div.find("li .notepad-object");
     target.text('Test a widget');
@@ -235,6 +213,9 @@ test("when I add two lines", function() {
     this.container.appendLine("second line");
     ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing): " + this.container.sortBy());
 });
+
+
+
 module("given a notepad with one line of text", {
     setup: function() {
         this.div = $("#notepad").notepad();
@@ -263,6 +244,8 @@ test("when I unindent the first line, then it should not move", function() {
     var parentAfter = this.firstLineElement.parent();
     deepEqual(parentAfter, parentBefore, "the parent element of the line should not changed");
 });
+
+
 
 module("given a notepad with two lines", {
     setup: function() {
@@ -353,6 +336,8 @@ test("when I hit enter at the end of the first line, then it should add a newlin
     equal(this.div.find("li:eq(2)").data('line').getLineLiteral(),"second line");
 });
 
+
+
 module("given a notepad with two lines (first empty, second with a label)", {
     setup: function() {
         this.div = $("#notepad").notepad();
@@ -364,14 +349,6 @@ module("given a notepad with two lines (first empty, second with a label)", {
     },
     teardown: function() { this.notepad.destroy(); }
 });
-skippedTest("when I save, then the empty line should save because it has a child", function() {
-});
-
-module("given a notepad with a line and a child line", {
-});
-skippedTest("when I unindent the second line, then the second line relatinoship to the first line should be deleted", function() {
-});
-
 test("when I add a triple that is being expressed but is not yet retrieve, then I should not add it to the container", function() {
     // for example, with a label being redisplayed as a child of the node
     // must ignore triples that are being expressed by a notepad-object
@@ -380,4 +357,12 @@ test("when I add a triple that is being expressed but is not yet retrieve, then 
 test("when I add a triple describing membershipt to a notepad, then it should filter it out", function() {
     ok(true);
 });
+skippedTest("when I save, then the empty line should save because it has a child", function() {
+});
 
+
+
+module("given a notepad with a line and a child line", {
+});
+skippedTest("when I unindent the second line, then the second line relatinoship to the first line should be deleted", function() {
+});
