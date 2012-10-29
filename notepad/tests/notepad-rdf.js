@@ -57,6 +57,9 @@ test("triple", function() {
 
     ok(new Triple(':1', ':2', ':3').equals(new Triple(':1', ':2', ':3')), "two identical triples should be identical with .equal");
     assertThat(new Triple(':1', ':2', ':3'), equalToObject(new Triple(':1', ':2', ':3')), "two identical triples should be identical with ==");
+
+    // Does not work
+    //assertThat(new Triple(':1', ':2', ':3'), equalTo(new Triple(':1', ':2', ':3')), "two identical triples should be identical with ==");
 });
 test("triples", function() {
     var triples = new Triples(new Triple(':1', ':2', ':3'), new Triple(':4', ':5', ':6'));
