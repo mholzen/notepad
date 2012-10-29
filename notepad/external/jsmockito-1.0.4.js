@@ -321,6 +321,8 @@ JsMockito = {
    */
   version: '1.0.4',
 
+  qunitOnThrow: true,
+
   _export: ['isMock', 'when', 'verify', 'verifyZeroInteractions',
             'verifyNoMoreInteractions', 'spy'],
 
@@ -889,6 +891,7 @@ JsMockito.verifier('Times', {
     });
     if (interactions.length == this.wanted) {
       this.updateVerifiedInteractions(interactions);
+      QUnit.ok(true, "verified interaction with " + funcName);
       return;
     }
 
@@ -904,7 +907,11 @@ JsMockito.verifier('Times', {
     }
 
     var description = this.buildDescription(message, funcName, matchers, describeContext);
-    throw description.get();
+    if (JsMockito.qunitOnThrow) {
+      QUnit.ok(false, description.get());
+    } else {
+      throw description.get();
+    }
   }
 });
 
@@ -935,7 +942,11 @@ JsMockito.verifier('NoMoreInteractions', {
     var description = this.buildDescription(
       "No interactions wanted, but " + interactions.length + " remains",
       funcName, matchers, describeContext);
-    throw description.get();
+      if (JsMockito.qunitOnThrow) {
+        QUnit.ok(false, description.get());
+      } else {
+        throw description.get();
+      }
   }
 });
 
