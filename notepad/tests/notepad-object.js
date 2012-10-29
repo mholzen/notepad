@@ -105,12 +105,11 @@ test("when I customize the template with multiple predicates, then it display th
     assertThat(this.element.html(), equalTo('<div><span>A</span><span>B</span></div>'), "the object should have two spans");
     //equal($(this.element[0]).find('span').length, 2, "the object should have two spans");
 });
+
 skippedTest("when I provide a triple with a label", function() {
     this.object.setRdf([ new Triple(this.object.getObjectUri(), 'rdfs:label', 'new label') ]);
     equal(this.element.find('.notepad-object').text(), 'new label', "the line's label should be updated");
 });
-
-
 skippedTest("when I provide a URI, it should retrieve the resource and display an element of it", function(){
     this.element.text("http://www.google.com");
     this.element.change();            
