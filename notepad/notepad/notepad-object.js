@@ -5,9 +5,8 @@
         // See notepad.js for interface
 
         options: { 
-            template: '<div>{{{rdfs:label}}}  {{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}} </div>',
-
-//            template: '<div>{{{rdfs:label}}}</div>',
+            template: '<div>{{{rdfs:label}}}{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}</div>',
+            // template: '<div>{{{rdfs:label}}}</div>',
         },
         _setOption: function(key, value) {
             this._super(key, value);
@@ -45,35 +44,17 @@
             return this.subject;
         },
         getSubjectUri: function() {
-            if (this.subject === undefined) {
-                throw new Error("no subject defined");
-            }
-            if (this.subject.getUri) {
-                // subject is a widget
-                return this.subject.getUri();
-            }
-            if (this.subject.attr['about']) {
-                return this.subject.attr['about'];
-            }
-            throw new Error("cannot determine subject's uri");
+            var subject = this.options.subject || this.element;
+            return subject.closest('[about]').attr('about');
         },
 
-        setPredicate: function(predicate) {
-            this.predicate = predicate;
-            return this;
+        getPredicate: function() {
+            return this.element.closest('.notepad-predicate').data('predicate');
         },
         getPredicateUri: function() {
-            if (this.predicate === undefined) {
-                throw new Error("no predicate defined");
-            }
-            if (this.predicate.getUri) {
-                // predicate is a widget
-                return this.predicate.getUri();
-            }
-            if (this.predicate.attr['rel']) {
-                return this.predicate.attr['rel'];
-            }
-            throw new Error("cannot determine predicate's uri");
+            var predicate = this.options.predicate || this.element;
+            return predicate.closest('[rel]').attr('rel');
+            return this.getPredicate().getUri();
         },
 
         // Object or Literal
@@ -106,7 +87,15 @@
         setObjectLiteral: function(literal) {
             this.element.text(literal);
         },
-        value: function() {
+        setObject: function(resource) {
+            if (resource.isLiteral()) {
+                return this.setObjectLiteral(resource);
+            } else if (resource.isUri()) {
+                return this.setObjectUri(resource);
+            }
+            throw new Error("cannot set an object that is neither a literal or a URI");
+        },
+        getResource: function() {
             if (this.isLiteral()) {
                 return this.getObjectLiteral();
             } else if ( this.isUri() ) {
@@ -175,11 +164,22 @@
         },
 
         getObject: function() {
-            // TODO: handle literals, somehow, I think
+            // Does not handle literals: deprecated by notepad-label.js
             return this.getObjectUri();
         },
-        getTriple: function() {
-            return new Triple(this.getSubjectUri(), this.getPredicateUri(), this.getObject());
+        triple: function() {
+            var subject, predicate, object;
+
+            if (! (subject   = this.getSubjectUri())) {
+                return undefined;
+            }
+            if (! (predicate = this.getPredicateUri())) {
+                return undefined;
+            }
+            if (! (object    = this.getObject())) {
+                return undefined;
+            }
+            return new Triple(subject, predicate, this.getObject());
         },
         focus: function() {
             return this.element.focus();

@@ -1,45 +1,83 @@
-<div class="notepad" about=":session_URI">
-	<ul id="top-level-container">
-		<li about=":li_uri" rel=":pred_to_parent">
-		    <span class="predicate">sequence</span>
-		    <span class="separator" />
-		    <span class="object" property="rdfs:label">Marc von Holzen</span>
-			<ul>
-				<li rel="rdfs:Class" about=":blank2" property="rdfs:label">
-				    <span class="predicate">subclass</span>
-				    <span class="separator" />
-				    <span class="object">Entrepreneur</span>
-				</li>
-			</ul>
-		</li>
-	</ul>
+<!--
+  :s   :p   :o .
+-->
+<div about=":s">
+    <div rel=":p">
+        <div about=":o"><!-- context of (:o,,)--></div>
+    </div>
 </div>
 
-li.triple =>
-    parent triple ( :li_uri, :pred_to_parent, :parent_uri );
-    line   triple ( :li_uri, rdfs:label, span text );
-    child triples 
+<div about=":s" rel=":p">
+    <!-- context of (:s,:p) -->
+    <div about=":o"/>
+</div>
+
+<div about=":s" rel=":p" resource=":o">
+    <!-- context of (:s,:p) -->
+</div>
 
 
+<!--  :s   :p   123  -->
 
-    <div class="notepad" about=":session_URI">
-    	<ul id="top-level-container">
-    		<li class="rdf" property="pred" >value</li>
+<div about=":s">
+    <div rel=":p">123</div>
+</div>
 
-    		<li class="label" about=":li_uri" rel=":pred_to_parent" resource=":session_URI">
+<div about=":s" rel=":p">123</div>
 
-    		<li class="label" about=":li_uri" rel=":pred_to_parent">
-    		    <span class="predicate">sequence</span>
-    		    <span class="separator" />
-    		    <span class="object" property="rdfs:label">Marc von Holzen</span>
-    			<ul>
-    				<li rel="rdfs:Class" about=":blank2" property="rdfs:label">
-    				    <span class="predicate">subclass</span>
-    				    <span class="separator" />
-    				    <span class="object">Entrepreneur</span>
-    				</li>
-    			</ul>
-    		</li>
-    	</ul>
+
+<!--
+  :s   :p   :o .
+  :s   rdfs:label S .
+  :p   rdfs:label P .
+  :o   rdfs:label O .
+-->
+<div about=":s">
+    <div rel="rdfs:label">S</div>
+    <div rel=":p">
+        <div rel="rdfs:label">P</div>
+        <div about=":o">
+            <div rel="rdfs:label">O</div>
+        </div>
     </div>
+</div>
+
+<!-- WITH CLASSES -->
+<div about=":s">
+    <div rel="rdfs:label" class="notepad-label">S</div>
+    <div rel=":p" class="notepad-predicate">
+        <div rel="rdfs:label" class="notepad-label">P</div>
+        <div about=":o">
+            <div rel="rdfs:label">O</div>
+        </div>
+    </div>
+</div>
+
+
+<!--
+  :s   :p   :o .
+  :o2  :p2  :s .
+  :s   :p3  123 .
+-->
+<div about=":s">
+    <div rel=":p">
+        <div about=":o"/>
+    </div>
+    <div inrel=":p2">
+        <div about=":o2"/>
+    </div>
+    <div rel=":p3">123</div>
+</div>
+
+
+<!--
+  :s   :p          123 .
+  :p   rdsf:label  "P" .
+-->
+<div about=":s">
+    <div rel=":p">
+        <div rel="rdfs:label">P</div>
+        123
+    </div>
+</div>
 

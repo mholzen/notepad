@@ -5,6 +5,7 @@
     var MAX_DEPTH = 2;
     var MAX_TRIPLES = 500;
     var MAX_TRIPLES_BEFORE_COLLAPSING = 5;
+    var MAX_TRIPLES_BEFORE_FILTERING = 10;
 
     $.widget("notepad.endpoint", {
 
@@ -39,11 +40,6 @@
         // See notepad.js for interface
 
         options: {
-//            query:          "CONSTRUCT { ?s ?p ?o } WHERE { { ?s ?p ?o FILTER sameTerm(?s, {{{about}}} ) } UNION { ?s ?p ?o FILTER sameTerm(?o, {{{about}}} ) } }",  // an alternative is (?s=about or ?o=about)
-            // query:          "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o FILTER sameTerm(?s, {{{about}}} ) }",  // an alternative is (?s=about or ?o=about)
-            source:         undefined, // consider: this.element.closest('[about]');
-            collapsed:      false,
-            lineTemplate:   '<div>{{{rdfs:label}}}</div>'
         },
 
         _setOption: function(key, value) {
@@ -58,15 +54,11 @@
         _destroy: function() {
             this.element.removeClass("notepad-container").removeAttr('about');
         },
-        getQuery: function() {
-            if (this.options.query !== undefined) {
-                return this.options.query;
-            }
-            return $.notepad.queryFromObject(this.getUriElement());
-        },
-        getUriElement: function() {
-            if (this.options.uriElement !== undefined) {
-                return this.options.uriElement;
+
+        // A container knows its sourceElement, the element used to obtain the initial query
+        getSourceElement: function() {
+            if (this.options.sourceElement !== undefined) {
+                return this.options.sourceElement;
             }
             if (this.element.closest('[about]').length !== 0) {
                 return this.element.closest('[about]');
@@ -74,14 +66,14 @@
             throw new Error("cannot determine my source element");
         },
         getUri: function() {
-            return this.getUriElement().attr('about');
+            return this.getSourceElement().attr('about');
         },
-        // setUri: function(uri) {
-        //     throw "we shouldn't be setting this anymore";
-        //     // TODO: refactor as part of notepad-object
-        //     this.getUriElement().attr('about',uri);
-        //     this.load();  // If the container contains results from a query that does not use the URI, then do not load when the URI is changed
-        // },
+        getQuery: function() {
+            if (this.options.query !== undefined) {
+                return this.options.query;
+            }
+            return $.notepad.queryFromObject(this.getSourceElement());
+        },
         getNotepad: function() {
             return this.element.parents('.notepad').data("notepad");
         },
@@ -92,12 +84,6 @@
             }
             return this.getNotepad();
         },
-        // getEndpoint: function() {
-        //     if (this.options.endpoint) {
-        //         return this.options.endpoint;
-        //     }
-        //     return this.getParent().getEndpoint();
-        // },
         getDepth: function() {
             return this.element.parents(".notepad-container").length;
         },
@@ -123,6 +109,20 @@
         },
         appendUri: function(uri) {
         },
+
+        // add, no matter whether it should be expressed by the query or not
+        // find whether this triple is expressed or not
+        addTriple: function(triple) {
+            if (this.triples().expresses(triple)) {
+                log.debug("Triple already expressed in the container");
+                return;
+            }
+            // We are creating a new line, no matter what, because a container can have several times the same predicate with different objects or even the same predicate
+            var line = this.appendLine();
+            line.setTriple(triple);
+            return line;
+        },
+
         add: function(triple) {
             if (this.triples().expresses(triple)) {
                 log.debug("Triple already expressed in the container");
@@ -178,6 +178,9 @@
         load: function() {
             var container = this;
             this.getQuery()(function(triples) {
+
+                log.debug('updating container with '+triples.length+' triples');
+
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
                     container.option('collapsed', true);
                 }
@@ -190,35 +193,15 @@
                 container._updateFromRdf(triples);
             });
         },
-        // _load: function() {
-        //     var aboutResource = new Resource(this.getUri());
-        //     var sparql = Mustache.render(this.options.query, {about: aboutResource.toSparqlString()});
-        //     var container = this;
+        update: function(triples) {
 
-        //     this.getEndpoint().execute(sparql, function(triples) {
-
-        //         if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
-        //             container.option('collapsed', true);
-        //         }
-
-        //         // TODO: it should be up to the object to determine the best way to display itself, given its context
-        //         var tripleToFind = new Triple(aboutResource,
-        //             "rdf:type",  // TODO: check whether it's rdf:type or rdfs:type
-        //             "http://www.vonholzen.org/instruct/notepad/#imap_import");
-        //         if (triples.contains(tripleToFind)) {
-        //             container.lineTemplate= '<div><span>{{{nmo:sender}}}</span>' + 
-        //                 '<span class="notepad-column-0">{{{nmo:messageSubject}}}</span><span  class="notepad-column-1">{{{nmo:receivedDate}}}</span></div>';
-        //         }
-
-        //         container._updateFromRdf(triples);
-        //     });
-        // },
+        },
         _updateFromRdf: function(triples) {
             // Update the immediate descendant children
             var container = this;
 
             _.each(triples, function(triple) {
-                log.debug('updating for triple', triple.toString());
+                log.debug('updating for triple'+triple.toString());
                 if (container.getDepth() > MAX_DEPTH) {
                     log.debug("Max depth reached");
                     return;
@@ -262,6 +245,12 @@
                 }
 
             });
+
+            if (container.getLines().length > MAX_TRIPLES_BEFORE_FILTERING) {
+                container._createFilters();
+                container.filters().load();
+            }
+
             this._updateLabelsFromRdf(triples);
         },
         _updateLabelsFromRdf: function(triples) {
@@ -319,7 +308,41 @@
             this.getHeadersContainer().css('display','inline');
             this.getHeadersContainer().css('display','block');
             return header.data('column');
+        },
+
+
+        // 
+        // Filters
+        //
+        _createFilters: function() {
+            if (this.filters() !== undefined) {
+                return;
+            }
+            log.debug('creating new filters');
+            var element = $('<ul class="notepad-filters">').prependTo(this.element).container({query: $.notepad.queryFromContainer(this)});
+        },
+        filters: function() {
+            return this.element.children('.notepad-filters').data('container');
         }
+
+
+
     });
 
 }(jQuery));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

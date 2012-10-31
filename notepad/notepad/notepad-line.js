@@ -53,21 +53,10 @@
             return this.getContainer().getNotepad();
         },
 
-
         getEndpoint: function () {
             return this.element.findEndpoint();
         },
 
-        // endpoint: undefined,
-        // getEndpoint: function() {
-        //     if (this.endpoint) {
-        //         return this.endpoint;
-        //     }
-        //     if (this.getContainer() && this.getContainer().getEndpoint()) {
-        //         return this.getContainer().getEndpoint();    
-        //     }
-        //         return this.getNotepad().getEndpoint();            
-        // },
         getDirection: function() {
             if (this.predicate.attr(getAttrName(FORWARD))) {
                 return FORWARD;
@@ -221,25 +210,53 @@
             }
             return undefined;
         },
+
+        triple: function() {
+            if ( this.getObject().getResource() === undefined ) {
+                // An object can have an undefined value, for example when the literal() is empty
+                return undefined;
+            }
+
+            var operation = this.predicate.hasClass("delete") ? 'delete' : 'update';
+            if (this.getDirection() === FORWARD) {
+                return new Triple(
+                    this.getSubjectUri(),
+                    this.getContainerPredicateUri(),
+                    this.getObjectResource(),
+                    operation
+                );
+            } else {
+                return new Triple(
+                    this.getObjectResource(),
+                    this.getContainerPredicateUri(),
+                    this.getSubjectUri(),
+                    operation
+                );
+            }
+        },
         getContainerTriple: function() {
+            return this.triple();
+        },
+
+        old_getContainerTriple: function() {
             if (this.predicate.hasClass("delete")) {
                 return new Triple(
                     this.subject(),
                     this.getContainerPredicateUri(),
-                    this.getObject().value(),
+                    this.getObject().getResource(),
                     // If the object is a literal, then we should call this.object().getPreviousLiteral()
                     //this.getPreviousLiteral(),
                     "delete"
                 );
             }
-            if ( this.getObject().value() === undefined ) {
+            if ( this.getObject().getResource() === undefined ) {
                 // An object can have an undefined value, for example when the literal() is empty
                 return undefined;
             }
             var tripleObject;
 
             if (this.getDirection() === FORWARD) {
-                tripleObject = this.getObject().value();
+                tripleObject = this.getObject().getResource();
             } else {
                 tripleObject = this._getContainerUri();
             }
@@ -280,6 +297,61 @@
         },
         getObject: function() {
             return this.getObjectElement().data('notepad-object');
+        },
+
+        getSubjectElement: function() {
+            return this.element.children('.notepad-subject');
+        },
+        setSubjectElement: function(element) {
+            this.getSubjectElement().remove();
+        },
+        _createSubject: function(uri) {
+            var subjectElement = $('<div>').addClass('').attr('about', uri).label().prependTo(this.element);
+            $('<div>').attr('about', uri).label();
+        },
+
+
+        setSubjectUri: function(uri) {
+            if (this.getSubjectElement() === undefined) {
+                this._createSubject(uri);
+            }
+            
+            this.element.attr('about',uri);
+
+            // TODO: this should trigger displaying the subject URI
+        },
+        getSubjectUri: function() {
+            return this.element.closest('[about]').attr('about');
+        },
+        setObjectResource: function(resource) {
+            this.getObject().setObject(resource);
+        },
+        getObjectResource: function() {
+            return this.getObject().getResource();
+        },
+
+        setTriple: function(triple) {
+            if (this.getUri() === undefined) {
+                this.setSubjectUri(triple.subject);
+                this.setContainerPredicateUri(triple.predicate, FORWARD);
+                this.setObjectResource(triple.object);
+                return;
+            }
+            if (triple.subject.equals(this.getUri())) {
+                // No need to set the subject
+                this.setContainerPredicateUri(triple.predicate, FORWARD);
+                this.setObjectResource(triple.object);
+                return;
+            }
+            if (triple.object.equals(this.getUri())) {
+                this.setSubjectUri(triple.object);  
+                this.setContainerPredicaterUri(triple.predicate, BACKWARD);
+                this.setObjectResource(this.subject);
+                return;
+            }
+            this.setSubjectUri(triple.subject)
+            this.setContainerPredicateUri(triple.predicate, FORWARD);
+            this.setObjectResource(triple.object);
         },
 
         // Object representation
@@ -404,10 +476,6 @@
             this.element.insertAfter(newPredecessor);
         },
 
-
-        _setupContextMenu: function() {
-        },
-
         // Set up the line widget
         _create: function() {
             var line = this;
@@ -517,7 +585,7 @@
 
             { // TODO: refactor into container( {param: objectElement});
                 // set the URI on the child container to: get it to load based on the notepad-object
-                childContainer.option('uriElement', objectElement);
+                childContainer.option('sourceElement', objectElement);
                 objectElement.bind("objecturichange", function() {
                     if (!line.collapsed()) {
                         childContainer.load();

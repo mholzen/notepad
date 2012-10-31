@@ -103,6 +103,7 @@ asyncTest("when I create a named graph", function() {
         });
     });
 })
+
 skippedTest("given a predicate p, when I post a triple with that predicate, then I can retrieve the collection of triples where p is the predicate", function(){
     this.endpoint.post(":a :pred :b", function() {
         this.endpoint.get(":pred", function(triples) {

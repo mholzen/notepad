@@ -27,8 +27,19 @@
     }
     $.notepad.queryFromContainer = function(container) {
         return function(callback) {
-            callback(container.triples());
+            var clusterTriples = $.notepad.cluster(container.triples());
+            callback(clusterTriples);
         }
+    }
+    $.notepad.query = function(element) {
+        var container = element.data('container');
+        if (container) {
+            return $.notepad.queryFromContainer(container);
+        }
+        if (element.attr('about')) {
+            return $.notepad.queryFromObject(element);
+        }
+        throw "cannot determine the type of query to create for element"+element;
     }
 
 

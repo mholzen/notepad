@@ -48,3 +48,11 @@ var here = function() {
   console.log('here');  
 }
 var c = console;
+
+
+module = function(label, options) {
+  if (QUnit.file) {
+    label = QUnit.file + ':  '+ label;
+  }
+  return QUnit.module(label,options)
+};

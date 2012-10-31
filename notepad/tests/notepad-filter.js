@@ -1,3 +1,4 @@
+QUnit.file = "test-filter.js";
 module("given a container with no uri", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
@@ -13,40 +14,60 @@ test("when i create filters, then ", function() {
     this.container._createFilters();
     assertThat(this.element.children('.notepad-container').length, equalTo(1), "the container has one direct child that is a container");
     assertThat(this.container.filters(), truth(), "the filters are defined");
-})
+});
 test("when I add a triple to it", function() {
-    var newTriple = new Triple(":anyuri", ":p", ":o");
-    this.container.addTriple(newTriple);
-    assertThat(this.container.triples(), hasItem(equalToObject(newTriple)), "the container should contain it");
+    var test = this;
+    function addAndTest(triple) {    
+        var line = test.container.addTriple(triple);
+        assertThat(line.triple(), equalToObject(triple));
+        assertThat(test.container.triples(), hasItem(equalToObject(triple)), "the container should contain it");
+    }
+    addAndTest(new Triple(":aUri", ":describe", "a literal"));
+    addAndTest(new Triple(":aUri", ":relate", ":anotherUri"));
+    addAndTest(new Triple(":anotherUri", ":describe", "another literal"));
+
+    assertThat(this.container.getLines().length, greaterThanOrEqualTo(3), "it has at least 3 lines");
 });
 
-module("given a container with a URI", {
+module("given a container with an 'about' attribute", {
     setup: function() {
-        this.element = $('<ul about=":s">').container();
-        this.container = mock(this.element.data('container'));
+        this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
+        this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
+        this.container = this.element.data('container');
     }
+});
+test("when I add a triple to it", function() {
+    var uri = this.container.element.attr('about');
+
+    var newTriple = new Triple(':s', ":describe", "a literal");
+    
+    var line = this.container.addTriple(newTriple);
+    assertThat(line.triple(), equalToObject(newTriple));
+    assertThat(this.container.triples(), hasItem(equalToObject(newTriple)), "the container should contain it");
 });
 test("when I get its source element", function() {
     assertThat(this.container.getSourceElement()[0], equalTo(this.element[0]), "it is the container itself");
 });
 test("when I create and execute the default query", function() {
-    var query = $.notepad.queryFromContainer(this.container);
+    var container = spy(this.container);
+    var query = $.notepad.queryFromContainer(container);
     query(function(triples) {
         ok(true, "the callback function should be called");
     });
 
-    verify(this.container, times(1)).triples();   // the query accessed the triples from the container
+    verify(container, times(1)).triples();   // the query accessed the triples from the container
 });
 test("when I create another container inside of it", function() {
     expect(2);
-    var query = spy($.notepad.queryFromContainer(this.container));
+    var container = spy(this.container);
+    var query = spy($.notepad.queryFromContainer(container));
     var newContainerElement = $('<ul>').appendTo(this.element).container({query: query});
     var newContainer = spy(newContainerElement.data('container'));
 
     newContainer.load();
 
     verify(query)();       // that function was called
-    verify(this.container, times(1)).triples();  //then the new container works on the triples of the parent container
+    verify(container, times(1)).triples();  //then the new container works on the triples of the parent container
 });
 
 
@@ -68,11 +89,6 @@ test("when I change the source container", function() {
     // then the container reloads
     this.dependantContainer.load();
     verify(this.sourceContainer,times(1)).triples();        // then I access the sourceContainer's triples
-});
-test("when I add a triple to it", function() {
-    var newTriple = new Triple(":anyuri", ":p", ":o");
-    this.container.add(newTriple);
-    assertThat(this.container.triples(), hasItem(equalToObject(newTriple)), "the container should contain it");
 });
 
 module("given a container with a URI", {
@@ -98,4 +114,3 @@ test("when I load a large result sets, then its containerFilter is displayed", f
     assertThat(this.container.filters(), truth(), "there is a filter container after the load ");
     assertThat(this.container.filters().getLines().length, greaterThan(2), "one cluster for all unique predicates");
 });
-

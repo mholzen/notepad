@@ -56,7 +56,7 @@
                 objectElement.addClass(column.getCssClass());
 
                 var object = objectElement.object().data('object');
-                object.setPredicate(column.element);
+                object.option('predicate', column.element);
             });
         },
         _destroy : function() {

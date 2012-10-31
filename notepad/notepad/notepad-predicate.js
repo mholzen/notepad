@@ -2,101 +2,83 @@
 
     $.widget("notepad.predicate", {
 
-        // An predicate is a DOM element that participates in a triple as the predicate
-        // It maintains consistency between the label and the URI
-
-        getNotepad: function() {
-            return this.element.closest('.notepad').data("notepad");
-        },
-
-        _setPredicateUri: function(uri) {
-            this.element.attr('rel',uri);            
-        },
-        _setPredicateLabel: function(label) {
-            this.element.text(label);
-        },
-        setPredicateUri: function(uri) {
-            this._setPredicateUri(uri);
-
-            var line = this;
-
-            this.getNotepad().getLabels(uri, function(labels) {
-                if (labels.length > 1) {
-                    throw new Error("More than one label for a given uri ("+labels+")");
-                }
-                if (labels.length == 0) {
-                    throw new Error("Can't find a label for a predicate uri");
-                }
-                line._setPredicateLabel(labels[0]);
-            });
-        },
-        setPredicateLabel: function(label) {
-            this._setPredicateLabel(label);
-            var line = this;
-            this.getNotepad().getPredicatesLabelsByLabel(label,function(results) {
-                var uri;
-                if (results.length > 1) {
-                    throw new Error("More than one predicate with the same label ("+results+")");
-                }
-                if (results.length == 0) {
-                    uri = $.notepad.getNewUri();
-                }
-                line._setPredicateUri(uri);
-            });
-        },
-        getPredicateLabel: function() {
-            return this.element.text();
-        },
-        getPredicateUri: function() {
-            var predicateUri = {
-                uri: this.element.attr('rel'),
-                element: this.element
-            };
-            predicateUri.__proto__.toString = function() { return this.uri; }
-            return predicateUri;
-        },
-        _getPredicateUriByLabel: function(label) {
-            var uri = this.getContainer().predicateMap[label];
-            if (uri === undefined) {
-                throw "cannot find a uri matching the label " + label;
+        setUri: function(uri) {
+            this.element.attr('rel', uri);
+            if (this.getLabel() === undefined) {
+                this.insertLabel();
             }
-            return uri;
-        },      
-        _getPredicateLabelByUri: function(uri) {
-            var map =  this.getContainer().predicateMap;
-            for (var label in map) {
-                if (map[label] == uri) {
-                    return label;
+        },
+        getUri: function() {
+            return this.element.closest('[rel]').attr('rel');
+        },
+        getLabel: function() {
+            return this.element.children('.notepad-label.notepad-predicate-label').data('label');
+        },
+        insertLabel: function() {
+            var element = $('<div class="notepad-predicate-label">').prependTo(this.element).label({uriElement: this.element, uriAttr: "rel"});
+        },
+        getSubject: function() {
+            return this.element.closest('[about]');
+        },
+        getObjects: function(object) {
+            var objects = this.element.children('.notepad-label').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
+            if (object) {
+                if (object.isUri()) {
+                    objects = objects.filter('[about='+object+']');
+                } else if (object.isLiteral()) {
+                    objects = objects.filter(function() { return $(this).text() == object; });
+                } else if (object.isBlank()) {
+                    throw new Error("cannot add a blank node");
+                } else {
+                    throw new Error("cannot add an unknown object type");
                 }
             }
-            throw "cannot find a label from the URI "+uri;
+            return objects.map(function(i,e) { return $(e).data('label'); });
+        },
+        getObjectLocation: function(object) {
+            var objects = this.getObjects(object);
+            var object;
+            if (object.length > 1) {
+                throw new Error ("should not have multiple locations for a given object");
+            }
+            if (objects.length === 0) {
+                object = this.insertObject();
+            } else {
+                object = objects[0];
+            }
+            return object;
+        },
+        insertObject: function() {
+            return $('<div>').appendTo(this.element).label().data('label');
+        },
+        add: function(triple) {
+            if (this.getUri() != triple.predicate) {
+                return;
+            }
+            var object = this.getObjectLocation(triple.object);
+            object.setObject(triple.object);
+        },
+
+        triples: function() {
+            var triples = new Triples(0);
+            if (this.getLabel() !== undefined && this.getLabel().triple() !== undefined) {
+                triples.push(this.getLabel().triple());
+            }
+            _.each(this.getObjects(), function(object) {
+                var triple = object.triple();
+                if (triple) {
+                    triples.push(triple);
+                }
+            });
+            return triples;
         },
 
         // Set up the widget
         _create : function() {
-
-            this.element.addClass('notepad-predicate').attr('contenteditable', 'true');
-
-            // How do change() and autocomplete() interact?
-            var notepad = this.getNotepad();
-            this.element.change(function(event) { 
-                line.setPredicateLabel( $(event.target).val() );
-            });
-
-            // Must turn on autocomplete *after* the element has
-            // been added to the document
-            this.element.autocomplete({
-                source: function(term,callback) {
-                    notepad.endpoint.getPredicatesLabelsByLabel(term.term,callback);
-                },
-
-                select : function(event,ui) {
-                    var line = $(event.target).closest('.notepad-predicate').data('predicate');
-                    line._setPredicateLabel(ui.item.label);
-                    line._setPredicateUri(ui.item.value);
-                    event.preventDefault();  // the default behaviour replaces the text with the value
-                }
-            });
+            this.element.addClass('notepad-predicate');
+            if (this.element.attr('rel')) {
+                this.setUri(this.element.attr('rel'));
+            }
         },
         _destroy : function() {
             this.element.removeClass("notepad-predicate").removeAttr('contenteditable');

@@ -1,75 +1,56 @@
+QUnit.file = "notepad-predicate.js: "
 module("given an empty element", {
     setup: function() {
         this.element = $("<div>");
     }
 });
-test("when I create a new object", function() {
-    this.element.object();
+test("when I create a new predicate", function() {
+    this.element.predicate();
 
-    var object = this.element.data('object');
-    assertThat(object.isLiteral(), not(truth()), "then object is not a literal");
-    assertThat(object.isUri(), not(truth()), "then object is not a URI");
+    var predicate = this.element.data('predicate');
+    assertThat(predicate, truth(), "the element has a predicate widget");
+    assertThat(predicate.getUri(), nil(), "it has no predicate uri");
 });
 
-
-module("given a element with text", {
+module("given a element within a subject", {
     setup: function() {
         this.initialText = "initial label";
-        this.element = $("<div>"+this.initialText+"</div>");
+        this.element = $('<div rel=":p">'+this.initialText+'</div>');
+
+        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.subjectElement = $('<div about=":s">').endpoint({endpoint: this.endpoint});
+
+        this.element.appendTo(this.subjectElement);
     }
 });
-test("when I create a new object", function() {
-    this.element.object();
-    var object = this.element.data('object');
-    assertThat(object.isLiteral(), truth(), "then object is a literal");
-    assertThat(object.isUri(), not(truth()), "then object is not a URI");
-    assertThat(object.getObjectLiteral(), equalTo(this.initialText), "then initial label is equal to the initial object text");
-    assertThat(object.getPredicate(), nil(), "it has no predicate uri");
+test("when I create a new predicate", function() {
+    this.element.predicate();
+    var predicate = this.element.data('predicate');
+    assertThat(predicate.getUri(), equalTo(':p'), "its predicate should be :p");
+    verify(this.endpoint,times(1)).execute();       // We tried to fetch the label
+    assertThat(predicate.getLabel(), truth(), "it has a label");
+    assertThat(predicate.getSubject(), truth(), "it has a subject");
 });
 
-
-module("given a element with an attribute 'about' its path", {
+module("given a predicate within a subject", {
     setup: function() {
-        this.element = $("<div>label</div>");
-        this.subject = $('<div about=":s"/>').append(this.element);
+        this.initialText = "initial label";
+        this.element = $('<div rel=":p">'+this.initialText+'</div>');
+
+        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.subjectElement = $('<div about=":s">').endpoint({endpoint: this.endpoint});
+
+        this.element.appendTo(this.subjectElement);
+        this.predicate = this.element.predicate().data('predicate');
     }
 });
-test("when I create a new object", function() {
-    this.element.object();
-    var object = this.element.data('object');
-
-    assertThat(object.getSubjectUri(), ":s", "it has a subject");
-    assertThat(object.getPredicate(), nil(), "it has no predicate uri");
+test("when I add a triple", function() {
+    var triple = new Triple(':s', ':p', "123");
+    this.predicate.add(triple);
+    assertThat(this.predicate.getObjects().length, equalTo(1), "it should have one object");
+    assertThat(this.predicate.getObjects()[0].triple(), equalToObject(triple), "it should have one object that has a triple");
+    assertThat(this.predicate.triples(), hasItem(equalToObject(triple)), "it contains the triple");
 });
-
-module("given a element with an attribute 'rel' in its path", {
-    setup: function() {
-        this.element = $("<div>label</div>");
-        this.predicate = $('<div rel=":p"/>').append(this.element);
-    }
-});
-test("when I create a new object", function() {
-    this.element.object();
-    var object = this.element.data('object');
-    assertThat(object.getPredicateUri(), ':p', "it finds the predicate uri");
-});
-
-module("given a element with attributes 'about' and 'rel' in its path", {
-    setup: function() {
-        this.element = $("<div>label</div>");
-        this.predicate = $('<div rel=":p"/>').append(this.element);
-        this.subject = $('<div about=":s"/>').append(this.predicate);
-
-    }
-});
-test("when I create a new object", function() {
-    this.element.object();
-    var object = this.element.data('object');
-
-    assertThat(object.getSubjectUri(), ':s', "it finds the subject uri");
-    assertThat(object.getPredicateUri(), ':p', "it finds the predicate uri");
-});
-
 
 module("given a new object", {
     setup: function() {
@@ -117,11 +98,6 @@ test("when I set a URI", function() {
     ok(this.object.isUri(), "it should be a URI");
     equal(this.object.getObjectUri(), ":uri", "it's literal value should be what was set");
     verify(this.endpoint,times(1)).execute();
-});
-test("when I configure its predicate to a specific element", function() {
-    var predicate = $('<div rel=":p">');
-    this.object.option('predicate', predicate);
-    assertThat(this.object.getPredicateUri(), equalTo(':p'), "it should find its predicate URI");
 });
 test("when I provide text, it should provide a URI or a literal", function(){
     this.element.text("a human readable label");
