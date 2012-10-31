@@ -29,7 +29,7 @@
     $.fn.findEndpoint = function() {
         var element = this.closest(":notepad-endpoint");
         if (element.length === 0) {
-            throw new Error("cannot find an element defining an endpoint");
+            throw new Error("cannot find an endpoint");
         }
         return element.data('endpoint').getEndpoint();
     }

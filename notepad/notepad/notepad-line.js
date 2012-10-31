@@ -215,7 +215,7 @@
                 return this._getContainerUri();
             } else if (this.getDirection() === BACKWARD) {
                 if (this.getUri() === undefined) {
-                    throw "a backward triple requires a URI";
+                    throw new Error("a backward triple requires a URI");
                 }
                 return this.getUri();
             }
@@ -287,7 +287,7 @@
             return "rdfs:label";
         },
         _setLinePredicateUri: function() {
-            throw "not yet implemented";
+            throw new Error("not yet implemented");
         },
         getLineLiteral: function() {
             return this.getObject().getObjectLiteral();
@@ -313,7 +313,7 @@
         setLineTriple: function(triple) {
             this.setUri(triple.subject);
             if (triple.predicate !== 'rdfs:label') {
-                throw "line triple predicate is not rdfs:label";
+                throw new Error("line triple predicate is not rdfs:label");
             }
             this._setLiteral(triple.object);
         },
@@ -350,7 +350,7 @@
                 return [];
             }
             if (this.getChildContainer() === undefined) {
-                throw "somehow, we can't find a child container anymore";
+                throw new Error("somehow, we can't find a child container anymore");
             }
             return this.getChildContainer().triples();
         },
@@ -414,7 +414,7 @@
 
             // Verify the container
             if(!this.getContainer()) {
-                throw "when creating a new line, should find a parent container";
+                throw new Error("when creating a new line, should find a parent container");
             }
 
             this.element.addClass("notepad-line");
