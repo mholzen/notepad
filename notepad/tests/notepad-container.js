@@ -1,9 +1,9 @@
 module("given a container with no uri", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
-        this.ul = $('<ul>').container().endpoint({endpoint: this.endpoint});
-        this.container = this.ul.data('container');
-        this.line = this.ul.find("li:first").data('line');
+        this.element = $('<ul>').container().endpoint({endpoint: this.endpoint});
+        this.container = this.element.data('container');
+        this.line = this.element.find("li:first").data('line');
     },
     teardown: function() {
         this.container.destroy();
@@ -13,8 +13,8 @@ test("when I load the content, then ", function() {
     raises(function() { this.container.load() } , /cannot /, "it should require the URI");
 });
 test("when I set the URI and load, then", function() {
-    this.ul.attr('about', ':s');    
-    assertThat(this.container.getSourceElement()[0], equalTo(this.ul[0]), "the source element for the container is itself");
+    this.element.attr('about', ':s');    
+    assertThat(this.container.getSourceElement()[0], equalTo(this.element[0]), "the source element for the container is itself");
 
     this.container.load();
 
@@ -24,9 +24,9 @@ test("when I set the URI and load, then", function() {
 module("given a container with the uri :s", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
-        this.ul = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
-        this.container = this.ul.data('container');
-        this.line = this.ul.find("li:first").data('line');
+        this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
+        this.container = this.element.data('container');
+        this.line = this.element.find("li:first").data('line');
     },
     teardown: function() {
         this.container.destroy();
