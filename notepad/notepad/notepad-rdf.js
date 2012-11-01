@@ -92,6 +92,9 @@
         isLiteral: function() {
             return (this.resource.type == 'literal');
         },
+        indexOf: function(v) {
+            return this.toString().indexOf(v);
+        },
         toString: function() {
             if (this.isBlank()) {
                 return this.toSparqlString();
