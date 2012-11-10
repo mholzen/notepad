@@ -586,6 +586,7 @@
 
             // Children collapse/expand
             var childrenToggle = $('<a>').addClass('childrenToggle');
+            var line = this;
             childrenToggle.click(function(event) {
                 line.childrenToggle();
             });
