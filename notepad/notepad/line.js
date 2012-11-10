@@ -503,10 +503,8 @@
                 predicate = this._getContainerDefaultPredicate();
             }
             if (this.options.initialTriple === undefined) {
+                // Set the initial predicate URI only if we are not setting an initial triple
                 this.setContainerPredicateUri(predicate);
-            } else {
-                c.log(this.options.initialTriple.predicate.toString());
-                this.setContainerPredicateUri(this.options.initialTriple.predicate);
             }
 
             this.predicate.change(function(event) {
@@ -600,8 +598,6 @@
 
         // Set up the line widget
         _create: function() {
-            var line = this;
-
             // Verify the container
             if(!this.getContainer()) {
                 throw new Error("when creating a new line, should find a parent container");
