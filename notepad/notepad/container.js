@@ -294,16 +294,12 @@
 
                 // dev:techdebt
                 // This could be instead modified by setting a triple in the endpoint of the container that defines the label for ... as being the <input> element
-                //filter.find('.notepad-fact > .notepad-predicate[rel="rdfs:label"] > .notepad-predicate-label').append('<input type=checkbox>');
                 filter.find('.notepad-fact').prepend('<input type=checkbox>');
             });
         },
         filters: function() {
             return this.element.children('.notepad-filters').data('container2');
-        }
-
-
-
+        },
     });
 
 }(jQuery));
