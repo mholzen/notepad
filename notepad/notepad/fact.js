@@ -79,6 +79,7 @@
                 this.setUri(this.element.attr('about'));
             }
             if (this.options.initialTriple !== undefined) {
+                this.setUri(this.options.initialTriple.subject);
                 this.add(this.options.initialTriple);
             }
         },
