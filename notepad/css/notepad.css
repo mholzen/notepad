@@ -211,8 +211,8 @@ div.notepad-object {
 }
 
 .uri {
-    color: #aaa;
-    font-family: courier, sans-serif;
+    color: #bbb;
+    /*font-family: courier, sans-serif;*/
     font-weight: 100;
 }
 
