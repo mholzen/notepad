@@ -70,7 +70,7 @@ test("when I add a triple where the container is the subject, then the container
     ok(line.getContainerPredicateUri(), ":p", "then the line's predicate should be :p");
     ok(line.getContainerPredicateLabel(), "P", "then the line's predicate label should be ...");
 
-    verify(this.endpoint,times(1)).getLabels();
+    verify(this.endpoint,times(2)).getLabels();
 });
 test("when I add a triple where the container is the object, then the container contains it", function() {
     var triple = new Triple(":s1", ":p", ":s");

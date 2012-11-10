@@ -68,15 +68,15 @@
         getAllLines: function() {
           return this.getAllLineElements().map(function(index, line) { return $(line).data('line'); } );  
         },
-        appendLine: function(line) {
+        appendLine: function(line, triple) {
             if (line === undefined) {
                 line = $('<li>');
             }
             if (line.appendTo === undefined) {
                 line = $('<li>').text(line);
             }
-            //line.appendTo(this.element).line({initialTriple: triple});
-            line.appendTo(this.element).line();
+            line.appendTo(this.element).line({initialTriple: triple});
+            //line.appendTo(this.element).line();
 
             return line.data('line');
         },
@@ -198,7 +198,7 @@
                 if (childLines.length == 1) {
                     line = $(childLines[0]).data('line');
                 } else {
-                    line = container.appendLine();
+                    line = container.appendLine(undefined, triple);
                 }
                 if (triple.object.toString() === 'http://localhost:3030/dev/699d1fd9-13f0-11e2-90e8-c82a1402d8a8') {
                     console.log('setting pred uri for our line ');

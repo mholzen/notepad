@@ -115,9 +115,6 @@
         },
         setContainerPredicateUri: function(uri, direction, triple) {
             direction = (direction !== undefined) ? direction : this.getDirection();
-
-            c.error("setContainerPredicateUri", this.element, uri.toString(), direction);
-
             this._setContainerPredicateUri(uri, direction);
 
             // if (triple === undefined && this.getContainerPredicateLabel() !== undefined) {
@@ -137,6 +134,7 @@
                 var label = labels[0];
 
                 line._setContainerPredicateLabel(label);
+
                 if ((uri.toString() === 'rdfs:member' || label === 'member') && direction === FORWARD) {
                     line.hideContainerPredicate();
                 } else {
@@ -478,21 +476,7 @@
             this.element.insertAfter(newPredecessor);
         },
 
-        // Set up the line widget
-        _create: function() {
-            var line = this;
-
-            // Verify the container
-            if(!this.getContainer()) {
-                throw new Error("when creating a new line, should find a parent container");
-            }
-
-            this.element.addClass("notepad-line");
-            
-            // Save the initial content of the line to later initialize the object with it.
-            var objectText = this.element.text();
-            this.element.text("");
-            
+        _createPredicate: function() {
             // Predicate toggle
             this.predicateToggle = $('<a>').addClass('predicateToggle');
             this.predicateToggle.click(function(){
@@ -518,8 +502,11 @@
             } else {
                 predicate = this._getContainerDefaultPredicate();
             }
-            if (this.options.initialTriple !== undefined) {
+            if (this.options.initialTriple === undefined) {
                 this.setContainerPredicateUri(predicate);
+            } else {
+                c.log(this.options.initialTriple.predicate.toString());
+                this.setContainerPredicateUri(this.options.initialTriple.predicate);
             }
 
             this.predicate.change(function(event) {
@@ -557,13 +544,14 @@
             } else {
                 newlinePredicateHidden = true;
             }
-            newlinePredicateHidden = true;
             if ( this.options.hidePredicateWhenRepeated && newlinePredicateHidden ) {
                 this.predicateToggle.addClass('hidden');
                 this.predicate.css('display', 'none');
                 separator.css('display', 'none');
             }
-            
+        },
+
+        _createColumnObjects: function() {
             // For all columns, create objects
             var line = this;
             _.each( this.getContainer().getColumns(), function(column) {
@@ -576,19 +564,20 @@
                 object.setPredicate(column);
                 object.setSubject(line);
             });
-
-
-            // OBJECT
+        },
+        _createObject: function(objectText) {
             var objectElement = $('<div>').text(objectText);
             objectElement.appendTo(this.element);                   // WORKS
             objectElement.object();
-
+        },
+        _createChildContainer: function() {
             // CHILD CONTAINER
             var childContainerElement = $('<ul>').appendTo(this.element).container();
             var childContainer = childContainerElement.data('container');
 
             { // TODO: refactor into container( {param: objectElement});
                 // set the URI on the child container to: get it to load based on the notepad-object
+                var objectElement = this.getObjectElement();
                 childContainer.option('sourceElement', objectElement);
                 objectElement.bind("objecturichange", function() {
                     if (!line.collapsed()) {
@@ -607,6 +596,27 @@
             // Initial state depends on the container
             var childrenCollapsed = this.getContainer().option('collapsed');
             this.childrenToggle(childrenCollapsed);
+        },
+
+        // Set up the line widget
+        _create: function() {
+            var line = this;
+
+            // Verify the container
+            if(!this.getContainer()) {
+                throw new Error("when creating a new line, should find a parent container");
+            }
+
+            this.element.addClass("notepad-line");
+            
+            // Save the initial content of the line to later initialize the object with it.
+            var objectText = this.element.text();
+            this.element.text("");
+            
+            this._createPredicate();
+            this._createColumnObjects();
+            this._createObject(objectText);
+            this._createChildContainer();
         },
 
         getChildrenToggle: function() {
