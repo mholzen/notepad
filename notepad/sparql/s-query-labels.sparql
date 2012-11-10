@@ -1,0 +1,15 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX ex: <http://example.com/#>
+PREFIX nmo: <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX notepad: <http://www.vonholzen.org/notepad#>
+PREFIX : <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html>
+PREFIX : <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#> 
+
+SELECT DISTINCT ?subject ?label
+WHERE {
+	?subject ?labelPredicate ?label FILTER regex(?label, "conta", "i")
+	{ ?labelPredicate rdfs:subPropertyOf rdfs:label } UNION { ?subject rdfs:label ?label }
+}

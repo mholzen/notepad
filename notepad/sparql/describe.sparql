@@ -1,0 +1,34 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX fn:   <http://www.w3.org/2005/xpath-functions#> 
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX : 	 <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
+
+CONSTRUCT {
+	?about ?predicateForward ?neighbourForward .
+	?neighbourBackward ?predicateBackward ?about .
+}
+WHERE
+{
+	LET (?about := 
+		<http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8>  # import
+		# :39f7a8ad-c245-c31d-9907-bb1266ce3417								# marc
+		# :a5d81a03-d2b7-3f00-ea64-b9c5159043b1
+	)
+
+	{ ?about ?predicateForward ?neighbourForward
+		BIND (?neighbourForward as ?neighbour)
+	}
+	UNION
+	{ ?neighbourBackward ?predicateBackward ?about
+		BIND (?neighbourBackward as ?neighbour)
+	}
+
+	#
+	# Filter content
+	#
+	
+		{ ?neighbour  nmo:primaryRecipient "Marc von Holzen <marc@vonholzen.org>" . }
+	
+}

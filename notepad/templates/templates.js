@@ -1,0 +1,73 @@
+$.notepad = $.notepad || {};
+$.notepad.templates = $.notepad.templates || {};
+
+$.notepad.templates.clusters = "CONSTRUCT { \n\
+	_:filter rdfs:label ?label1 . \n\
+	_:filter rdfs:count  ?count . \n\
+	_:filter notepad:filterByPredicate1 ?p1 . \n\
+	_:filter notepad:filterByObject1    ?o1 . \n\
+#	_:filter rdfs:label ?label2 . \n\
+#	_:filter rdfs:label ?label . \n\
+#	_:filter notepad:filterByPredicate2 ?p2 . \n\
+#	_:filter notepad:filterByObject2    ?o2 . \n\
+} \n\
+WHERE \n\
+{ \n\
+	BIND (bnode() as ?filters) \n\
+	{ \n\
+		SELECT (count (distinct *) as ?count) ?p1 ?o1 # ?p2 ?o2 \n\
+		WHERE \n\
+		{ \n\
+			{ \n\
+				# dev:techdebt The variables neighbourForward and neighbourBackward reference  \n\
+				# variables in describe.sparql \n\
+ \n\
+				SELECT (coalesce(?neighbourForward, ?neighbourBackward) AS ?s) \n\
+				WHERE { \n\
+					{{{graphPatterns}}} \n\
+				} \n\
+			} \n\
+			?s ?p1 ?o1 FILTER( ?p1 != nmo:content ) . \n\
+			?s ?p1 ?o1 FILTER( ?p1 != rdf:type ) . \n\
+			# OPTIONAL { ?o1 ?p2 ?o2 } . \n\
+		} \n\
+		GROUP BY ?p1 ?o1 # ?p2 ?o2 \n\
+ \n\
+		HAVING (?count > 1) \n\
+		 \n\
+		ORDER BY DESC(?count) \n\
+	} \n\
+ \n\
+	OPTIONAL { ?p1 rdfs:label ?p1Label } \n\
+	LET ( ?label1 := CONCAT( ?p1Label, \" is \", str(?o1), ' (', str(?count), ')') ) \n\
+ \n\
+	# OPTIONAL { ?p2 rdfs:label ?p2Label } \n\
+	# LET ( ?label := CONCAT('filter by ', ?label1, ' and ', ?label2)) \n\
+	# LET ( ?label2 := CONCAT( COALESCE(?p2Label, ?p2), '=\"', ?o2, '\"')) \n\
+} \n\
+";
+$.notepad.templates.coalesce = "SELECT (coalesce(?neighbourForward, ?neighbourBackward) AS ?s) \n\
+WHERE { \n\
+	{{{graphPatterns}}} \n\
+} \n\
+";
+$.notepad.templates.describe = "CONSTRUCT { \n\
+	?about ?predicateForward ?neighbourForward . \n\
+	?neighbourBackward ?predicateBackward ?about . \n\
+} \n\
+WHERE { \n\
+ \n\
+	LET ( ?about := {{{about}}} ) \n\
+ \n\
+	{ ?about ?predicateForward ?neighbourForward \n\
+		BIND (?neighbourForward as ?neighbour) \n\
+	} \n\
+	UNION \n\
+	{ ?neighbourBackward ?predicateBackward ?about \n\
+		BIND (?neighbourBackward as ?neighbour) \n\
+	} \n\
+ \n\
+	# {{{filters}}} \n\
+ \n\
+} \n\
+";

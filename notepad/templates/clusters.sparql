@@ -1,0 +1,44 @@
+CONSTRUCT {
+	_:filter rdfs:label ?label1 .
+	_:filter rdfs:count  ?count .
+	_:filter notepad:filterByPredicate1 ?p1 .
+	_:filter notepad:filterByObject1    ?o1 .
+#	_:filter rdfs:label ?label2 .
+#	_:filter rdfs:label ?label .
+#	_:filter notepad:filterByPredicate2 ?p2 .
+#	_:filter notepad:filterByObject2    ?o2 .
+}
+WHERE
+{
+	BIND (bnode() as ?filters)
+	{
+		SELECT (count (distinct *) as ?count) ?p1 ?o1 # ?p2 ?o2
+		WHERE
+		{
+			{
+				# dev:techdebt The variables neighbourForward and neighbourBackward reference 
+				# variables in describe.sparql
+
+				SELECT (coalesce(?neighbourForward, ?neighbourBackward) AS ?s)
+				WHERE {
+					{{{graphPatterns}}}
+				}
+			}
+			?s ?p1 ?o1 FILTER( ?p1 != nmo:content ) .
+			?s ?p1 ?o1 FILTER( ?p1 != rdf:type ) .
+			# OPTIONAL { ?o1 ?p2 ?o2 } .
+		}
+		GROUP BY ?p1 ?o1 # ?p2 ?o2
+
+		HAVING (?count > 1)
+		
+		ORDER BY DESC(?count)
+	}
+
+	OPTIONAL { ?p1 rdfs:label ?p1Label }
+	LET ( ?label1 := CONCAT( ?p1Label, " is ", str(?o1), ' (', str(?count), ')') )
+
+	# OPTIONAL { ?p2 rdfs:label ?p2Label }
+	# LET ( ?label := CONCAT('filter by ', ?label1, ' and ', ?label2))
+	# LET ( ?label2 := CONCAT( COALESCE(?p2Label, ?p2), '="', ?o2, '"'))
+}

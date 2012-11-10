@@ -1,0 +1,8 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+
+SELECT ?member
+WHERE {
+	?import rdfs:member ?member
+		FILTER (sameTerm(?import, <http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8> )) .
+}

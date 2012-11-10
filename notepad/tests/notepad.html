@@ -19,14 +19,20 @@
 <link  href="../external/jquery.contextMenu.css" type="text/css" rel="stylesheet" media="screen" />
 
 <!-- Notepad code -->
-<script src="../notepad/notepad-rdf.js" type="text/javascript"></script>
+<script src="../notepad/endpoint.js" type="text/javascript"></script>
+<script src="../notepad/rdf.js" type="text/javascript"></script>
 <script src="../notepad/notepad.js" type="text/javascript"></script>
-<script src="../notepad/notepad-container.js" type="text/javascript"></script>
-<script src="../notepad/notepad-line.js" type="text/javascript"></script>
-<script src="../notepad/notepad-sparql.js" type="text/javascript"></script>
-<script src="../notepad/notepad-column.js" type="text/javascript"></script>
-<script src="../notepad/notepad-object.js" type="text/javascript"></script>
-<script src="../notepad/notepad-predicate.js" type="text/javascript"></script>
+<script src="../notepad/container.js" type="text/javascript"></script>
+<script src="../notepad/label.js" type="text/javascript"></script>
+<script src="../notepad/fact.js" type="text/javascript"></script>
+<script src="../notepad/container2.js" type="text/javascript"></script>
+<script src="../notepad/line.js" type="text/javascript"></script>
+<script src="../notepad/sparql.js" type="text/javascript"></script>
+<script src="../notepad/column.js" type="text/javascript"></script>
+<script src="../notepad/object.js" type="text/javascript"></script>
+<script src="../notepad/predicate.js" type="text/javascript"></script>
+<script src="../templates/templates.js" type="text/javascript"></script>
+<script src="../notepad/query.js" type="text/javascript"></script>
 
 <link href="../css/notepad.css" rel="stylesheet" type="text/css" media="screen" />
 
@@ -39,9 +45,12 @@ var notepad;
 var container;
 var line;
 var object;
-var log = new Log(Log.DEBUG, Log.consoleLogger);
+var log = console;
+var c = log;
 
 $(function() {
+    console.__proto__.debug = function() { };
+
     devFusekiEndpoint = new FusekiEndpoint("http://localhost:3030/dev");
     $("#notepad").notepad({endpoint: devFusekiEndpoint});
 

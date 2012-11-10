@@ -1,0 +1,23 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+
+SELECT (count (distinct *) as ?count) ?p ?o
+
+# can't seem to use an aggregate with CONSTRUCT:
+# CONSTRUCT (count (distinct *) as ?count) ?p ?o
+
+WHERE {
+
+	?import rdfs:member ?s 
+		# . 
+		FILTER (sameTerm(?import, <http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8> )) .
+		# . ?import rdfs:label "Emails, imported 2012-10-11 15:10:05.941303" .
+
+	?s ?p ?o FILTER(?p != nmo:content) .
+
+}
+GROUP BY ?p ?o
+
+HAVING (?count >= 0)
+
+ORDER BY DESC(?count)

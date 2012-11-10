@@ -1,0 +1,2 @@
+select concat("1", "2")
+where { ?s ?p ?o }

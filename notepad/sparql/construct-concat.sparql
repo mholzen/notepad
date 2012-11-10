@@ -1,0 +1,7 @@
+CONSTRUCT {
+	?s ?p ?label .
+} 
+where { 
+	?s ?p ?o .
+	LET ( ?label := concat("1", "2") ) 
+}

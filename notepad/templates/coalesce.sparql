@@ -1,0 +1,4 @@
+SELECT (coalesce(?neighbourForward, ?neighbourBackward) AS ?s)
+WHERE {
+	{{{graphPatterns}}}
+}

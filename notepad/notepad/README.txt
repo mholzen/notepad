@@ -28,6 +28,25 @@ It defaults to <div>{{{rdfs:label}}}</div>
 
 Its subject and predicate can be set to ?reason
 
+CONTAINER2
+=========
+A container2 is a DOM element that provides editing (display and save) a collection of triples.
+It maintains consistency between DOM elements and triples
+A container
+    - has the collection interface (isEmpty, contains, add, remove, addAll, removeAll, clear) :  for TRIPLES and for DOM elements.
+    =>  e = addTriple(t)
+    =>  t = addElement(e)
+
+    - has an optional query
+        - requires an endpoint (searches up the DOM for #notepad-endpoint) or #notepad-notepad
+    - has a element widget (defaults to notepad-line)
+        - to: delegate displaying and editing members of the collection
+    - executes the query using (at minimum) the URI as a parameter
+
+    POSSIBLE FUTURE CHANGES:
+    - right now, this is essentially a "named container".  When we remove the need to have a URI; make a container simply about displaying a list of triples returned by a query
+
+
 CONTAINER
 =========
 A container is a DOM element that provides editing (display and save) a collection of triples relating to a given URI.
@@ -45,6 +64,7 @@ A container
 
     POSSIBLE FUTURE CHANGES:
     - right now, this is essentially a "named container".  When we remove the need to have a URI; make a container simply about displaying a list of triples returned by a query
+
 
 LINE
 ====

@@ -1,0 +1,20 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+
+SELECT (count (distinct *) as ?count) ?p1 ?o1 ?p2 ?o2
+
+WHERE {
+
+	?import rdfs:member ?s 
+		FILTER (sameTerm(?import, <http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8> )) .
+
+	?s ?p1 ?o1
+		FILTER(?p1 != nmo:content) .
+
+	OPTIONAL { ?o1 ?p2 ?o2 } .
+}
+GROUP BY ?p1 ?o1 ?p2 ?o2
+
+HAVING (?count >= 0)
+
+ORDER BY DESC(?count)

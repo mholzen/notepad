@@ -1,0 +1,73 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX fn:   <http://www.w3.org/2005/xpath-functions#>
+PREFIX notepad:   <http://www.vonholzen.org/instruct/notepad#>
+PREFIX : 	 <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
+
+construct { 
+	_:filter rdfs:label ?label .
+	_:filter rdfs:card  ?count .
+	_:filter notepad:filterByPredicate1 ?p1 .
+	_:filter notepad:filterByObject1    ?o1 .
+	_:filter notepad:filterByPredicate2 ?p2 .
+	_:filter notepad:filterByObject2    ?o2 .
+}
+
+WHERE {
+	{
+		SELECT (count (distinct *) as ?count) ?p1 ?o1 ?p2 ?o2
+		WHERE {
+
+			#
+			# clusters are computed, given a list of URIs
+			#
+			# Given a graph specified with { ?s ?p ?o }, how can I get the list of URIs (both subjects and objects)?
+
+			# EXTRACT FROM GRAPH  INTO :s
+			# - subjects
+			# - object URIs
+			# EXCLUDE
+			# - predicates
+			# - object literals
+
+			#
+			# START: Must come from the source query
+			#
+			{
+				SELECT (?neighbour as ?s)
+				WHERE
+				{
+					LET (?about := 
+						<http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8>
+						# :39f7a8ad-c245-c31d-9907-bb1266ce3417
+					)
+					{ ?about ?p1 ?neighbour }
+					UNION
+					{ ?neighbour ?p2 ?about }
+				}
+			}
+#				# optional filter
+#				?s nmo:primaryRecipient "Marc von Holzen <marc@vonholzen.org>" .
+
+			#
+			# END
+			#
+
+			?s ?p1 ?o1 FILTER( ?p1 != nmo:content ) .
+
+			?s ?p1 ?o1 FILTER( ?p1 != rdf:type ) .
+
+			OPTIONAL { ?o1 ?p2 ?o2 } .
+		}
+		GROUP BY ?p1 ?o1 ?p2 ?o2
+
+		HAVING (?count > 1)
+		
+		ORDER BY DESC(?count)
+	}
+
+	OPTIONAL { ?p1 rdfs:label ?p1Label }
+	OPTIONAL { ?p2 rdfs:label ?p2Label }
+	LET ( ?label := CONCAT("filter by '", ?p1Label, "' and '", ?p2Label, "'") )
+}

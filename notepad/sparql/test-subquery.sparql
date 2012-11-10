@@ -1,0 +1,41 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX fn:   <http://www.w3.org/2005/xpath-functions#> 
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX : 	 <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
+
+
+
+
+#CONSTRUCT {
+#	#?s rdf:labelMinCount 1 
+#	?s ?p ?o
+#}
+#WHERE {
+#	?s rdfs:label ?label
+#	let (?p := rdf:labelMinCount )
+#	let (?o := 1)
+#}
+
+
+construct {
+	?s ?p ?o
+}
+where
+{
+	{ ?s ?p ?o filter (?s in ( :b55be30a-9ec0-f084-2a47-d5489728e417 )) }
+
+	{
+	 	{
+			#?sX rdf:labelMinCount 1 
+	 		let (?s := ?sX)
+	 		let (?p := ?pX)
+	 		let (?o := ?oX)
+			?sX rdfs:label ?labelX
+			let (?pX := rdf:labelMinCount )
+			let (?oX := 1)
+		}
+	}
+
+}
