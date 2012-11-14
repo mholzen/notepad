@@ -1,7 +1,7 @@
 @CHARSET "UTF-8";
 
 body {
-    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;    
+    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
 }
 
 .notepad-fact > .notepad-label {
@@ -16,6 +16,24 @@ body {
     display: inline-block;
 }
 
+#icons a {
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    float: left;
+}
+#icons .label {
+    opacity: 0;
+}
+#icons a {
+    text-decoration: none;
+}
+#icons a:hover .label {
+    opacity: 1;
+    color: #bbb;
+    text-align: center;
+}
 
 #container {
     margin-left: auto;
@@ -24,6 +42,7 @@ body {
     border: solid 1px #888;
     border-radius: 5px;
     padding: 20px;
+    clear: both;
 }
 
 #container h2 {
