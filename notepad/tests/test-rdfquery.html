@@ -1,17 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:dc="http://purl.org/dc/elements/1.1/">
 <head>
 
 <script src="../external/qunit.js" type="text/javascript"></script>
 <link href="../external/qunit.css" type="text/css" rel="stylesheet" media="screen" />
+<script src="../external/jsmockito-1.0.4.js" type="text/javascript"></script>
+<script src="../external/jshamcrest-0.5.2.js" type="text/javascript"></script>
+<script src="qunit-additions.js" type="text/javascript"></script>
 
 <script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
 <script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
 <script src="../external/jquery.rdfquery.rules-1.0.js" type="text/javascript"></script>
+<script src="../external/jquery.rdfquery.rdfa-1.0.js" type="text/javascript"></script>
+<script src="../external/jquery.rdf.turtle.js" type="text/javascript"></script>
 <script src="../notepad/sparql.js" type="text/javascript"></script>
 
 <script>
     $(document).ready(function() {
+
+        JsMockito.Integration.QUnit();
+        JsHamcrest.Integration.QUnit();
 
         var ns = {
             rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -46,9 +54,8 @@
             // BUG: The following test fails if the previous test is not executed right before it
             // http://code.google.com/p/rdfquery/issues/detail?id=30
             equal($.rdf.literal('"\\""').toString(), '"\\""');
-            });
         });
-
+        
         test("can create a resource", function() {
             var resource = $.rdf.resource('rdf:foo', {namespaces: {rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}});
             equal(resource.value.toString(), "http://www.w3.org/1999/02/22-rdf-syntax-ns#foo");
@@ -104,7 +111,9 @@
             var graph = $.rdf.databank();
             graph.add(getTriple());
             var rdf = $.rdf( {databank: graph });
-            log.debug(rdf.databank.size());
+            console.debug(rdf.databank.size());
+            console.debug(JSON.stringify(rdf.databank.dump()));
+            console.debug(rdf.databank.dump({format: "text/turtle"}));
             equal(rdf.where('?s ?p ?o').length, 1, "the rdf object should contain one triple");
         });
 
@@ -134,6 +143,18 @@
             equal(data.size(), 4);
             equal(data.triples()[2], $.rdf.triple('<#me2> ex:pred "123"', { namespaces: ns }));
         });
+
+        test("rdfa", function() {
+            //var element = $('<div prefix="notepad: http://www.vonholzen.org/instruct/notepad"> <div about="notepad:s" rel="notepad:p" resource="notepad:o"> <div>');
+            var element = $('<p id="http://ex.com#info">This paper was written by <span rel="http://ex.com#creator" resource="#me"><span property="http://ex.com#name">Ben Adida</span>.</span></p>');
+            element.appendTo("body");
+            $('#main').html('<p>This photo was taken by <span class="author" about="photo1.jpg" property="dc:creator">Mark Birbeck</span>.</p>');
+            var rdf = $('#main > p > span').rdf();
+            assertThat(rdf.databank.triples().length, equalTo(1), "there should be one triple");
+            var dump = rdf.databank.dump({format: "text/turtle"});
+            assertThat(dump, containsString("photo1.jpg"));
+        });
+
         
     });
 </script>
@@ -147,6 +168,7 @@
     <ol id="qunit-tests"></ol>
     <div id="qunit-fixture">test markup, will be hidden</div>
     <div id="notepad-container"><div id="notepad"/></div>
+    <div id="main"/>
 </body>
 
 </html>
