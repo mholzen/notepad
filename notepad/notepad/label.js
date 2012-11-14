@@ -145,16 +145,29 @@
         },
 
         getPredicateElement: function() {
-            return this.element.closest('[rel]');
+            var objectElement = this.options.uriElement || this.element;
+            var predicateElement = objectElement.closest('[rel]');
+            if (predicateElement.length > 0 && this.options.uriElement && predicateElement[0] === this.options.uriElement[0]) {
+                return undefined;
+            }
+            return predicateElement;
         },
         getPredicateUri: function() {
             return this.getPredicateElement().attr('rel');
         },
         getSubjectElement: function() {
+            var predicateElement = this.getPredicateElement();
+            if (predicateElement === undefined) {
+                return undefined;
+            }
             return this.getPredicateElement().closest('[about]');      // TODO: this should come from notepad-predicate, shouldn't it?
         },
         getSubjectUri: function() {
-            return this.getSubjectElement().attr('about');
+            var subjectElement = this.getSubjectElement();
+            if (subjectElement === undefined) {
+                return undefined;
+            }
+            return subjectElement.attr('about');
         },
         getResource: function() {
             if (this.isLiteral()) {
@@ -179,7 +192,7 @@
                 return undefined;
             }
             return new Triple(subject, predicate, resource);
-                },
+        },
         labelTriple: function() {
             if (!this.isUri() || !this.getLiteral()) {
                 return undefined;
@@ -188,9 +201,11 @@
         },
         triples: function() {
             var triples = new Triples(0);
-            triples.add(this.triple());
-            if (this.isUri()) {
-                triples.add(this.labelTriple());
+            if (this.triple() !== undefined) {
+                triples.push(this.triple());
+            }
+            if (this.isUri() && this.labelTriple() !== undefined) {
+                triples.push(this.labelTriple());
             }
             return triples;
         },

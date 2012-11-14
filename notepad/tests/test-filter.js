@@ -32,23 +32,57 @@ asyncTest("query", function() {
     var about = new Resource(this.emails);
     var clusters = $.notepad.clusterQuery.execute(this.endpoint, {about: about.toSparqlString()}, function(triples) {
         container2.addAllTriples(triples);
+
+        container2.element.find('.notepad-fact').prepend('<input type="checkbox">');      // This should come from sp:
+
         assertThat(triples.length, greaterThan(0), "it should return some triples");
         start();
     });
 
+
 });
 
-skippedTest("filter", function() {
-    var parent = $('<ul>').container().endpoint({endpoint: this.endpoint}).prependTo($("#fixture"));
-    
-    parent.setUri(this.emails);
-    
-    assertThat(parent.filters(), not(nil()), "the container should create filters");
+asyncTest("filter a simple describe query", function() {
 
-    parent.filters().find("input:eq(0)").attr("checked", "checked");
+    var filter = new Triples(
+        new Triple("_:", "sp:predicate",    "nmo:primaryRecipient"),
+        new Triple("_:", "sp:object",       "Marc von Holzen <marc@vonholzen.org>")
+        );
 
-    assertThat(parent.getQuery(), containsString("Can you endorse me"), "the query uses the filter");
+    var query = $.notepad.describeQuery.appendTriplePattern(filter);
+    var about = new Resource(this.emails);
+    query.execute(this.endpoint, {about: about.toSparqlString()}, function(triples) {
+        console.log(triples.toPrettyString());
+        assertThat(triples.length, greaterThan(0), "it should return some triples");
+        start();
+    });
+
+    // var parent = $('<ul>').container().endpoint({endpoint: this.endpoint}).prependTo($("#fixture"));    
+    // parent.setUri(this.emails);
+    // assertThat(parent.filters(), not(nil()), "the container should create filters");
+    // parent.filters().find("input:eq(0)").attr("checked", "checked");
+    // assertThat(parent.getQuery(), containsString("Can you endorse me"), "the query uses the filter");
 });
+
+module("given a container with filters", {
+    setup: function() {
+        this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
+        this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
+        this.container = this.element.data('container');
+        this.container._createFilters();
+    }
+});
+test("when a filter is selected, it appends it to the query", function() {
+    var filters = this.container.filters();     // A container2
+
+    filters.addTriple(new Triple("_:filter", "sp:predicate", "ex:foo"));
+    filters.element.find('.notepad-fact').prepend('<input type=checkbox>');      // This should come from sp:
+    this.container.filters().element.find('input:eq(0)').attr('checked', true);
+
+    assertThat(this.container.getQuery().toSparql(), containsString("#foo"));
+});
+
+
 
 
 module("given a container with no uri", {
@@ -91,7 +125,7 @@ test("when I create and execute the default query", function() {
 
     verify(container, times(1)).triples();   // the query accessed the triples from the container
 });
-test("when I create another container inside of it", function() {
+skippedTest("when I create another container inside of it", function() {
     expect(2);
     var container = spy(this.container);
     var query = spy($.notepad.clustersFromContainer(container));
@@ -119,11 +153,12 @@ module("given a container with a URI", {
     }
 });
 
-test("when I load a large result sets, then its containerFilter is displayed", function() {
+skippedTest("when I load a large result sets, then its containerFilter is displayed", function() {
     var test = this;
     when(this.endpoint).describe(":s", anything()).then(function() { callback = arguments[1]; callback(test.largeTriples); });
 
     assertThat(this.container.filters(), not(truth()), "there is no filter before loading the parent");
+
     this.container.load();
 
     assertThat(this.container.filters(), truth(), "there is a filter container after the load ");

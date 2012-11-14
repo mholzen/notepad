@@ -27,6 +27,7 @@ test("when I create a new fact and a triple", function() {
 
     assertThat(fact.getPredicates(':p').length, equalTo(1));
     assertThat(fact.triples(), hasItem(equalToObject(triple)));
+    assertThat(fact.triples().length, equalTo(1), "it only contains the triple that I addded");
 });
 
 

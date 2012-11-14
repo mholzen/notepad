@@ -86,8 +86,7 @@
         },
         _destroy : function() {
             this.element.removeClass("notepad-predicate").removeAttr('contenteditable');
-        },
-
+        }
     });
 
 }(jQuery));

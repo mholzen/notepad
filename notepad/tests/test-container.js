@@ -19,7 +19,7 @@ test("when I set the URI and load, then", function() {
 
     this.container.load();
 
-    verify(this.endpoint, times(1)).describe();
+    verify(this.endpoint, times(1)).execute();
 });
 
 module("given a container with the uri :s", {
@@ -166,7 +166,7 @@ asyncTest("when I configure a container to retrieve triples from another contain
     });
     sourceElement.endpoint({endpoint: endpoint});
 
-    var containerElement = $('<ul>').container({query: $.notepad.queryFromObject(sourceElement), sourceElement: sourceElement});
+    var containerElement = $('<ul>').container({query: $.notepad.describeObject(sourceElement), sourceElement: sourceElement});
     var container = containerElement.data('container');
 
     containerElement.endpoint({endpoint: endpoint});        // This container needs an endpoint to retrieve labels
@@ -174,7 +174,7 @@ asyncTest("when I configure a container to retrieve triples from another contain
     container.load();
 
     setTimeout( function() {
-        verify(endpoint, times(1)).describe(":uri");
+        verify(endpoint, times(1)).execute();
 
         start();
     }, 200);

@@ -1,12 +1,13 @@
 CONSTRUCT {
-	_:filter rdfs:label ?label1 .
-	_:filter rdfs:count  ?count .
-	_:filter notepad:filterByPredicate1 ?p1 .
-	_:filter notepad:filterByObject1    ?o1 .
+	_:filter rdfs:label   ?label1 .
+	_:filter rdfs:count   ?count .
+	_:filter sp:predicate ?p1 .
+	_:filter sp:object    ?o1 .
+
 #	_:filter rdfs:label ?label2 .
 #	_:filter rdfs:label ?label .
-#	_:filter notepad:filterByPredicate2 ?p2 .
-#	_:filter notepad:filterByObject2    ?o2 .
+#	_:filter sp:predicate2 ?p2 .
+#	_:filter sp:object2    ?o2 .
 }
 WHERE
 {

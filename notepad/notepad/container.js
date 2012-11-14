@@ -41,10 +41,15 @@
             return this.getSourceElement().attr('about');
         },
         getQuery: function() {
-            if (this.options.query !== undefined) {
-                return this.options.query;
+            var query = this.options.query || $.notepad.describeObject(this.getSourceElement());
+
+            if (this.filters()) {
+                //var filters = this.filters().element.find(":checked").triples();
+                var filters = this.filters().element.find(":checked").parent().each(function(i,element) {
+                    query = query.appendTriplePattern($(element).data('fact').triples());
+                });
             }
-            return $.notepad.queryFromObject(this.getSourceElement());
+            return query;
         },
         getNotepad: function() {
             return this.element.parents('.notepad').data("notepad");
@@ -150,7 +155,7 @@
         },
         load: function() {
             var container = this;
-            this.getQuery()(function(triples) {
+            this.getQuery().execute(this.element.findEndpoint(), {}, function(triples) {
 
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
                     container.option('collapsed', true);
@@ -289,12 +294,19 @@
             var filter = $('<div class="notepad-filters">').prependTo(this.element).container2();
             var container2 = filter.data('container2');
             var about = new Resource(this.getUri());
+            var container = this;
             var clusters = $.notepad.clusterQuery.execute(this.element.findEndpoint(), {about: about.toSparqlString()}, function(triples) {
                 container2.addAllTriples(triples);
 
                 // dev:techdebt
                 // This could be instead modified by setting a triple in the endpoint of the container that defines the label for ... as being the <input> element
-                filter.find('.notepad-fact').prepend('<input type=checkbox>');
+                filter.find('.notepad-fact').prepend('<input type="checkbox">');
+                // filter.find('.notepad-fact').wrap('<input type="checkbox">');
+                filter.find('input').click(function() {
+                    container.element.find(":notepad-line").remove();
+                    container2.element.find("input:not(:checked)").parent().remove();
+                    container.load();
+                })
             });
         },
         filters: function() {

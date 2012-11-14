@@ -1,31 +1,6 @@
 (function($) {
 
-    $.notepad = $.notepad || {};
-
-    $.notepad.queryFromObject = function(element) {
-        var endpoint = element.findEndpoint();
-        var uri = element.data('object') ? element.data('object').getUri() : element.attr('about');
-        return function(callback) {
-            endpoint.describe(uri, callback);
-        }
-    }
-    $.notepad.clustersFromContainer = function(container) {
-        return function(callback) {
-            var clusterTriples = $.notepad.clusterFromTriples(container.triples());
-            callback(clusterTriples);
-        }
-    }
-    $.notepad.query = function(element) {
-        var container = element.data('container');
-        if (container) {
-            return $.notepad.clustersFromContainer(container);
-        }
-        if (element.attr('about')) {
-            return $.notepad.queryFromObject(element);
-        }
-        throw "cannot determine the type of query to create for element"+element;
-    }
-
+$.notepad = $.notepad || {};
 
 FusekiEndpoint = function(uri) {
     this.uri = uri;

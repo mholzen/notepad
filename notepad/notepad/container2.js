@@ -14,17 +14,16 @@
 
         // elementClass widget requirements
         // --------------------------------
-        // elementClass = jQuery.elementFactory()
+        // elementClass = jQuery.elementFactory( {initialTriple: triple })
         // elementClass.triples()
-        // elementClass.addTriple()
-        // elementClass.setUri()  --- might not be needed
+        // elementClass.addTriple(triple)
         // PROBABLY: elementClass.removeTriple()
 
         // A container should act as a "set of elements, where two elements e1, e2 are equal iff e1.getUri() === e2.getUri()"
+        // We need a hashCode(element) and a hashCode(triple)
 
         // The implementation (element) is offering a List interface
 
-        // We need a hashCode(element) and a hashCode(triple)
     
         options: {
             elementClass: 'notepad-fact',

@@ -21,6 +21,7 @@ test("when add a triple ", function() {
     var triple = new Triple(':a', ':b', ':c');
     this.container.addTriple(triple);
     assertThat(this.container.triples().expresses(triple), truth(), "the container should express this triple");
+    assertThat(this.container.triples().length, equalTo(1), "the container should have only 1 triple");
 });
 
 test("when add two triples with the same subject", function() {

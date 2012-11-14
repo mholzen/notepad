@@ -2,14 +2,15 @@ $.notepad = $.notepad || {};
 $.notepad.templates = $.notepad.templates || {};
 
 $.notepad.templates.clusters = "CONSTRUCT { \n\
-	_:filter rdfs:label ?label1 . \n\
-	_:filter rdfs:count  ?count . \n\
-	_:filter notepad:filterByPredicate1 ?p1 . \n\
-	_:filter notepad:filterByObject1    ?o1 . \n\
+	_:filter rdfs:label   ?label1 . \n\
+	_:filter rdfs:count   ?count . \n\
+	_:filter sp:predicate ?p1 . \n\
+	_:filter sp:object    ?o1 . \n\
+ \n\
 #	_:filter rdfs:label ?label2 . \n\
 #	_:filter rdfs:label ?label . \n\
-#	_:filter notepad:filterByPredicate2 ?p2 . \n\
-#	_:filter notepad:filterByObject2    ?o2 . \n\
+#	_:filter sp:predicate2 ?p2 . \n\
+#	_:filter sp:object2    ?o2 . \n\
 } \n\
 WHERE \n\
 { \n\

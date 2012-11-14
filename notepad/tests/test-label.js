@@ -102,12 +102,14 @@ test("when I create a new label", function() {
     var label = this.element.label().data('label');    
     label.option('uriElement', this.parentElement);
 
-    assertThat(label.isLiteral(),   not(truth()),   "then label is not a literal");
-    assertThat(label.isUri(),       truth(),        "then label is a URI");
+    assertThat(label.isLiteral(),      not(truth()),    "then label is not a literal");
+    assertThat(label.isUri(),          truth(),         "then label is a URI");
+    assertThat(label.triple(),         nil(),           "it has no triples");
+    assertThat(label.labelTriple(),    nil(),           "it has no triples");
+    assertThat(label.triples().length, equalTo(0),      "it has no triples");
 
     verify(this.endpoint,times(1)).execute();       // The endpoint should be queried for a label
 });
-
 function givenANewLabel(world) {
     givenAnElement(world);
     world.label = world.element.label({autocomplete: true}).data('label');
@@ -171,6 +173,19 @@ test("when I create a new label", function() {
     var label = this.element.data('label');
     assertThat(label.getSubjectUri(),   truth(), "it has a subject");
     assertThat(label.getPredicateUri(), truth(), "it has a predicate");
+});
+
+module("given an element within a subject and predicate", {
+    setup: function() {
+        this.subjectElement = $('<div about=":s">');
+        this.predicateElement = $('<div rel=":p">').appendTo(this.subjectElement);
+    }
+});
+test("when I create a new label to describe the predicate", function() {
+    var element = $('<div>').appendTo(this.predicateElement);
+    var label = element.label({uriElement: this.predicateElement, uriAttr: "rel"}).data('label');
+    assertThat(label.getResource(), ":p",  "it has no object");
+    assertThat(label.triple(),      nil(),      "it has no triples");
 });
 
 
