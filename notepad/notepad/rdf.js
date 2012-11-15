@@ -10,7 +10,8 @@
         ex:         "http://example.com/#",
         nmo:        "http://www.semanticdesktop.org/ontologies/nmo/#",
         notepad:    "http://www.vonholzen.org/instruct/notepad/#",
-        '':         $.uri.base() + '#',
+        sp:         "http://spinrdf.org/sp#",
+        '':         $.uri.base() + (($.uri.base().toString().indexOf('#') === -1) ? '#' : ''),
     };
     $.notepad.DEFAULT_NAMESPACES = DEFAULT_NAMESPACES;
 
