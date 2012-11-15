@@ -238,3 +238,9 @@ div.notepad-object {
 .notepad-label {
     display: inline-block;
 }
+
+.turtle {
+    font-family: courier;
+    font-size: small;
+    white-space: pre;
+}
