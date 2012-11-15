@@ -56,7 +56,6 @@
         getEndpoint: function () {
             return this.element.findEndpoint();
         },
-
         getDirection: function() {
             if (this.predicate.attr(getAttrName(FORWARD))) {
                 return FORWARD;
@@ -475,7 +474,13 @@
             // Move current line to parent
             this.element.insertAfter(newPredecessor);
         },
+        _getPredicateWidget: function() {
+            return this.element.children(":notepad-predicate").data('predicate');
+        },
+        _createPredicateWidget: function() {
+            var element = $('<div>').appendTo(this.element).predicate();
 
+        },
         _createPredicate: function() {
             // Predicate toggle
             this.predicateToggle = $('<a>').addClass('predicateToggle');
@@ -490,6 +495,8 @@
                     if (action == 'delete') {
                         ele.toggleClass('delete');
                         return;
+                    } else if (action == 'toggleDirection') {
+                        ele.data('predicate').toggleDirection();
                     }
                     throw ("unknown action from contextmenu", action);
                 });
@@ -569,7 +576,6 @@
             objectElement.object();
         },
         _createChildContainer: function() {
-            // CHILD CONTAINER
             var childContainerElement = $('<ul>').appendTo(this.element).container();
             var childContainer = childContainerElement.data('container');
 
@@ -611,6 +617,7 @@
             this.element.text("");
             
             this._createPredicate();
+            this._createPredicateWidget();
             this._createColumnObjects();
             this._createObject(objectText);
             this._createChildContainer();

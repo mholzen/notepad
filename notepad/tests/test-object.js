@@ -1,3 +1,4 @@
+QUnit.file="test-object.js";
 module("given an empty element", {
     setup: function() {
         this.element = $("<div>");
@@ -37,39 +38,21 @@ module("given a element with an attribute 'about' its path", {
 test("when I create a new object", function() {
     this.element.object();
     var object = this.element.data('object');
-
-    assertThat(object.getSubjectUri(), ":s", "it has a subject");
     assertThat(object.getPredicate(), nil(), "it has no predicate uri");
 });
 
 module("given a element with an attribute 'rel' in its path", {
     setup: function() {
         this.element = $("<div>label</div>");
-        this.predicate = $('<div rel=":p"/>').append(this.element);
+        this.parent = $('<div about=":s" rel=":p"/>').append(this.element).predicate();
     }
 });
 test("when I create a new object", function() {
     this.element.object();
     var object = this.element.data('object');
-    assertThat(object.getPredicateUri(), ':p', "it finds the predicate uri");
-});
-
-module("given a element with attributes 'about' and 'rel' in its path", {
-    setup: function() {
-        this.element = $("<div>label</div>");
-        this.predicate = $('<div rel=":p"/>').append(this.element);
-        this.subject = $('<div about=":s"/>').append(this.predicate);
-
-    }
-});
-test("when I create a new object", function() {
-    this.element.object();
-    var object = this.element.data('object');
-
     assertThat(object.getSubjectUri(), ':s', "it finds the subject uri");
     assertThat(object.getPredicateUri(), ':p', "it finds the predicate uri");
 });
-
 
 module("given a new object", {
     setup: function() {
@@ -119,7 +102,7 @@ test("when I set a URI", function() {
     verify(this.endpoint,times(1)).execute();
 });
 test("when I configure its predicate to a specific element", function() {
-    var predicate = $('<div rel=":p">');
+    var predicate = $('<div rel=":p">').predicate().data('predicate');
     this.object.option('predicate', predicate);
     assertThat(this.object.getPredicateUri(), equalTo(':p'), "it should find its predicate URI");
 });

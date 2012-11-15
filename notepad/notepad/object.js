@@ -36,26 +36,18 @@
             return this.options.template;
         },
 
-        setSubject: function(subject) {
-            this.subject = subject;
-            return this;
-        },
-        getSubject: function() {
-            return this.subject;
-        },
-        getSubjectUri: function() {
-            var subject = this.options.subject || this.element;
-            return subject.closest('[about]').attr('about');
-        },
-
         getPredicate: function() {
-            return this.element.closest('.notepad-predicate').data('predicate');
+            return this.options.predicate || this.element.closest(":notepad-predicate").data('predicate');
         },
         getPredicateUri: function() {
-            var predicate = this.options.predicate || this.element;
-            return predicate.closest('[rel]').attr('rel');
-            return this.getPredicate().getUri();
+            var predicate = this.getPredicate();
+            return predicate ? predicate.getUri() : undefined;
         },
+        getSubjectUri: function() {
+            var predicate = this.getPredicate();
+            return predicate ? predicate.getSubjectUri() : undefined;
+        },
+
 
         // Object or Literal
 
@@ -65,6 +57,9 @@
         },
         isUri: function() {
             return (this.getObjectUri() !== undefined);
+        },
+        isDefined: function() {
+            return this.isLiteral() || this.isUri();
         },
         getUri: function() {
             return this.element.attr("about");
@@ -176,10 +171,17 @@
             if (! (predicate = this.getPredicateUri())) {
                 return undefined;
             }
-            if (! (object    = this.getObject())) {
+            if (! (object    = this.getResource())) {
                 return undefined;
             }
-            return new Triple(subject, predicate, this.getObject());
+            if (this.getPredicate().isForward()) {
+                return new Triple(subject, predicate, object);
+            }
+            // Backward
+            if (this.isUri()) {
+                return new Triple(object, predicate, subject);
+            }
+            return undefined;
         },
         focus: function() {
             return this.element.focus();

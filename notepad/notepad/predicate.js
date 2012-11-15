@@ -2,10 +2,54 @@
 
     $.widget("notepad.predicate", {
 
+        // Given a DOM element
+            // that has a subject URI defined (that is within an element that has an '[about]' uri)
+            // getSubject()
+
+        // It manages the relationship between
+            // (a) a predicate URI (ie "the [rel] or [rev] attribute of the element"), (getUri(), setUri(uri), isForward(), toggleDirection(forward))
+            // and
+            // (b) its representation (getLabel(), insertLabel())
+                // (via the a class for the predicate URI (label))
+                // can create a new label for the predicate: element.label({uriElement: , uriAttr: })
+
+        // It manages the relationship between
+            // (a) a collection of objects that relate to this predicate
+                // can create a new object: element.label()
+                // object.isUri, object.isLiteral, object.isBlank 
+                // label.triple
+                // label.attr('about')
+            // and
+            // (b)
+
+
         options: {
+            objectFactory: $.fn.label, 
             allowBlankNodes: true
         },
-
+        getSubjectUri: function() {;
+            return this.element.closest('[about]').attr('about');
+        },
+        isForward: function() {
+            if (this.element.attr('rel')) {
+                return true;
+            } else if (this.element.attr('rev')) {
+                return false;
+            }
+            return undefined;
+        },
+        toggleDirection: function(forwardOrBackward) {
+            if (forwardOrBackward === undefined) {
+                forwardOrBackward = ! this.isForward();
+            }
+            if (forwardOrBackward) { // setting it forward
+                var uri = this.element.attr('rev');
+                this.element.attr('rel', uri).removeAttr('rev');
+            } else { // setting it backward
+                var uri = this.element.attr('rel');
+                this.element.attr('rev', uri).removeAttr('rel');
+            }
+        },
         setUri: function(uri) {
             this.element.attr('rel', uri);
             if (this.getLabel() === undefined) {
@@ -19,11 +63,10 @@
             return this.element.children('.notepad-label.notepad-predicate-label').data('label');
         },
         insertLabel: function() {
-            var element = $('<div class="notepad-predicate-label">').prependTo(this.element).label({uriElement: this.element, uriAttr: "rel"});
+            var element = $('<div class="notepad-predicate-label">').prependTo(this.element);
+            this.options.objectFactory.call($(element), {uriElement: this.element, uriAttr: 'rel'});  // TODO: when backward, => ?
         },
-        getSubject: function() {
-            return this.element.closest('[about]');
-        },
+
         getObjects: function(object) {
             var objects = this.element.children('.notepad-label').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
             if (object) {
@@ -62,7 +105,6 @@
             var object = this.getObjectLocation(triple.object);
             object.setObject(triple.object);
         },
-
         triples: function() {
             var triples = new Triples(0);
             if (this.getLabel() !== undefined && this.getLabel().triple() !== undefined) {
@@ -80,8 +122,10 @@
         // Set up the widget
         _create : function() {
             this.element.addClass('notepad-predicate');
-            if (this.element.attr('rel')) {
-                this.setUri(this.element.attr('rel'));
+            var attrName = this.element.attr('rev') ? "rev" : "rel";
+            var uri;
+            if (uri = this.element.attr(attrName)) {
+                this.setUri(uri);
             }
         },
         _destroy : function() {

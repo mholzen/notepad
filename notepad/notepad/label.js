@@ -7,7 +7,7 @@
             template:           '<div rel="rdfs:label">{{{rdfs:label}}}</div>',
             uriAttr:            'about',
             uriElement:         undefined,
-            autocomplete:       false,
+            autocomplete:       true,
             allowBlankNodes:    true
         },
         _setOption: function(key, value) {
