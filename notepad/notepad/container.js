@@ -85,8 +85,6 @@
 
             return line.data('line');
         },
-        appendUri: function(uri) {
-        },
 
         // add, no matter whether it should be expressed by the query or not
         // find whether this triple is expressed or not

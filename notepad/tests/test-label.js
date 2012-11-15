@@ -164,7 +164,7 @@ module("given a element within a subject and predicate", {
     setup: function() {
         this.initialText = "initial label";
         this.element = $('<div>'+this.initialText+'</div>');
-        this.predicate = $('<div rel=":p"></div>').append(this.element);
+        this.predicate = $('<div rel=":p"></div>').append(this.element).predicate();
         this.subject = $('<div about=":s"></div>').append(this.predicate);
     }
 });
@@ -178,7 +178,7 @@ test("when I create a new label", function() {
 module("given an element within a subject and predicate", {
     setup: function() {
         this.subjectElement = $('<div about=":s">');
-        this.predicateElement = $('<div rel=":p">').appendTo(this.subjectElement);
+        this.predicateElement = $('<div rel=":p">').appendTo(this.subjectElement).predicate();
     }
 });
 test("when I create a new label to describe the predicate", function() {

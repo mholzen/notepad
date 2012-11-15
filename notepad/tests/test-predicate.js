@@ -9,10 +9,32 @@ test("when I create a new predicate", function() {
 
     var predicate = this.element.data('predicate');
     assertThat(predicate, truth(), "the element has a predicate widget");
-    assertThat(predicate.getUri(), nil(), "it has no predicate uri");
 });
 
 module("given a element within a subject", {
+    setup: function() {
+        this.element = $('<div/>');
+        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.subjectElement = $('<div about=":s">').endpoint({endpoint: this.endpoint});
+        this.element.appendTo(this.subjectElement);
+    }
+});
+test("when I create a new predicate with an initial triple", function() {
+    this.element.predicate({initialTriple: new Triple(":s", ":p", ":o")});
+
+    var predicate = this.element.data('predicate');
+    assertThat(predicate.isForward(), truth(), "defaults to forward");
+    assertThat(predicate.triples(), hasItem(equalToObject(new Triple(":s", ":p", ":o"))));
+});
+test("when I create a new predicate with an initial triple", function() {
+    this.element.predicate({initialTriple: new Triple(":o", ":p", ":s")});
+
+    var predicate = this.element.data('predicate');
+    assertThat(predicate.isForward(), not(truth()));
+    assertThat(predicate.triples(), hasItem(equalToObject(new Triple(":o", ":p", ":s"))));
+});
+
+module("given an element within a subject with an 'rel' attribute", {
     setup: function() {
         this.element = $('<div rel=":p">initial label</div>');
         this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
@@ -26,6 +48,20 @@ test("when I create a new predicate", function() {
     verify(this.endpoint,times(1)).execute();       // We tried to fetch the label
     assertThat(predicate.getLabel(), truth(), "it has a label");
     assertThat(predicate.getSubjectUri(), truth(), "it has a subject");
+});
+
+module("given a new predicate :p", {
+    setup: function() {
+        this.element = $('<div rel=":p"/>');
+        //this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.predicate = this.element.predicate().data('predicate');
+    }
+});
+test("when I set a URI", function() {
+    this.predicate.setUri(":foo");
+    assertThat(this.predicate.getUri(), equalTo(":foo"));
+    this.predicate.toggleDirection();
+    assertThat(this.predicate.getUri(), equalTo(":foo"));
 });
 
 module("given a predicate within a subject", {
@@ -63,7 +99,7 @@ test("when I add a triple with a URI", function() {
     this.predicate.toggleDirection();
     assertThat(this.predicate.isForward(), not(truth()), "flipped after toggle");
     assertThat(this.predicate.triples(), not(hasItem(equalToObject(triple))), "it doesn't contains the anymore");
-    assertThat(this.predicate.triples(), not(hasItem(equalToObject(new Triple(":o", ":p", ":s")))), "it doesn't contains the anymore");
+    assertThat(this.predicate.triples(), hasItem(equalToObject(new Triple(":o", ":p", ":s"))), "it doesn't contains the anymore");
 });
 
 

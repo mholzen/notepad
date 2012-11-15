@@ -25,10 +25,18 @@
 
         options: {
             objectFactory: $.fn.label, 
-            allowBlankNodes: true
+            allowBlankNodes: true,
         },
         getSubjectUri: function() {;
             return this.element.closest('[about]').attr('about');
+        },
+        getAttribute: function() {
+            if (this.element.attr('rel')) {
+                return "rel";
+            } else if (this.element.attr('rev')) {
+                return "rev";
+            }
+            return "rel";
         },
         isForward: function() {
             if (this.element.attr('rel')) {
@@ -51,13 +59,17 @@
             }
         },
         setUri: function(uri) {
-            this.element.attr('rel', uri);
-            if (this.getLabel() === undefined) {
+            this.element.attr(this.getAttribute(), uri);
+            var label = this.getLabel();
+            if (!label) {
                 this.insertLabel();
+            } else {
+                label.load();
             }
         },
         getUri: function() {
-            return this.element.closest('[rel]').attr('rel');
+            return this.element.attr(this.getAttribute())
+            //return this.element.closest('[rel]').attr('rel');
         },
         getLabel: function() {
             return this.element.children('.notepad-label.notepad-predicate-label').data('label');
@@ -65,6 +77,7 @@
         insertLabel: function() {
             var element = $('<div class="notepad-predicate-label">').prependTo(this.element);
             this.options.objectFactory.call($(element), {uriElement: this.element, uriAttr: 'rel'});  // TODO: when backward, => ?
+            return element.data('label');
         },
 
         getObjects: function(object) {
@@ -102,8 +115,18 @@
             if (this.getUri() != triple.predicate) {
                 return;
             }
-            var object = this.getObjectLocation(triple.object);
-            object.setObject(triple.object);
+            var resourceAsObject;
+            if (triple.subject == this.getSubjectUri()) {
+                resourceAsObject = triple.object;
+                this.toggleDirection(true);
+            } else if (triple.object.isUri() && triple.object == this.getSubjectUri()) {
+                this.toggleDirection(false);
+                resourceAsObject = triple.subject;
+            } else {
+                return;
+            }
+            var object = this.getObjectLocation(resourceAsObject);
+            object.setObject(resourceAsObject);
         },
         triples: function() {
             var triples = new Triples(0);
@@ -122,11 +145,27 @@
         // Set up the widget
         _create : function() {
             this.element.addClass('notepad-predicate');
-            var attrName = this.element.attr('rev') ? "rev" : "rel";
-            var uri;
-            if (uri = this.element.attr(attrName)) {
-                this.setUri(uri);
+            if (this.options.initialTriple) {
+                this.setUri(this.options.initialTriple.predicate);
+                this.add(this.options.initialTriple);
+            } else {
+                var uri = this.getUri() || "rdfs:member";
+                if (uri) {
+                    this.setUri(uri);
+                }
             }
+            this.element.contextMenu({menu: 'predicateMenu'}, function(action, element, pos) {
+                if (action == 'delete') {
+                    element.toggleClass('delete');
+                    return;
+                } else if (action == 'toggleDirection') {
+                    element.data('predicate').toggleDirection();
+                    return;
+                }
+                throw ("unknown action from contextmenu", action);
+            });
+
+
         },
         _destroy : function() {
             this.element.removeClass("notepad-predicate").removeAttr('contenteditable');

@@ -119,7 +119,7 @@ test("when set RDF with cycles, then it should not display a triple twice", func
             return function() {
                 equal(test.line.getUri(), ':line1', "the first line should be :line1");
                 assertThat(test.line.getDirection(), equalTo(FORWARD), "the line should express a forward triple");
-                assertThat(test.line._getContainerUri(), uri, "the line should belong to the notepad container");
+                assertThat(test.line.getContainerUri(), uri, "the line should belong to the notepad container");
 
                 assertThat(test.line.getLines().length, equalTo(1), "the first line should have one child");
                 assertThat(test.line.getLines()[0].getUri(), ':line1', "the child line should be the uri :line1");                
@@ -172,7 +172,7 @@ test("when create a new line, then it should have two lines", function() {
     var line = this.div.find("li:first").data('line');
     equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
 
-    equal(line._getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
+    equal(line.getContainerUri(), this.notepad.getUri(), "container URI should be the notepad URI");
     equal(line.getContainerTriple().subject, this.notepad.getUri(), "subject of the container triple should be the notepad URI");
     ok(line.getContainerTriple().predicate, 'rdf:member', "predicate should be member-of");
     equal(line.getContainerTriple().object, line.getUri(), "object should be the line URI");
@@ -281,7 +281,7 @@ function indentSecondLine(div) {
 test("when I indent the second line,", function() {
     indentSecondLine(this.div);
     equal(
-        this.lastLine._getContainerUri(),
+        this.lastLine.getContainerUri(),
         this.firstLine.getUri(),
         "second line should be under the first");
 });

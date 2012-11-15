@@ -7,7 +7,6 @@
         return ( direction === undefined || direction === FORWARD ? "rel" : "inrel" );
     }
 
-
     // A line matcher, based on the container uri and the triple
     Selector = $.fn.Selector = function(uri, triple) {
         var lineUri, direction;
@@ -55,6 +54,9 @@
 
         getEndpoint: function () {
             return this.element.findEndpoint();
+        },
+        _getDirection: function() {
+            return this.getPredicate() ? this.getPredicate().getDirection() : undefined;
         },
         getDirection: function() {
             if (this.predicate.attr(getAttrName(FORWARD))) {
@@ -106,11 +108,14 @@
         getContainer: function() {
             return this.element.parents('.notepad-container').data("container");
         },
-        _getContainerUri: function() {
+        getContainerUri: function() {
             return this.getContainer().getUri();
         },
         _getContainerDefaultPredicate: function() {
             return this.getContainer().getDefaultPredicate();
+        },
+        _setPredicateUri: function(uri) {
+            this.getPredicate().setUri(uri);
         },
         setContainerPredicateUri: function(uri, direction, triple) {
             direction = (direction !== undefined) ? direction : this.getDirection();
@@ -200,7 +205,7 @@
         },
         subject: function() {
             if (this.getDirection() === FORWARD) {
-                return this._getContainerUri();
+                return this.getContainerUri();
             } else if (this.getDirection() === BACKWARD) {
                 if (this.getUri() === undefined) {
                     throw new Error("a backward triple requires a URI");
@@ -257,7 +262,7 @@
             if (this.getDirection() === FORWARD) {
                 tripleObject = this.getObject().getResource();
             } else {
-                tripleObject = this._getContainerUri();
+                tripleObject = this.getContainerUri();
             }
             return new Triple(
                 this.subject(),
@@ -331,24 +336,39 @@
 
         setTriple: function(triple) {
             if (this.getUri() === undefined) {
-                this.setSubjectUri(triple.subject);
-                this.setContainerPredicateUri(triple.predicate, FORWARD);
-                this.setObjectResource(triple.object);
+                if (this.getContainerUri() == triple.subject) {
+                    // Forward
+                    this.setSubjectUri(triple.subject);
+                    this.getPredicate().setUri(triple.predicate);
+                    this.setContainerPredicateUri(triple.predicate, FORWARD);
+                    this.setObjectResource(triple.object);
+                } else if ( this.getContainerUri() == triple.object ) {
+                    // Backward
+                    this.setSubjectUri(triple.object);
+                    this.getPredicate().setUri(triple.predicate);
+                    this.getPredicate().toggleDirection(false);
+                    this.setContainerPredicateUri(triple.predicate, BACKWARD);
+                    this.setObjectResource(triple.subject);
+                }
                 return;
             }
             if (triple.subject.equals(this.getUri())) {
                 // No need to set the subject
+                this.getPredicate().setUri(triple.predicate);
                 this.setContainerPredicateUri(triple.predicate, FORWARD);
                 this.setObjectResource(triple.object);
                 return;
             }
             if (triple.object.equals(this.getUri())) {
                 this.setSubjectUri(triple.object);  
+                this.setPredicate().setUri(triple.predicate);
+                this.getPredicate().toggleDirection(false);
                 this.setContainerPredicaterUri(triple.predicate, BACKWARD);
                 this.setObjectResource(this.subject);
                 return;
             }
             this.setSubjectUri(triple.subject)
+            this.setPredicate().setUri(triple.predicate);
             this.setContainerPredicateUri(triple.predicate, FORWARD);
             this.setObjectResource(triple.object);
         },
@@ -474,15 +494,15 @@
             // Move current line to parent
             this.element.insertAfter(newPredecessor);
         },
-        _getPredicateWidget: function() {
+        getPredicate: function() {
             return this.element.children(":notepad-predicate").data('predicate');
         },
         _createPredicateWidget: function() {
-            var element = $('<div>').appendTo(this.element).predicate();
-
+            var element = $('<div>').appendTo(this.element).predicate({initialTriple: this.options.initialTriple});
         },
         _createPredicate: function() {
             // Predicate toggle
+            var line = this;
             this.predicateToggle = $('<a>').addClass('predicateToggle');
             this.predicateToggle.click(function(){
                 line.toggleContainerPredicate();
@@ -570,9 +590,14 @@
                 object.setSubject(line);
             });
         },
-        _createObject: function(objectText) {
+        _createObject1: function(objectText) {
             var objectElement = $('<div>').text(objectText);
             objectElement.appendTo(this.element);                   // WORKS
+            objectElement.object();
+        },
+        _createObject: function(objectText) {
+            var objectElement = $('<div>').text(objectText);
+            objectElement.appendTo(this.getPredicate().element);
             objectElement.object();
         },
         _createChildContainer: function() {

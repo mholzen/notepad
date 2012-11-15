@@ -126,7 +126,7 @@
 
             var predicatesInTemplate = this.getPredicatesInTemplate();
 
-            var context = { uri: this.getUri().toString() };
+            var context = { uri: this.getUri() };
 
             _.each(predicatesInTemplate, function(predicate) {
                 var values = triples.filter(function(triple) { return triple.predicate == predicate; });
@@ -144,30 +144,18 @@
             this.element.html(html);
         },
 
-        getPredicateElement: function() {
-            var objectElement = this.options.uriElement || this.element;
-            var predicateElement = objectElement.closest('[rel]');
-            if (predicateElement.length > 0 && this.options.uriElement && predicateElement[0] === this.options.uriElement[0]) {
-                return undefined;
-            }
-            return predicateElement;
+
+        getPredicate: function() {
+            var objectElement = this.getUriElement();
+            return objectElement.parent().closest(":notepad-predicate").data('predicate');
         },
         getPredicateUri: function() {
-            return this.getPredicateElement().attr('rel');
-        },
-        getSubjectElement: function() {
-            var predicateElement = this.getPredicateElement();
-            if (predicateElement === undefined) {
-                return undefined;
-            }
-            return this.getPredicateElement().closest('[about]');      // TODO: this should come from notepad-predicate, shouldn't it?
+            var predicate = this.getPredicate();
+            return predicate ? predicate.getUri() : undefined;
         },
         getSubjectUri: function() {
-            var subjectElement = this.getSubjectElement();
-            if (subjectElement === undefined) {
-                return undefined;
-            }
-            return subjectElement.attr('about');
+            var predicate = this.getPredicate();
+            return predicate ? predicate.getSubjectUri() : undefined;
         },
         getResource: function() {
             if (this.isLiteral()) {
@@ -179,19 +167,26 @@
         },
 
         triple: function() {
-            var subject = this.getSubjectUri();
-            if (!subject) {
+            var subject, predicate, object;
+
+            if (! (predicate = this.getPredicateUri())) {
                 return undefined;
             }
-            var predicate = this.getPredicateUri();
-            if (!predicate) {
+
+            if (! (subject   = this.getSubjectUri())) {
                 return undefined;
             }
-            var resource = this.getResource();
-            if (!resource) {
+            if (! (object    = this.getResource())) {
                 return undefined;
             }
-            return new Triple(subject, predicate, resource);
+            if (this.getPredicate().isForward()) {
+                return new Triple(subject, predicate, object);
+            }
+            // Backward
+            if (this.isUri()) {
+                return new Triple(object, predicate, subject);
+            }
+            return undefined;
         },
         labelTriple: function() {
             if (!this.isUri() || !this.getLiteral()) {

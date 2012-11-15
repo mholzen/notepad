@@ -125,9 +125,8 @@
         },
         _return : function(event) {
             var target = $(event.target);
-            var li = target.parent('li');
-            var ul = li.parent('ul');
-            
+            var li = target.closest(":notepad-line");
+
             var newLine;
             if (target.caret() == 0) {
                 newLine = li.data('line').insertLineBefore();
@@ -140,7 +139,7 @@
             return false;
         },
         _indent : function(event) {
-            var li = $(event.target).parent('li');
+            var li = $(event.target).closest(":notepad-line");
 
             // when on the predicate, then skip to the object
             if ($(event.target).hasClass('notepad-predicate')) {
@@ -154,7 +153,7 @@
             return result;
         },
         _unindent : function(event) {
-            var li = $(event.target).parent('li');
+            var li = $(event.target).closest(":notepad-line");
 
             if ($(event.target).hasClass('notepad-object') &&
                 li.find('.notepad-predicate').css('display') != 'none') {

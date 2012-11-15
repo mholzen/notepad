@@ -65,6 +65,10 @@ body {
 }
 .notepad-predicate [inrel] {
     background: black;
+}
+
+.notepad-predicate[rev] {
+    background: grey;
     color: white;
 }
 
