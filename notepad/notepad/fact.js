@@ -7,8 +7,6 @@
 
     $.widget("notepad.fact", {
 
-        // See notepad.js for interface
-
         options : {
         },
 
