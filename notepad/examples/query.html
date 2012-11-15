@@ -1,0 +1,102 @@
+<div about=":s">
+    <div class="describe"/>
+    <!-- setting the URI on the div triggers the descibe query and placing results in itself -->
+</div>
+
+<div about=":s">
+    <div class="describeAndFilter"/>
+    <!-- setting the URI on the div triggers the descibe query and placing results in itself -->
+    <!-- when the card(results)>MAX, then it places a cluster container describing the result set -->
+</div>
+
+ALTERNATIVE: place a "cluster" element within the same describe element
+<div about=":s">
+    <div class="describe">
+        <!-- setting the URI on the div triggers the descibe query and placing results in itself -->
+        <div class="clusters"/>
+        <!-- loading results in this parent triggers evaluating whether the cluser query runs -->
+    </div>
+</div>
+
+=> HOW WOULD I FILTER DESCRIBE?
+<div about=":s">
+    <div class="describe"/>
+    <!-- setting the URI on the div triggers the descibe query and placing results in itself -->
+</div>
+
+=> Does a filter (eg sp:predicate modify (a) a query or (b) an element?
+
+(a)
+<div about=":s">
+    <div class="describe">
+        <div rel="sp:predicate">...</div>
+        <!-- this element modifies the query it is in -->
+        <!-- => the "describe" class has to look DOWN in its DOM to find modifiers: LET'S JUST DO THAT FOR NOW -->
+    </div>
+</div>
+
+(b)
+<div about=":s">
+    <div rel="sp:predicate"><div about="nmo:sender"/>
+        <div class="describe"/>
+    </div>
+</div>
+
+
+=>
+
+<div about=":s">
+    <div class="describeAndFilter">
+        <div about=":s1"/>
+        <div about=":s2"/>
+        ...
+        <div about=":sn"/>
+        <div class="clusters"/>
+    </div>
+</div>
+
+
+=>
+
+<div about=":s">
+    <div class="describeAndFilter">
+        <div about=":s1"/>
+        <div about=":s2"/>
+        ...
+        <div about=":sn"/>
+        <div class="clusters">  <!-- describes the result set -->
+            <div rel="sp:predicate">...</div>
+            ...
+            <div class="sp:TripplePattern">...</div>
+        </div>
+    </div>
+</div>
+
+
+
+<div about=":s">
+    <div class="describe">
+        <!-- setting the URI on the div triggers the descibe query and placing results in itself -->
+        <!-- describe results -->
+
+        <div class="clusters">
+            <!-- loading results in this parent triggers evaluating whether the cluser query runs -->
+            <!-- class=clusters  =>  query=clusters && class=container2 -->
+            <!-- cluster results: filters -->
+            <div rel="sp:predicate">...</div>
+            <div rel="sp:object">...</div>
+            <div class="sp:TripplePattern">...</div>
+            <div itemtype="sp:TripplePattern">...</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- HOW does selecting a filter affect its environment -->
+
+
+
+
+
+
+
