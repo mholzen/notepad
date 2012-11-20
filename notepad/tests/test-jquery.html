@@ -67,7 +67,15 @@ $(document).ready(function() {
 
       assertThat(element.val(), equalTo("A"), "the content should contain the character typed");
     });
+    test("events", function() {
+      var parent = $("<div>").appendTo("#qunit-fixture");
+      var child = $("<div>").appendTo(parent);
 
+      parent.on("myEvent", function() { ok(false, "parent should never be called"); });
+      child.on("myEvent", function() { ok(true, "children is called"); return false; });
+
+      child.trigger("myEvent");
+    });
 
 });
 </script>
