@@ -269,7 +269,7 @@ div.notepad-object {
     color: white;
 }
 .notepad-predicate[rel] > .notepad-predicate-label > [rel="rdfs:label"] {
-    background: white;
+    background: #0000;
     color: black;
 }
 
