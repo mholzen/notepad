@@ -92,7 +92,11 @@
         },
         _up : function(event) {
             var target = $(event.target);
-            var li = target.parent('li');
+            var li = target.closest(':notepad-line');
+            if (li.length === 0) {
+                return;
+            }
+
             // Get the list of lines
             var lines = li.data('line').getNotepad().getContainer().getAllLineElements();
             var i;
@@ -108,10 +112,13 @@
         },
         _down : function(event) {
             var target = $(event.target);
-            var li = target.parent('li');
+            var li = target.closest(':notepad-line');
+            if (li.length === 0) {
+                return false;
+            }
 
             // Get the list of lines
-            var lines = li.data('line').getNotepad().getContainer().getAllLineElements()
+            var lines = li.data('line').getNotepad().getContainer().getAllLineElements();
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -126,11 +133,14 @@
         _return : function(event) {
             var target = $(event.target);
             var li = target.closest(":notepad-line");
+            if (li.length === 0) {
+                return false;
+            }
 
             var newLine;
             if (target.caret() == 0) {
                 newLine = li.data('line').insertLineBefore();
-                li.focus();         // Focus on the line that moved down
+                newLine.focus();         // Stay focused on the new line
             } else {
                 newLine = li.data('line').insertLineAfter();
                 newLine.focus();
@@ -147,10 +157,10 @@
                 return false;
             }
 
-            var result = li.data('line').indent();
-
-            li.data('line').focus();
-            return result;
+            var line = li.data('line');
+            var propagateEvent = line.indent();
+            line.focus();
+            return propagateEvent;
         },
         _unindent : function(event) {
             var li = $(event.target).closest(":notepad-line");
@@ -160,10 +170,10 @@
                 li.find('.notepad-predicate').focus();
                 return false;
             }
-            
-            var result = li.data('line').unindent();
-            li.data('line').focus();
-            return result;
+            var line = li.data('line');
+            var propagateEvent = line.unindent();
+            line.focus();
+            return propagateEvent;
         },
 
         // TODO: this really should be expressed in RDF

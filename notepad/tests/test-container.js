@@ -56,21 +56,11 @@ test("when I add a triple where the container is the subject, then the container
     var line = this.container.getLines()[0];
     assertThat(line.getObject().isUri(), truth(), "the object should be a URI");
     assertThat(line.getObject().getResource(), equalTo(":o"), "the object should have a value of :o");
+    assertThat(line.getPredicate().getLabel(), not(nil), "then the line's predicate label should be ...");
+    assertThat(line.getContainerPredicateUri(), ":p", "then the line's predicate should be :p");
     ok(!triplesPre.contains(triple), "the initial triples do not contain it");
     assertThat(this.container.triples(), hasItem(equalToObject(triple)), "the triples contains it");
     ok(!this.container.reverseTriples().contains(triple), "the reverse triples does not contain it");
-});
-test("when I add a triple where the container is the subject, then the container displays the labels for the predicate and object", function() {
-    var triple = new Triple(":s", ":p", ":o");
-    when(this.endpoint).getLabels(":p", anything()).then(function() { callback=arguments[1]; callback(["P"]); });
-
-    this.container.add(triple);
-
-    var line = this.container.getLines()[0];
-    ok(line.getContainerPredicateUri(), ":p", "then the line's predicate should be :p");
-    ok(line.getContainerPredicateLabel(), "P", "then the line's predicate label should be ...");
-
-    verify(this.endpoint,times(2)).getLabels();
 });
 test("when I add a triple where the container is the object, then the container contains it", function() {
     var triple = new Triple(":s1", ":p", ":s");
@@ -93,25 +83,16 @@ test("when I add a triple with a literal, then the container contains it", funct
     this.container.add(triple);
 
     equal(this.container.getLines().length, 1, "the container has one new line");
-    var line;
-    ok(line = this.container.getLines()[0], "the container has a line for it");
+    var line = this.container.getLines()[0];
 
     equal(line.getObject().element.text(), 'a literal', "the line's object displays the literal");
 
     assertThat(this.container.triples(), hasItem(equalToObject(triple)));
 
     ok(this.container.triples().contains(triple), "the triples contains it");
-
-
-
-    ok(this.container.getLines().length, 1, "the container has only one line")
-    var line;
-
     
     equal(line.triples().length, 1, "the line has only one triple (no child triples)");
     ok(line.triples().contains(triple), "the line has the triple");
-    equal(line.getLineTriple(), undefined, "the line triple is undefined");
-    deepEqual(line.getContainerTriple(), triple, "the container triple is the triple");
 });
 test("when I add a triple where the container is the predicate, then nothing happens", function() {
     var triple = new Triple(":s1", ":s", ":o");
@@ -139,7 +120,7 @@ test("when I change the default state of the element widget to collapsed", funct
     var triple = new Triple(":s", "rdfs:member", ":o");
     var childTriple = new Triple(":o", "rdfs:member", ":o2");
 
-    this.container.option("collapsed", true);
+    this.container.option("describeElements", false);
 
     this.container.add(triple);
     

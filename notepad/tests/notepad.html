@@ -19,6 +19,7 @@
 <link  href="../external/jquery.contextMenu.css" type="text/css" rel="stylesheet" media="screen" />
 
 <!-- Notepad code -->
+<script src="../notepad/console.js" type="text/javascript"></script>
 <script src="../notepad/endpoint.js" type="text/javascript"></script>
 <script src="../notepad/rdf.js" type="text/javascript"></script>
 <script src="../notepad/notepad.js" type="text/javascript"></script>
@@ -46,11 +47,13 @@ var notepad;
 var container;
 var line;
 var object;
+var toUri = $.notepad.toUri;
+
 var log = console;
-var c = log;
+//console.__proto__.debug = function() { };
+//console.__proto__.error = function() { };
 
 $(function() {
-    console.__proto__.debug = function() { };
 
     devFusekiEndpoint = new FusekiEndpoint("http://localhost:3030/dev");
     $("#notepad").notepad({endpoint: devFusekiEndpoint});

@@ -4,16 +4,12 @@ body {
     font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
 }
 
-.notepad-fact > .notepad-label {
-    display: none;
+.notepad {
+    font-size: large;
 }
-.notepad-filters .notepad-predicate {
-    border: solid 1pt white;
+
+#icons {
     display: none;
-}
-.notepad-filters [rel="rdfs:label"] {
-    border: solid 1pt white;
-    display: inline-block;
 }
 
 #icons a {
@@ -55,9 +51,6 @@ body {
 .notepad .predicate {
 	font-style: italic;
 }
-.notepad-predicate {
-    font-style: italic;
-}
 
 .notepad [inrel] {
     background: black;
@@ -67,14 +60,13 @@ body {
     background: black;
 }
 
-.notepad-predicate[rev] {
-    background: grey;
-    color: white;
-}
-
 .notepad-object {
     display: inline-block;
     width: 600px;
+}
+
+.notepad-object3 {
+    display: inline;
 }
 
 textarea.notepad-object {
@@ -99,6 +91,7 @@ div.notepad-object {
 
 .notepad li {
     list-style: none;
+    line-height: 30px;
 }
 .notepad .ui-effects-wrapper {
     display: inline-block;
@@ -239,12 +232,62 @@ div.notepad-object {
     font-weight: 100;
 }
 
-.notepad-label {
-    display: inline-block;
-}
-
 .turtle {
     font-family: courier;
     font-size: small;
     white-space: pre;
+}
+
+.notepad-filters > .notepad-fact > .notepad-predicate > .notepad-predicate-label {
+    display: none;
+}
+.notepad-filters .notepad-predicate {
+    border: solid 1pt white;
+    display: none;
+}
+.notepad-filters [rel="rdfs:label"] {
+    border: solid 1pt white;
+    display: inline-block;
+}
+
+[rel="rdfs:label"] {
+    display: inline-block;
+    width: 600px;
+}
+
+.notepad-predicate-label [rel="rdfs:label"] {
+    font-style: italic;
+    display: inline;
+    /*width: 150px;*/
+    /*text-align: right;*/
+    padding-right: 10px;
+    padding-top: 5px;
+}
+
+.notepad-predicate[rev] > .notepad-predicate-label > [rel="rdfs:label"] {
+    background: grey;
+    color: white;
+}
+.notepad-predicate[rel] > .notepad-predicate-label > [rel="rdfs:label"] {
+    background: white;
+    color: black;
+}
+
+
+.notepad-predicate-label [rel="rdfs:label"]:after {
+    content: ":" ;
+}
+
+.notepad-predicate {
+    display: inline;
+}
+
+.notepad-predicate-label {
+    display: inline;
+}
+
+.notepad-object3:not([about]) {
+    display: inline-block;
+    width: 400px;
+    padding-right: 3px;
 }

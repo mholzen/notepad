@@ -3,8 +3,11 @@
     $.widget("notepad.label", {
 
         options: { 
-            // template: '<div rel="rdfs:label">{{{rdfs:label}}}{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}</div>',
-            template:           '<div rel="rdfs:label">{{{rdfs:label}}}</div>',
+            template:           '<div contenteditable="true" rel="rdfs:label">' +
+                                    '{{{rdfs:label}}}' + 
+                                    '{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}' +
+                                '</div>',
+                                
             uriAttr:            'about',
             uriElement:         undefined,
             autocomplete:       true,
@@ -38,7 +41,7 @@
 
         // Object or Literal
         isLiteral: function() {
-            return (this.getUri() === undefined && this.getLiteral().length > 0);
+            return (this.getUri() === undefined && this.getLiteral() !== undefined && this.getLiteral().length > 0);
         },
         isUri: function() {
             return (this.getUri() !== undefined);
@@ -51,15 +54,53 @@
             return this.element;
         },
         setUri: function(uri) {
+            if (uri === undefined) {
+                throw new Error("cannot set uri to undefined");
+            }
+            if (uri == this.getUri()) {
+                return;
+            }
             this._setUri(uri);
             this.load();
+
+            // Trigger the event only after the label has displayed itself
+            // so that: dependent DOM elements can avoid redisplaying a triple that is already displayed here
+
+            // this._trigger("urichange"); // will trigger 'labelurichange'
+
+            // Does this get captured by parent elements of this one, when this is triggered by a child.
+            // It should *not* propagate to parents
+
+            this.element.trigger("labelurichange"); // does not add widget prefix.
         },
         _setUri: function(uri) {
             this.getUriElement().attr(this.options.uriAttr, uri);
             return this;
-        },      
+        },
+        ensureUri: function() {
+            if (this.getUri() !== undefined) { return this.getUri(); }
+            this._setUri($.notepad.getNewUri());
+        },
+        getLabelElement: function() {
+            return this.element.children('[rel="rdfs:label"]');
+        },
+        focus: function() {
+            this.getLabelElement().focus();
+        },
         getLiteral: function() {
-            return this.element.text();
+            var text = this.getLabelElement().text() || this.element.text();
+            return (text.length !== 0) ? text : undefined;
+            // return this.element.contents().filter(function(){ return(this.nodeType == 3); }).text();        // Get only the direct children that are text nodes
+            // return literalElement.length > 0 ? literalElement : this._createLiteral();
+            //return this.element.text();
+        },
+        getLiteralAsTriple: function() {
+            return toTriple(":", "rdfs:label", this.getLiteral());
+        },
+        updateFromLiteral: function() {
+            var triples = new Triples(0);
+            triples.add(this.getLiteralAsTriple());
+            this._updateFromRdf(triples);
         },
         setLiteral: function(literal) {
             this.element.text(literal);
@@ -93,6 +134,13 @@
             if (! this.isUri()) {
                 return;
             }
+            // dev:perf
+            // When this URI is in our root path, it was already loaded in this context
+            // if (this.element.closest('[about='+this.getUri()+']').length > 0) {
+            //     // We already have all the triples we care about in this context.  We could just updateFromRdf using ...().triples()
+            //     this._updateFromRdf ( this.element.closest('[about='+this.getUri()+']').triples() );
+            // }
+
             if (this.element.findEndpoint() === undefined) {
                 // This element could be detached
                 return;
@@ -112,12 +160,9 @@
             }
 
             var label = this;
+            log.debug("query for label of ", aboutResource.toString());
             this.getEndpoint().execute(sparql, function(triples) {
                 label._updateFromRdf(triples);
-
-                // Trigger the event only after the label has displayed itself
-                // so that: dependent DOM elements can avoid redisplaying a triple that is already displayed here
-                label._trigger("urichange"); // will trigger 'objecturichange'
             });
         },
         _updateFromRdf: function(triples) {
@@ -131,7 +176,7 @@
             _.each(predicatesInTemplate, function(predicate) {
                 var values = triples.filter(function(triple) { return triple.predicate == predicate; });
                 if (values.length == 0) {
-                    log.debug("cannot find a value for "+predicate+" in template substitution");
+                    // log.debug("cannot find a value for "+predicate+" in template substitution");
                     return;
                 }
                 if (values.length > 1) {
@@ -139,9 +184,11 @@
                     log.warn("using first ("+values[0].object+")");
                 }
                 context[predicate] = values[0].object;
-            })
+            });
             var html = Mustache.render(this.template(), context);
-            this.element.html(html);
+            this.getLabelElement().remove();  // we need to setup autocomplete again later.
+            this.element.prepend(html);
+            this._setupAutocomplete();
         },
 
 
@@ -167,6 +214,11 @@
         },
 
         triple: function() {
+            if (this.options.uriElement) {
+                // reason?
+                return undefined;
+            }
+
             var subject, predicate, object;
 
             if (! (predicate = this.getPredicateUri())) {
@@ -174,7 +226,8 @@
             }
 
             if (! (subject   = this.getSubjectUri())) {
-                return undefined;
+                throw "cannot find a subject URI but can find a predicate URI";
+                //return undefined;
             }
             if (! (object    = this.getResource())) {
                 return undefined;
@@ -188,20 +241,36 @@
             }
             return undefined;
         },
+        getLabelElement: function() {
+            return this.element.children('[rel="rdfs:label"]');
+        },
+        _getLabelLiteral: function() {
+            return this.getLabelElement().text();
+        },
         labelTriple: function() {
-            if (!this.isUri() || !this.getLiteral()) {
+            var uri = this.getUri();
+            var label = this._getLabelLiteral();
+            if (!uri || !label) {
                 return undefined;
             }
-            return new Triple(this.getUri(), "rdfs:label", this.getLiteral());
+            
+            return new Triple(uri, "rdfs:label", label);
+        },
+        childTriples: function() {
+            var container = this.element.children(":notepad-container").data('container');
+            if (!container) {
+                return [];
+            }
+            return container.triples();
+
         },
         triples: function() {
             var triples = new Triples(0);
-            if (this.triple() !== undefined) {
-                triples.push(this.triple());
+            triples.add(this.triple());
+            if (this.isUri()) {
+                triples.add(this.labelTriple());  // this could be derived from the template (though label triple is still used in setting the URI)
             }
-            if (this.isUri() && this.labelTriple() !== undefined) {
-                triples.push(this.labelTriple());
-            }
+            $.merge(triples, this.childTriples());
             return triples;
         },
         _setupAutocomplete: function() {
@@ -209,7 +278,7 @@
                 return;
             }
             var label = this;
-            this.element.autocomplete({
+            this.getLabelElement().autocomplete({
                 source: function(term,callback) {
                     label.getEndpoint().getSubjectsLabelsByLabel(term.term,callback);
                 },
@@ -218,25 +287,30 @@
                     var uri = ui.item.value;
                     var choice = new Triples(0);
                     choice.push(new Triple(uri, "rdfs:label", ui.item.label));
-                    label._setUri(uri);
+
+                    label.setUri(uri);
                     label._updateFromRdf(choice);
+
                     event.preventDefault();  // prevent the default behaviour of replacing the text with the value
                 }
             });
         },
 
         // Set up the widget
-        _create : function() {
+        _create: function() {
             // Object
-            this.element.addClass('notepad-label').attr('contenteditable', 'true');
+            this.element.addClass('notepad-label'); //.attr('contenteditable', 'true');
 
-            if (this.isUri() && this.getLiteral() == "") {
+            if (this.getUri() !== undefined && this.getLiteral() === undefined) {
+                // A uri but no literal:
                 this.load();
+            } else {
+                this.updateFromLiteral();
             }
 
             // on change, set the URI if it's not yet set
             // => new objects that are not changed do not receive a URI
-            var label = this;
+            // var label = this;
             // this.element.change(function(event) {
             //     if (label.getUri() === undefined) {
             //         label._setUri($.notepad.getNewUri());

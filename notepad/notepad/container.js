@@ -4,7 +4,7 @@
     var CONTAINER_DEFAULT_PREDICATE_URI = 'rdfs:member';
     var MAX_DEPTH = 2;
     var MAX_TRIPLES = 500;
-    var MAX_TRIPLES_BEFORE_COLLAPSING = 5;
+    var MAX_TRIPLES_BEFORE_COLLAPSING = 30;
     var MAX_TRIPLES_BEFORE_FILTERING = 10;
 
     $.widget("notepad.container", {
@@ -12,6 +12,7 @@
         // See notepad.js for interface
 
         options: {
+            describeElements: true,
         },
 
         _setOption: function(key, value) {
@@ -19,7 +20,6 @@
         },
         _create: function() {
             this.element.addClass("notepad-container");
-
             this._createHeadersContainer();
         },
 
@@ -27,7 +27,6 @@
             this.element.removeClass("notepad-container").removeAttr('about');
         },
 
-        // A container knows its sourceElement, the element used to obtain the initial query
         getSourceElement: function() {
             if (this.options.sourceElement !== undefined) {
                 return this.options.sourceElement;
@@ -74,16 +73,17 @@
           return this.getAllLineElements().map(function(index, line) { return $(line).data('line'); } );  
         },
         appendLine: function(line, triple) {
-            if (line === undefined) {
-                line = $('<li>');
-            }
+            line = line || $("<li>");
             if (line.appendTo === undefined) {
                 line = $('<li>').text(line);
             }
-            line.appendTo(this.element).line({initialTriple: triple});
-            //line.appendTo(this.element).line();
-
-            return line.data('line');
+            line.appendTo(this.element);
+            if (line.data('line') === undefined) {
+                line.line({initialTriple: triple});    
+            }
+            line = line.data('line');
+            line._ensureSubjectUriExists();
+            return line;
         },
 
         // add, no matter whether it should be expressed by the query or not
@@ -153,10 +153,23 @@
         },
         load: function() {
             var container = this;
-            this.getQuery().execute(this.element.findEndpoint(), {}, function(triples) {
+            var query = this.getQuery();
+
+            // When this URI is in our root path, it was already loaded there.
+            // if (this.element.parent().parent().closest('[about='+ $.notepad.toUri(query.context.about)+']').length > 0) {
+            //     log.debug("decline load to avoid repeat", this.element.parent());
+            //     log.debug(this.element.parent().parent());
+            //     return;
+            // }
+
+            log.debug("describe(", $.notepad.toUri(query.context.about), ") into ", this.element[0], query);
+
+            query.execute(this.element.findEndpoint(), {}, function(triples) {
+
+                log.debug("received ", triples.length, " triples from describe(", $.notepad.toUri(query.context.about), ")" );
 
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
-                    container.option('collapsed', true);
+                    container.option('describeElements', false);
                 }
 
                 // TODO: it should be up to the object to determine the best way to display itself, given its context

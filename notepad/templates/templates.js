@@ -66,9 +66,11 @@ WHERE { \n\
 	UNION \n\
 	{ ?neighbourBackward ?predicateBackward ?about \n\
 		BIND (?neighbourBackward as ?neighbour) \n\
+		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } \n\
 	} \n\
  \n\
-	# {{{filters}}} \n\
+	# Ignore  \n\
+ \n\
  \n\
 } \n\
 ";

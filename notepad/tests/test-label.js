@@ -1,13 +1,10 @@
 QUnit.file = "notepad-label.js";
 
-function givenAnElement(world) {
-    world.element = $('<div>');
-    $("#qunit-fixture").append(world.element);
-}
 module("given an empty element", {
     setup: function() {
-        givenAnElement(this);
-    }
+        this.element = $('<div>');
+        $("#qunit-fixture").append(this.element);
+    },
 });
 test("when I create a new label", function() {
     this.element.label();
@@ -18,14 +15,12 @@ test("when I create a new label", function() {
     assertThat(label.triple(),      nil(),              "there is no triple associated");
 });
 
-function givenAnElementWithText(world) {
-    givenAnElement(world);
-    world.text = "initial label";
-    world.element.text(world.text);
-}
 module("given a element with initial text", {
     setup: function() {
-        givenAnElementWithText(this);
+        this.element = $('<div>');
+        $("#qunit-fixture").append(this.element);
+        this.text = "initial label";
+        this.element.text(this.text);
     }
 });
 test("when I create a new label", function() {
@@ -37,16 +32,14 @@ test("when I create a new label", function() {
     assertThat(label.triple(),      nil(),              "there is no triple associated");
 });
 
-function givenAnElementWithUri(world) {
-    givenAnElement(world);
-    world.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-    world.element.endpoint({endpoint: world.endpoint});
-    world.uri = ":s";
-    world.element.attr("about", world.uri);
-}
 module("given a element with a URI", {
     setup: function() {
-        givenAnElementWithUri(this);
+        this.element = $('<div>');
+        $("#qunit-fixture").append(this.element);
+        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.element.endpoint({endpoint: this.endpoint});
+        this.uri = ":s";
+        this.element.attr("about", this.uri);
     }
 });
 test("when I create a new label", function() {
@@ -62,18 +55,19 @@ test("when I create a new label", function() {
     //assertThat(label.triple().toString(), equalTo(labelTriple.toString()), "its triple should be the triple returned by the endpoint");
 });
 
-function givenAnElementWithUriWIthText(world) {
-    givenAnElementWithUri(world);
-    world.text = "initial label";
-    world.element.text(world.text);    
-}
 module("given an element with a URI, with initial text", {
     setup: function() {
-        givenAnElementWithUriWIthText(this);
+        this.element = $('<div>');
+        $("#qunit-fixture").append(this.element);
+        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.element.endpoint({endpoint: this.endpoint});
+        this.uri = ":s";
+        this.element.attr("about", this.uri);
+        this.text = "initial label";
+        this.element.text(this.text);    
     }
 });
 test("when I create a new label", function() {
-
     var label = this.element.label().data('label');
 
     assertThat(label.isLiteral(),   not(truth()),       "the label should not be a literal");
@@ -110,15 +104,13 @@ test("when I create a new label", function() {
 
     verify(this.endpoint,times(1)).execute();       // The endpoint should be queried for a label
 });
-function givenANewLabel(world) {
-    givenAnElement(world);
-    world.label = world.element.label({autocomplete: true}).data('label');
-    world.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-    world.element.endpoint({endpoint: world.endpoint});
-}
 module("given a new label", {
     setup: function() {
-        givenANewLabel(this);
+        this.element = $('<div>');
+        $("#qunit-fixture").append(this.element);
+        this.label = this.element.label({autocomplete: true}).data('label');
+        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.element.endpoint({endpoint: this.endpoint});
     }
 });
 asyncTest("when I type new text and select the choice", function() {
@@ -127,11 +119,11 @@ asyncTest("when I type new text and select the choice", function() {
         arguments[1]( [ {value: ":aUri", label: "a label"} ] );
     });
 
-    this.element.text('lab').keydown();     // Can't seem to trigger events with a keyCode.  This is how autocomplete() tests keyboard events
+    this.label.getLabelElement().text('lab').keydown();     // Can't seem to trigger events with a keyCode.  This is how autocomplete() tests keyboard events
 
     setTimeout(function() {
-        test.element.simulate( "keydown", { keyCode: $.ui.keyCode.DOWN } );
-        test.element.simulate( "keydown", { keyCode: $.ui.keyCode.ENTER } );
+        test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.DOWN } );
+        test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.ENTER } );
     }, 300);
 
     setTimeout(function() {
@@ -146,14 +138,24 @@ asyncTest("when I type new text and select the choice", function() {
     }, 400);
     
 });
+test("when I (need a URI) set the URI", function() {
+    this.label.setLiteral("a label");
+    this.label.ensureUri();
+    assertThat(this.label.isLiteral(),   not(truth()),  "then label is not a literal");
+    assertThat(this.label.getLiteral(),  "a label");
+    assertThat(this.label.isUri(),       truth(),       "then label is not a URI");
+    this.label.element.append("<div>an element that should not affect the label</div>");
+});
 
-function givenANewLabelWithUri(world) {
-    givenAnElementWithUri(world);
-    world.label = world.element.label().data('label');
-}
 module("given a new label with a URI", {
     setup: function() {
-        givenANewLabelWithUri(this);
+        this.element = $('<div>');
+        $("#qunit-fixture").append(this.element);
+        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.element.endpoint({endpoint: this.endpoint});
+        this.uri = ":s";
+        this.element.attr("about", this.uri);
+        this.label = this.element.label().data('label');
     },
     teardown: function() {
         this.label.destroy();

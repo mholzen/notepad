@@ -110,7 +110,7 @@ test("when I add a triple to it", function() {
     var newTriple = new Triple(':s', ":describe", "a literal");
     
     var line = this.container.addTriple(newTriple);
-    assertThat(line.triple(), equalToObject(newTriple));
+    assertThat(line.triples(), hasItem(equalToObject(newTriple)));
     assertThat(this.container.triples(), hasItem(equalToObject(newTriple)), "the container should contain it");
 });
 test("when I get its source element", function() {

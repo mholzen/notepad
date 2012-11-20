@@ -27,8 +27,11 @@
             objectFactory: $.fn.label, 
             allowBlankNodes: true,
         },
-        getSubjectUri: function() {;
-            return this.element.closest('[about]').attr('about');
+        getSubjectElement: function() {
+            return this.element.closest('[about]');
+        },
+        getSubjectUri: function() {
+            return this.getSubjectElement().attr('about');
         },
         getAttribute: function() {
             if (this.element.attr('rel')) {
@@ -79,9 +82,8 @@
             this.options.objectFactory.call($(element), {uriElement: this.element, uriAttr: 'rel'});  // TODO: when backward, => ?
             return element.data('label');
         },
-
         getObjects: function(object) {
-            var objects = this.element.children('.notepad-label').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
+            var objects = this.element.children('.notepad-label, [about]').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
             if (object) {
                 if (object.isUri() || (this.options.allowBlankNodes && object.isBlank())) {
                     objects = objects.filter('[about='+object+']');
@@ -109,7 +111,11 @@
             return object;
         },
         insertObject: function() {
-            return $('<div>').appendTo(this.element).label().data('label');
+            return $('<div class="notepad-object3">').appendTo(this.element).label().data('label');
+        },
+        ensureOneObject: function() {
+            if (this.getObjects().length > 0) { return; }
+            this.insertObject();
         },
         add: function(triple) {
             if (this.getUri() != triple.predicate) {
@@ -131,13 +137,10 @@
         triples: function() {
             var triples = new Triples(0);
             if (this.getLabel() !== undefined && this.getLabel().triple() !== undefined) {
-                triples.push(this.getLabel().triple());
+                triples.add(this.getLabel().triple());
             }
             _.each(this.getObjects(), function(object) {
-                var triple = object.triple();
-                if (triple) {
-                    triples.push(triple);
-                }
+                triples.add(object.triples());
             });
             return triples;
         },
@@ -150,20 +153,19 @@
                 this.add(this.options.initialTriple);
             } else {
                 var uri = this.getUri() || "rdfs:member";
-                if (uri) {
-                    this.setUri(uri);
-                }
+                this.setUri(uri);
             }
-            this.element.contextMenu({menu: 'predicateMenu'}, function(action, element, pos) {
-                if (action == 'delete') {
-                    element.toggleClass('delete');
-                    return;
-                } else if (action == 'toggleDirection') {
-                    element.data('predicate').toggleDirection();
-                    return;
-                }
-                throw ("unknown action from contextmenu", action);
-            });
+            //this.element.append("<div>");
+            // this.element.contextMenu({menu: 'predicateMenu'}, function(action, element, pos) {
+            //     if (action == 'delete') {
+            //         element.toggleClass('delete');
+            //         return;
+            //     } else if (action == 'toggleDirection') {
+            //         element.data('predicate').toggleDirection();
+            //         return;
+            //     }
+            //     throw ("unknown action from contextmenu", action);
+            // });
 
 
         },

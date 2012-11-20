@@ -4,7 +4,7 @@
     BACKWARD = 1;
 
     getAttrName = $.fn.getAttrName = function(direction) {
-        return ( direction === undefined || direction === FORWARD ? "rel" : "inrel" );
+        return ( direction === undefined || direction === FORWARD ? "rel" : "rev" );
     }
 
     // A line matcher, based on the container uri and the triple
@@ -55,16 +55,9 @@
         getEndpoint: function () {
             return this.element.findEndpoint();
         },
-        _getDirection: function() {
-            return this.getPredicate() ? this.getPredicate().getDirection() : undefined;
-        },
         getDirection: function() {
-            if (this.predicate.attr(getAttrName(FORWARD))) {
-                return FORWARD;
-            } else if (this.predicate.attr(getAttrName(BACKWARD))) {
-                return BACKWARD;
-            }
-            return FORWARD;
+            var forward = this.getPredicate().isForward();
+            return forward !== undefined ? (forward ? FORWARD : BACKWARD) :  undefined;
         },
         hasObjectUri: function() {
             return (this.getUri() !== undefined);
@@ -75,14 +68,14 @@
 
         // Line Uri        
         getUri: function() {
-            return this.getObject().getObjectUri();
+            return this.getObject().getUri();
         },
         _setUri: function(uri) {
             this.element.attr('about',uri);
             return this;
         },      
         setUri: function(uri) {
-            this.getObject().setObjectUri(uri);
+            this.getObject().setUri(uri);
         },
         load: function() {
             // TODO: refactor with container.load
@@ -117,14 +110,15 @@
         _setPredicateUri: function(uri) {
             this.getPredicate().setUri(uri);
         },
-        setContainerPredicateUri: function(uri, direction, triple) {
+        setContainerPredicateUri: function(uri, direction) {
+            this.getPredicate().setUri(uri);
+            if (direction === BACKWARD) {
+                this.getPredicate().toggleDirection(false);
+            }
+        },
+        _setContainerPredicateUri: function(uri, direction, triple) {
             direction = (direction !== undefined) ? direction : this.getDirection();
             this._setContainerPredicateUri(uri, direction);
-
-            // if (triple === undefined && this.getContainerPredicateLabel() !== undefined) {
-            //     // TODO: fix: 
-            //     return;
-            // }
 
             var line = this;
             this.getEndpoint().getLabels(uri, function(labels) {
@@ -170,22 +164,8 @@
         _setContainerPredicateLabel: function(label) {
             this.predicate.val(label);
         },
-        getContainerPredicateLabel: function() {
-            return this.predicate.val();
-        },
         getContainerPredicateUri: function() {
-            if (this.getDirection()===FORWARD) {
-                return this.predicate.attr(getAttrName(FORWARD));
-            } else {
-                return this.predicate.attr(getAttrName(BACKWARD));
-            }
-
-            // var predicateUri = {
-            //     uri: this.predicate.attr(getAttrName(FORWARD)) || this.predicate.attr(getAttrName(BACKWARD)),
-            //     element: this.predicate
-            // };
-            // predicateUri.__proto__.toString = function() { return this.uri; }
-            // return predicateUri;
+            return this.getPredicate().getUri();
         },
         _getContainerPredicateUriByLabel: function(label) {
             var uri = this.getContainer().predicateMap[label];
@@ -215,62 +195,6 @@
             return undefined;
         },
 
-        triple: function() {
-            if ( this.getObject().getResource() === undefined ) {
-                // An object can have an undefined value, for example when the literal() is empty
-                return undefined;
-            }
-
-            var operation = this.predicate.hasClass("delete") ? 'delete' : 'update';
-            if (this.getDirection() === FORWARD) {
-                return new Triple(
-                    this.getSubjectUri(),
-                    this.getContainerPredicateUri(),
-                    this.getObjectResource(),
-                    operation
-                );
-            } else {
-                return new Triple(
-                    this.getObjectResource(),
-                    this.getContainerPredicateUri(),
-                    this.getSubjectUri(),
-                    operation
-                );
-            }
-        },
-        getContainerTriple: function() {
-            return this.triple();
-        },
-
-        old_getContainerTriple: function() {
-            if (this.predicate.hasClass("delete")) {
-                return new Triple(
-                    this.subject(),
-                    this.getContainerPredicateUri(),
-                    this.getObject().getResource(),
-                    // If the object is a literal, then we should call this.object().getPreviousLiteral()
-                    //this.getPreviousLiteral(),
-                    "delete"
-                );
-            }
-            if ( this.getObject().getResource() === undefined ) {
-                // An object can have an undefined value, for example when the literal() is empty
-                return undefined;
-            }
-            var tripleObject;
-
-            if (this.getDirection() === FORWARD) {
-                tripleObject = this.getObject().getResource();
-            } else {
-                tripleObject = this.getContainerUri();
-            }
-            return new Triple(
-                this.subject(),
-                this.getContainerPredicateUri(),
-                tripleObject,
-                "update"                
-            );
-        },
         showContainerPredicate: function() {
             this.predicateToggle.removeClass("hidden");
             this.predicateToggle.parent().children(".notepad-predicate").slideDown(100);
@@ -286,47 +210,10 @@
             this.predicateToggle.parent().children(".notepad-predicate").slideToggle(100);
             this.predicateToggle.parent().children(".notepad-separator").slideToggle(100);  
         },
-        getPredicateLabelTriple: function() {
-            if (this.getLineLiteral() == '' || this.getContainerPredicateLabel() == '') {
-                return undefined;
-            }
-            return new Triple(
-                this.getContainerPredicateUri(),
-                "rdfs:label",
-                this.getContainerPredicateLabel()
-                );
-        },
-        getObjectElement: function () {
-            return this.element.find('.notepad-object');
-        },
         getObject: function() {
-            return this.getObjectElement().data('notepad-object');
+            return this.getPredicate().element.find('.notepad-object3').data('label');
         },
 
-        getSubjectElement: function() {
-            return this.element.children('.notepad-subject');
-        },
-        setSubjectElement: function(element) {
-            this.getSubjectElement().remove();
-        },
-        _createSubject: function(uri) {
-            var subjectElement = $('<div>').addClass('').attr('about', uri).label().prependTo(this.element);
-            $('<div>').attr('about', uri).label();
-        },
-
-
-        setSubjectUri: function(uri) {
-            if (this.getSubjectElement() === undefined) {
-                this._createSubject(uri);
-            }
-            
-            this.element.attr('about',uri);
-
-            // TODO: this should trigger displaying the subject URI
-        },
-        getSubjectUri: function() {
-            return this.element.closest('[about]').attr('about');
-        },
         setObjectResource: function(resource) {
             this.getObject().setObject(resource);
         },
@@ -338,13 +225,11 @@
             if (this.getUri() === undefined) {
                 if (this.getContainerUri() == triple.subject) {
                     // Forward
-                    this.setSubjectUri(triple.subject);
                     this.getPredicate().setUri(triple.predicate);
                     this.setContainerPredicateUri(triple.predicate, FORWARD);
                     this.setObjectResource(triple.object);
                 } else if ( this.getContainerUri() == triple.object ) {
                     // Backward
-                    this.setSubjectUri(triple.object);
                     this.getPredicate().setUri(triple.predicate);
                     this.getPredicate().toggleDirection(false);
                     this.setContainerPredicateUri(triple.predicate, BACKWARD);
@@ -360,15 +245,14 @@
                 return;
             }
             if (triple.object.equals(this.getUri())) {
-                this.setSubjectUri(triple.object);  
-                this.setPredicate().setUri(triple.predicate);
+                this.getPredicate().setUri(triple.predicate);
                 this.getPredicate().toggleDirection(false);
                 this.setContainerPredicaterUri(triple.predicate, BACKWARD);
                 this.setObjectResource(this.subject);
                 return;
             }
             this.setSubjectUri(triple.subject)
-            this.setPredicate().setUri(triple.predicate);
+            this.getPredicate().setUri(triple.predicate);
             this.setContainerPredicateUri(triple.predicate, FORWARD);
             this.setObjectResource(triple.object);
         },
@@ -384,7 +268,7 @@
             return this.getObject().getObjectLiteral();
         },
         setLineLiteral: function(text) {
-            this.getObject().setObjectLiteral(text);
+            this.getObject().setLiteral(text);
             return this;
         },
         getLineTriple: function() {
@@ -411,23 +295,49 @@
 
         // Children elements
         getChildList: function() {
-            return this.element.find('ul');  // use find instead of children because jqueryui can move the element during transitions
+            var ul = this.getObject().element.find('ul:eq(0)');  // use find instead of children because jqueryui can move the element during transitions
+            if (ul.length === 0) {
+                var parentElement = this.getObject().element;
+                ul = $('<ul>').appendTo(parentElement);
+            }
+            return ul;
         },
+        _createChildContainer: function() {
+            var objectElement = $(this.getObject().element[0]);
+            var container = this.getChildList().container().data('container');
+            var line = this;
+            objectElement.on("labelurichange", function(event) {
+                if (!line.collapsed()) {
+                    container.load();
+                }
+                event.stopPropagation();
+                return false; // prevent this event from being caught by any labels in the path to root
+            });
+
+            this._createChildToggle();
+
+            return container;
+        },
+
         getChildContainer: function() {
-            return this.getChildList().data('container');
+            var container = this.getChildList().data('container');
+            if (!container) {
+                container = this._createChildContainer();
+            }
+            return container;
         },
         getLines: function() {
             return this.getChildContainer().getLines();
         },
-        appendLine: function(li) {
-            // Find or create list
-            var ul = this.getChildList();
-            if (ul.length==0) {
-                ul = $('<ul>').appendTo(this.element).container();
-            }
-            return ul.data('container').appendLine(li);
+        appendChildLine: function(li) {
+            this.showChildren();
+            return this.getChildContainer().appendLine(li);
         },
         insertLineAfter: function() {
+            // When a line has children, it should insert before any child
+            if (this.getLines().length > 0) {
+                return this.getLines()[0].insertLineBefore();
+            }
             var li = $('<li>').insertAfter(this.element).line();
             return li.data('line');
         },
@@ -437,9 +347,9 @@
         },
 
         childTriples: function() {
-            if (this.getUri() === undefined) {
-                return [];
-            }
+            // if (this.getUri() === undefined) {
+            //     return [];
+            // }
             if (this.getChildContainer() === undefined) {
                 throw new Error("somehow, we can't find a child container anymore");
             }
@@ -448,24 +358,9 @@
         triples: function() {
             var triples = new Triples(0);
 
-            var container = this.getContainerTriple();
-            if (container !== undefined) {
-                triples.push(container);
-            }
-            var predicate = this.getPredicateLabelTriple();
-            if (predicate !== undefined) {
-                triples.push(predicate);
-            }
+            var predicateTriples = this.getPredicate().triples();
+            $.merge(triples, predicateTriples);
 
-            var line = this.getLineTriple();
-            if (line !== undefined) {
-                triples.push(line);
-            }
-
-            var childTriples = this.childTriples();            
-            if (childTriples.length) {
-                $.merge(triples, childTriples);
-            }
             return triples;
         },
 
@@ -480,11 +375,11 @@
             }
 
             // Move current line to newParent
-            newParentLine.data('line').appendLine(this.element);
+            return newParentLine.data('line').appendChildLine(this.element);
         },
         unindent : function(event) {
             // Determine the new location
-            var newPredecessor = this.element.parent('ul').parent('li');
+            var newPredecessor = this.element.parent('ul').closest('li');
 
             // Prevent moving if we couldn't find the new parent
             if (!newPredecessor.length) {
@@ -492,90 +387,36 @@
             }
 
             // Move current line to parent
-            this.element.insertAfter(newPredecessor);
+            return this.element.insertAfter(newPredecessor); 
         },
         getPredicate: function() {
             return this.element.children(":notepad-predicate").data('predicate');
         },
-        _createPredicateWidget: function() {
-            var element = $('<div>').appendTo(this.element).predicate({initialTriple: this.options.initialTriple});
+        _createChildToggle: function() {
+            // Children collapse/expand
+            var childrenToggle = $('<a>').addClass('childrenToggle');
+            var line = this;
+            childrenToggle.click(function(event) {
+                line.childrenToggle();
+            });
+            this.element.prepend(childrenToggle);
+
+            // Initial state depends on the container
+            var describeElements = this.getContainer().option('describeElements');
+            if (!describeElements) {
+                this.hideChildren();
+            }
+            // No need to show because the initial state is: not collapsed, children shown
+            // thus avoiding an unnecessarey refresh and reload
         },
         _createPredicate: function() {
-            // Predicate toggle
-            var line = this;
-            this.predicateToggle = $('<a>').addClass('predicateToggle');
-            this.predicateToggle.click(function(){
-                line.toggleContainerPredicate();
-            });
+            var element = $('<div>').appendTo(this.element).predicate({ initialTriple: this.options.initialTriple });
+            // This will cause the object to be created before the child container has been, so the load event fires
+            // but the parent container receives it
 
-            // Predicate
-            this.predicate = $('<textarea rows="1" cols="8">').addClass('notepad-predicate');
-            this.predicate.contextMenu( {menu: 'predicateMenu'}, 
-                function(action, ele, pos) {
-                    if (action == 'delete') {
-                        ele.toggleClass('delete');
-                        return;
-                    } else if (action == 'toggleDirection') {
-                        ele.data('predicate').toggleDirection();
-                    }
-                    throw ("unknown action from contextmenu", action);
-                });
-
-            // Find whether this line has a predecessorPredicate
-            var predecessorLine = $(this.element).prev().data('line');
-            var predicate;
-            if (predecessorLine) {
-                predicate = predecessorLine.getContainerPredicateUri();
-            } else {
-                predicate = this._getContainerDefaultPredicate();
-            }
-            if (this.options.initialTriple === undefined) {
-                // Set the initial predicate URI only if we are not setting an initial triple
-                this.setContainerPredicateUri(predicate);
-            }
-
-            this.predicate.change(function(event) {
-                line.setContainerPredicateLabel($(event.target).val());
-            });
-            this.element.append(this.predicate);
-
-            // Must turn on autocomplete *after* the element has
-            // been added to the document
-            var notepad = this.getNotepad();
-            this.predicate.autocomplete({
-                source: function(term,callback) {
-                    notepad.getPredicatesLabelsByLabel(term.term,callback);
-                },
-
-                select: function(event,ui) {
-                    var line = $(event.target).parent('li').data('line');
-                    line._setContainerPredicateLabel(ui.item.label);
-                    line._setContainerPredicateUri(ui.item.value);
-                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value
-                }
-            });
-            
-            // Separator
-            var separator = $('<span>').addClass('notepad-separator');
-            this.element.append(separator);
-
-            // Insert the toggle after the ':'
-            this.element.append(this.predicateToggle);
-            
-            // Set the initial state of predicate and separator
-            var newlinePredicateHidden;
-            if ( predecessorLine ) {
-                newlinePredicateHidden = predecessorLine.element.find('.predicateToggle').hasClass('hidden');
-            } else {
-                newlinePredicateHidden = true;
-            }
-            if ( this.options.hidePredicateWhenRepeated && newlinePredicateHidden ) {
-                this.predicateToggle.addClass('hidden');
-                this.predicate.css('display', 'none');
-                separator.css('display', 'none');
-            }
+            // Ensure we created at least an object
+            element.data('predicate').ensureOneObject();
         },
-
         _createColumnObjects: function() {
             // For all columns, create objects
             var line = this;
@@ -590,62 +431,31 @@
                 object.setSubject(line);
             });
         },
-        _createObject1: function(objectText) {
-            var objectElement = $('<div>').text(objectText);
-            objectElement.appendTo(this.element);                   // WORKS
-            objectElement.object();
-        },
-        _createObject: function(objectText) {
-            var objectElement = $('<div>').text(objectText);
-            objectElement.appendTo(this.getPredicate().element);
-            objectElement.object();
-        },
-        _createChildContainer: function() {
-            var childContainerElement = $('<ul>').appendTo(this.element).container();
-            var childContainer = childContainerElement.data('container');
-
-            { // TODO: refactor into container( {param: objectElement});
-                // set the URI on the child container to: get it to load based on the notepad-object
-                var objectElement = this.getObjectElement();
-                childContainer.option('sourceElement', objectElement);
-                objectElement.bind("objecturichange", function() {
-                    if (!line.collapsed()) {
-                        childContainer.load();
-                    }
-                });
-            }
-
-            // Children collapse/expand
-            var childrenToggle = $('<a>').addClass('childrenToggle');
-            var line = this;
-            childrenToggle.click(function(event) {
-                line.childrenToggle();
-            });
-            this.element.prepend(childrenToggle);
-
-            // Initial state depends on the container
-            var childrenCollapsed = this.getContainer().option('collapsed');
-            this.childrenToggle(childrenCollapsed);
-        },
-
-        // Set up the line widget
-        _create: function() {
-            // Verify the container
+        _ensureSubjectUriExists: function() {
             if(!this.getContainer()) {
                 throw new Error("when creating a new line, should find a parent container");
             }
+            var enclosingLabel = this.getContainer().element.closest(":notepad-label");
+            if (enclosingLabel.length > 0) {
+                enclosingLabel.data('notepad-label').ensureUri();
+            }
+        },
+        // Set up the line widget
+        _create: function() {
+            // Verify the container
 
-            this.element.addClass("notepad-line");
+            this._ensureSubjectUriExists();
+
+            this.element.addClass("notepad-line");      // TODO: change all .notepad-* to :notepad-*
             
             // Save the initial content of the line to later initialize the object with it.
             var objectText = this.element.text();
             this.element.text("");
             
-            this._createPredicate();
-            this._createPredicateWidget();
+            this._createPredicate();                    // Creates the predicate and the first object
+                                                        // Sets the URI, which fails to trigger the child container
             this._createColumnObjects();
-            this._createObject(objectText);
-            this._createChildContainer();
+            this._createChildContainer();          
         },
 
         getChildrenToggle: function() {
@@ -654,13 +464,20 @@
         collapsed: function() {
             return this.getChildrenToggle().hasClass('collapsed');
         },
-        childrenToggle: function(collapse) {
-            var toggleElement = this.getChildrenToggle();
-            if (collapse === undefined) {
-                collapse = ! this.collapsed();
-                log.debug(collapse);
+        showChildren: function(showOrHide) {
+            if (showOrHide === undefined) { showOrHide = true; }
+            this.childrenToggle(!showOrHide);
+        },
+        hideChildren: function(hideOrShow) {
+            if (hideOrShow === undefined) { hideOrShow = true; }
+            this.childrenToggle(hideOrShow);
+        },
+        childrenToggle: function(hide) {
+            if (hide === undefined) {
+                hide = ! this.collapsed();
             }
-            if (collapse) {
+            var toggleElement = this.getChildrenToggle();
+            if (hide) {
                 toggleElement.addClass('collapsed');
                 this.getChildList().hide('blind', {}, 100);
             } else {  // expand
@@ -671,8 +488,6 @@
         },
         _destroy : function() {
             this.element.removeClass("notepad-line").removeAttr('about');
-            this.predicate.remove();
-            this.subject.unbind().remove();
         },
 
     });

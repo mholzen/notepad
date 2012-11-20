@@ -12,8 +12,10 @@ WHERE {
 	UNION
 	{ ?neighbourBackward ?predicateBackward ?about
 		BIND (?neighbourBackward as ?neighbour)
+		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session }
 	}
 
-	# {{{filters}}}
+	# Ignore 
+
 
 }

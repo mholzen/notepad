@@ -141,6 +141,19 @@
         return new Resource(":"+guidGenerator());
     };
 
+    $.notepad.toUri= function(value) {
+        if (value === undefined) { return undefined; }
+        var resource = new Resource(value);
+        return resource.toString();
+    };
+
+    toTriple = function(subject,predicate,object,operation) {
+        if (subject === undefined || predicate === undefined || object === undefined) {
+            return undefined;
+        }
+        return new Triple(subject,predicate,object,operation);
+    };
+
     Triple = function(subject,predicate,object,operation) {
         this.subject = new Resource(subject);
         this.predicate = new Resource(predicate);
@@ -185,6 +198,14 @@
 
     Triples = (function() {
         var methods = {
+            add: { value: function(value) {
+                if (value === undefined) { return; }
+                if (value instanceof Array) {
+                    $.merge(this, value);
+                } else {
+                    this.push(value);
+                }
+            } },
             update: { value: function() {
                 return this.filter(function(triple) { return triple.operation == "update"; });
             } },

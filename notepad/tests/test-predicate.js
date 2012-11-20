@@ -33,6 +33,13 @@ test("when I create a new predicate with an initial triple", function() {
     assertThat(predicate.isForward(), not(truth()));
     assertThat(predicate.triples(), hasItem(equalToObject(new Triple(":o", ":p", ":s"))));
 });
+test("when I create a new predicate with an initial triple", function() {
+    this.element.predicate({initialTriple: new Triple(":s", ":p", "123")});
+
+    var predicate = this.element.data('predicate');
+    assertThat(predicate.isForward(), truth());
+    assertThat(predicate.triples(), hasItem(equalToObject(new Triple(":s", ":p", "123"))));
+});
 
 module("given an element within a subject with an 'rel' attribute", {
     setup: function() {

@@ -1,0 +1,48 @@
+# Start with an empty element
+
+## start
+	<div></div>
+
+## manage with a label
+	<div class="label">
+		<div rel="rdfs:label"></div>
+	<div>
+
+
+
+
+
+# Start with an element with text
+
+## Start
+	<div>123</div>
+
+## manage with a label
+	<div class="label">
+		<div rel="rdfs:label">123</div>
+	<div>
+
+### becomes a URI
+	<div about=":xyz" class="label">
+		<div rel="rdfs:label">123</div>
+	<div>
+
+### Can receive additional element to describe the URI
+	<div about=":xyz" class="uri">
+		<div rel="rdfs:label">123</div>
+		<ul><!--  more facts about :xyz --></ul>
+	</div>
+
+
+<div contenteditable="true" rel="rdfs:label">
+	{{{rdfs:label}}} 
+	{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}
+</div>
+
+
+
+<div contenteditable="true" rel="rdfs:label">
+	{{{rdfs:label}}} 
+	{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}
+</div>
+<ul class=":notepad-container"/>
