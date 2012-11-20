@@ -410,12 +410,26 @@
             // thus avoiding an unnecessarey refresh and reload
         },
         _createPredicate: function() {
-            var element = $('<div>').appendTo(this.element).predicate({ initialTriple: this.options.initialTriple });
+            var element = $('<div>').appendTo(this.element).predicate();
+            var predicate = element.data('predicate');
+
+            if (this.options.initialTriple) {
+                predicate.setUri(this.options.initialTriple.predicate);
+            }
+            var object = predicate.ensureOneObject();
+
+            this._createChildContainer();
+                // requires the dependant object to be there
+
+            if (this.options.initialTriple) {
+                predicate.add(this.options.initialTriple);
+                    // should reuse the first object BUT does not
+                    // should set the object URI
+                    // should trigger load
+            }
+
             // This will cause the object to be created before the child container has been, so the load event fires
             // but the parent container receives it
-
-            // Ensure we created at least an object
-            element.data('predicate').ensureOneObject();
         },
         _createColumnObjects: function() {
             // For all columns, create objects
@@ -455,7 +469,7 @@
             this._createPredicate();                    // Creates the predicate and the first object
                                                         // Sets the URI, which fails to trigger the child container
             this._createColumnObjects();
-            this._createChildContainer();          
+            //this._createChildContainer();          
         },
 
         getChildrenToggle: function() {

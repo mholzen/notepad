@@ -61,6 +61,7 @@ FusekiEndpoint.prototype = {
         });
     },
     execute: function(command, callback) {
+        log.info('execute:', command.replace(/\s+/mg,' ').substring(0,120));
         command = this.prefixes() +
             "PREFIX : <" + $.uri.base() + '#> \n' +
             command;

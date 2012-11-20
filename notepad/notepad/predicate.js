@@ -86,9 +86,29 @@
             var objects = this.element.children('.notepad-label, [about]').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
             if (object) {
                 if (object.isUri() || (this.options.allowBlankNodes && object.isBlank())) {
-                    objects = objects.filter('[about='+object+']');
+                    objects = objects.filter(function() {
+                        var label = $(this).data('label');
+                        if (label && label.getUri() == undefined) {
+                            // Include objects with an "undefined" uri
+                            return true;
+                        }
+                        if (label && label.getUri() == object.getUri()) {
+                            return true;
+                        }
+                        return $(this).attr('about') == object.getUri();
+                    });
                 } else if (object.isLiteral()) {
-                    objects = objects.filter(function() { return $(this).text() == object; });
+                    objects = objects.filter(function() {
+                        var label = $(this).data('label');
+                        if (label && label.getLiteral() == undefined) {
+                            // Include objects with an "undefined" literal
+                            return true;
+                        }
+                        if (label && label.getLiteral() == object.getLiteral()) {
+                            return true;
+                        }
+                        return ($(this).text() == object);
+                    });
                 } else if (object.isBlank()) {
                     throw new Error("cannot add a blank node");
                 } else {
@@ -121,18 +141,18 @@
             if (this.getUri() != triple.predicate) {
                 return;
             }
-            var resourceAsObject;
+            var resourceForObject;
             if (triple.subject == this.getSubjectUri()) {
-                resourceAsObject = triple.object;
+                resourceForObject = triple.object;
                 this.toggleDirection(true);
             } else if (triple.object.isUri() && triple.object == this.getSubjectUri()) {
                 this.toggleDirection(false);
-                resourceAsObject = triple.subject;
+                resourceForObject = triple.subject;
             } else {
                 return;
             }
-            var object = this.getObjectLocation(resourceAsObject);
-            object.setObject(resourceAsObject);
+            var object = this.getObjectLocation(resourceForObject);
+            object.setObject(resourceForObject);
         },
         triples: function() {
             var triples = new Triples(0);
