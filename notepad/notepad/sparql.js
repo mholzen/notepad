@@ -85,7 +85,7 @@ FusekiEndpoint.prototype = {
         'SELECT DISTINCT ?subject ?label \
         WHERE {  \
             ?subject ?labelPredicate ?label FILTER regex(?label, "'+label.replace(/"/g, '\\"')+'", "i") \
-        }';
+        } LIMIT 30';
         // { ?labelPredicate rdfs:subPropertyOf rdfs:label } UNION { ?subject rdfs:label ?label } 
         this.execute(command,function(data) { 
             var subjectsLabels = _.map(data.results.bindings, function(binding) {
