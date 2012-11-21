@@ -16,10 +16,10 @@
                                 '{{#nmo:sender}}<span class="notepad-column-0">{{{nmo:sender}}}</span><span class="notepad-column-1">{{{nmo:receivedDate}}}</span>{{/nmo:sender}}' +
                                 '{{^nmo:messageSubject}}' +
                                     '{{#uri}}' +
-                                        '<span contenteditable="false" class="uri">{{{uri}}}</span>' +
+                                        '<span contenteditable="false" rel="rdfs:label" class="uri">{{{uri}}}</span>' +
                                     '{{/uri}}' +
                                     '{{^uri}}' +
-                                        '<div literal contenteditable="true" rel="rdfs:label"></div>' +
+                                        '<div contenteditable="true" rel="rdfs:label"></div>' +
                                     '{{/uri}}' +
                                 '{{/nmo:messageSubject}}' +
                             '{{/rdfs:label}}' +
