@@ -8,6 +8,33 @@ body {
     font-size: large;
 }
 
+.uri {
+    color: #bbb;
+    font-weight: 100;
+}
+
+#container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 95%;
+    border: solid 1px #888;
+    border-radius: 5px;
+    padding: 20px;
+    clear: both;
+}
+
+#container h2 {
+    margin-top: 0px;
+}
+
+.notepad > ul {
+    padding-left: 0;
+}
+
+/*
+ * ICONS
+ */
+
 #icons {
     display: none;
 }
@@ -31,229 +58,13 @@ body {
     text-align: center;
 }
 
-#container {
-    margin-left: auto;
-    margin-right: auto;
-    width: 95%;
-    border: solid 1px #888;
-    border-radius: 5px;
-    padding: 20px;
-    clear: both;
-}
-
-#container h2 {
-    margin-top: 0px;
-}
-
-.notepad > ul {
-    padding-left: 0;
-}
-.notepad .predicate {
-	font-style: italic;
-}
-
-.notepad [inrel] {
-    background: black;
-    color: white;
-}
-.notepad-predicate [inrel] {
-    background: black;
-}
-
-.notepad-object {
-    display: inline-block;
-    width: 600px;
-}
-
-.notepad-object3 {
-    display: inline;
-}
-
-textarea.notepad-object {
-    /* Turn display off to test notepad-object in line */
-    display: none;
-}
-
-.notepad .delete {
-    text-decoration: line-through;
-}
-.notepad textarea {
-    font-size: large;
-    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
-}
-
-div.notepad-object {
-    line-height: 28px;
-    font-size: 18px;
-    /*vertical-align: text-bottom;*/
-    display: inline-block;
-}
-
-.notepad li {
-    list-style: none;
-    line-height: 30px;
-}
-.notepad .ui-effects-wrapper {
-    display: inline-block;
-}
-
-.notepad .separator:before {
-	content: ": ";
-}
-
-.notepad textarea {
-    resize: none;
-    border: none;
-    vertical-align: middle;
-}
-
-.notepad .predicateToggle {
-    padding: 2px 4px;
-    margin-right: 10px;
-    border-radius: 10px;      
-    cursor: pointer;
-    font-family: monospace;
-    font-size: xx-small;
-    
-    border-top: solid 1px #eaeaea;
-    border-left: solid 1px #eaeaea;
-    border-bottom: solid 1px #777;
-    border-right: solid 1px #777;
-}
-
-.notepad td {
-    vertical-align: top;
-}
-
-.notepad .predicateToggle.hidden {
-    border-top: solid 1px #eaeaea;
-    border-left: solid 1px #eaeaea;
-    border-bottom: solid 1px #777;
-    border-right: solid 1px #777;
-}
-
-.notepad .predicateToggle.hidden:before {
-    content: ">";
-}
-
-.notepad .predicateToggle:before {
-    content: "<";
-}
-
-.notepad-headers-container {
-    display: inline;
-}
-
-.notepad-headers-container .notepad-subjects {
-    line-height: 24px;    
-}
-
-.notepad-column.notepad-predicate {
-    line-height: 24px;
-}
-
-.notepad-column-0 {
-    width: 400px;
-    position: absolute;
-    left: 700px;
-    display: inline-block;
-}
-
-.notepad-column-0.notepad-object {
-    border: solid 1pt black;
-}
-
-.notepad-column-1 {
-    width: 400px;
-    position: absolute;
-    left: 1200px;
-    display: inline-block;
-}
-
-
-.notepad .childrenToggle {
-    padding: 2px 4px;
-    margin-right: 10px;
-    border-radius: 10px;      
-    cursor: pointer;
-    font-family: monospace;
-    font-weight: bold;
-    font-size: small;
-}
-
 /*
-  TODO: replace with triangle pointing right and down, similar to sublime text
-  display it initially, make it display on hover after a while.
-*/
-
-.notepad .childrenToggle.collapsed {
-    /* This is necessary to have the following pseudo selector work right */
+ * PREDICATES
+ */
+.notepad .predicate {
+    font-style: italic;
 }
 
-.notepad .childrenToggle.collapsed:before {
-    content: "+";  /* TODO: replace with triangle pointing right; */
-}
-
-.notepad .childrenToggle:before {
-    content: "-";  /* TODO: replace with triangle pointing down; */
-}
-
-.debug {
-    display: none;  /* turns this off */
-    position: absolute; bottom: 0px;
-}
-.debug .hidden {
-    display: none;
-}
-.debug td {
-    border: solid 1pt black;
-    white-space: pre;
-    font-family: courier;
-    font-size: xx-small;
-}
-
-
-/* Triple Elements Colors */
-.notepad-colors .notepad-predicate {
-    background: #efe;    
-}
-.notepad-colors .notepad-object {
-    background: #eef;
-}
-
-
-.notepad-object-old {
-    display: none;
-}
-
-.uri {
-    color: #bbb;
-    /*font-family: courier, sans-serif;*/
-    font-weight: 100;
-}
-
-.turtle {
-    font-family: courier;
-    font-size: small;
-    white-space: pre;
-}
-
-.notepad-filters > .notepad-fact > .notepad-predicate > .notepad-predicate-label {
-    display: none;
-}
-.notepad-filters .notepad-predicate {
-    border: solid 1pt white;
-    display: none;
-}
-.notepad-filters [rel="rdfs:label"] {
-    border: solid 1pt white;
-    display: inline-block;
-}
-
-[rel="rdfs:label"] {
-    display: inline-block;
-    width: 600px;
-}
 
 .notepad-predicate-label [rel="rdfs:label"] {
     font-style: italic;
@@ -286,8 +97,210 @@ div.notepad-object {
     display: inline;
 }
 
+[rel="rdfs:label"] {
+    display: inline-block;
+    width: 600px;
+}
+
+.notepad-label {
+    display: inline-block;
+}
+
+.notepad .delete {
+    text-decoration: line-through;
+}
+
+.notepad li {
+    list-style: none;
+    line-height: 30px;
+}
+
+.notepad .ui-effects-wrapper {
+    display: inline-block;
+}
+
+.notepad .separator:before {
+	content: ": ";
+}
+
+.notepad td {
+    vertical-align: top;
+}
+
+/*
+ * PREDICATE TOGGLE
+ */
+
+.notepad .predicateToggle {
+    padding: 2px 4px;
+    margin-right: 10px;
+    border-radius: 10px;      
+    cursor: pointer;
+    font-family: monospace;
+    font-size: xx-small;
+    
+    border-top: solid 1px #eaeaea;
+    border-left: solid 1px #eaeaea;
+    border-bottom: solid 1px #777;
+    border-right: solid 1px #777;
+}
+
+.notepad .predicateToggle.hidden {
+    border-top: solid 1px #eaeaea;
+    border-left: solid 1px #eaeaea;
+    border-bottom: solid 1px #777;
+    border-right: solid 1px #777;
+}
+
+.notepad .predicateToggle.hidden:before {
+    content: ">";
+}
+
+.notepad .predicateToggle:before {
+    content: "<";
+}
+
+/*
+ * OBJECTS
+ */
+
+.notepad-object {
+    display: inline-block;
+    width: 600px;
+}
+
+.notepad-object3 {
+    display: inline;
+}
+
 .notepad-object3:not([about]) {
     display: inline-block;
-    width: 400px;
+    width: 600px;
     padding-right: 3px;
+}
+
+div.notepad-object {
+    line-height: 28px;
+    font-size: 18px;
+    /*vertical-align: text-bottom;*/
+    display: inline-block;
+}
+
+
+/*
+ * COLUMNS, HEADERES
+ */
+
+.notepad-headers-container {
+    display: inline;
+}
+
+.notepad-headers-container .notepad-subjects {
+    line-height: 24px;    
+}
+
+.notepad-column.notepad-predicate {
+    line-height: 24px;
+}
+
+.notepad-column-0 {
+    width: 400px;
+    position: absolute;
+    left: 700px;
+    display: inline-block;
+}
+
+.notepad-column-0.notepad-object {
+    border: solid 1pt black;
+}
+
+.notepad-column-1 {
+    width: 400px;
+    position: absolute;
+    left: 1200px;
+    display: inline-block;
+}
+
+
+
+/*
+ * CHILDREN TOGGLE
+ */
+
+.notepad .childrenToggle {
+    padding: 2px 4px;
+    margin-right: 10px;
+    border-radius: 10px;      
+    cursor: pointer;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: small;
+}
+
+/*
+  TODO: replace with triangle pointing right and down, similar to sublime text
+  display it initially, make it display on hover after a while.
+*/
+
+.notepad .childrenToggle.collapsed {
+    /* This is necessary to have the following pseudo selector work right */
+}
+
+.notepad .childrenToggle.collapsed:before {
+    content: "+";  /* TODO: replace with triangle pointing right; */
+}
+
+.notepad .childrenToggle:before {
+    content: "-";  /* TODO: replace with triangle pointing down; */
+}
+
+/*
+ * DEBUG
+ */
+
+.debug {
+    display: none;  /* turns this off */
+    position: absolute; bottom: 0px;
+}
+.debug .hidden {
+    display: none;
+}
+.debug td {
+    border: solid 1pt black;
+    white-space: pre;
+    font-family: courier;
+    font-size: xx-small;
+}
+
+.turtle {
+    font-family: courier;
+    font-size: small;
+    white-space: pre;
+}
+
+
+/* Triple Elements Colors */
+.notepad-colors .notepad-predicate {
+    background: #efe;    
+}
+.notepad-colors .notepad-object {
+    background: #eef;
+}
+
+
+
+/*
+ * FILTERS
+ */
+
+.notepad-filters > .notepad-fact > .notepad-predicate > .notepad-predicate-label {
+    display: none;
+}
+.notepad-filters .notepad-predicate {
+    border: solid 1pt white;
+    display: none;
+}
+.notepad-filters [rel="rdfs:label"] {
+    border: solid 1pt white;
+    display: inline-block;
 }
