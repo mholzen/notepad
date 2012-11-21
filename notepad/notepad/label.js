@@ -127,6 +127,7 @@
             whereClauses.push (' && .');
             var query = 'CONSTRUCT {?s ?p ?o} WHERE { ?s ?p ?o FILTER( sameTerm(?s, '+about.toSparqlString()+') \
                 && ( ?p in (' + predicatesInTemplate.join(",") + ') ) ) }';
+            query = query + '\n # query:cache';
             return query;
         },
 

@@ -2,6 +2,8 @@
 
 $.notepad = $.notepad || {};
 
+cache = {};
+
 FusekiEndpoint = function(uri) {
     this.uri = uri;
     this.graph = 'default';
@@ -12,7 +14,6 @@ TempFusekiEndpoint = function(uri, triples, callback) {
     endpoint.graph = "ex" + $.notepad.getNewUri();
     endpoint.insertData(triples, callback.bind(endpoint));
 }
-
 
 FusekiEndpoint.prototype = {
     prefixes: function() {
@@ -35,6 +36,23 @@ FusekiEndpoint.prototype = {
         if (this.graph != 'default') {
             options['default-graph-uri'] = this.graph;
         }
+
+        // $.ajaxSetup({cache: true});
+        // options.cache = true;
+        // if (cache.shouldCache(command)) {
+        if (command.match(/# query:cache/) ) {
+            if (command in cache) {
+                log.debug("returning cached results");
+                callback ( cache[command] );
+                return;
+            } else {
+                return $.getJSON(this.queryUri(), options, function(result) {
+                    cache[command] = result;
+                    callback(result);
+                });
+            }
+        }
+
         return $.getJSON(this.queryUri(), options, callback);
     },
     update: function(command, callback) {
@@ -61,7 +79,7 @@ FusekiEndpoint.prototype = {
         });
     },
     execute: function(command, callback) {
-        log.info('execute:', command.replace(/\s+/mg,' ').substring(0,120));
+        log.debug('execute:', command.replace(/\s+/mg,' ').substring(0,120));
         command = this.prefixes() +
             "PREFIX : <" + $.uri.base() + '#> \n' +
             command;
