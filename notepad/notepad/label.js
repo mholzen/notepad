@@ -3,10 +3,29 @@
     $.widget("notepad.label", {
 
         options: { 
-            template:           '<div contenteditable="true" rel="rdfs:label">' +
-                                    '{{{rdfs:label}}}' + 
-                                    '{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}' +
-                                '</div>',
+            // template:           '<div contenteditable="true" rel="rdfs:label">' +
+            //                         '{{{rdfs:label}}}' + 
+            //                         '{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}' +
+            //                     '</div>',
+
+            template:       '{{#rdfs:label}}' +
+                                '<div contenteditable="true" rel="rdfs:label">{{{rdfs:label}}}</div>' +
+                            '{{/rdfs:label}}' +
+                            '{{^rdfs:label}}' +
+                                '{{#nmo:messageSubject}}<span rel="nmo:messageSubject">{{{nmo:messageSubject}}}</span>{{/nmo:messageSubject}}' +
+                                '{{#nmo:sender}}<span class="notepad-column-0">{{{nmo:sender}}}</span><span class="notepad-column-1">{{{nmo:receivedDate}}}</span>{{/nmo:sender}}' +
+                                '{{^nmo:messageSubject}}' +
+                                    '{{#uri}}' +
+                                        '<span contenteditable="false" class="uri">{{{uri}}}</span>' +
+                                    '{{/uri}}' +
+                                    '{{^uri}}' +
+                                        '<div literal contenteditable="true" rel="rdfs:label"></div>' +
+                                    '{{/uri}}' +
+                                '{{/nmo:messageSubject}}' +
+                            '{{/rdfs:label}}' +
+                            '',
+
+
                                 
             uriAttr:            'about',
             uriElement:         undefined,
@@ -103,7 +122,9 @@
             this._updateFromRdf(triples);
         },
         setLiteral: function(literal) {
-            this.element.text(literal);
+            var triples = new Triples(0);
+            triples.add( toTriple(":", "rdfs:label", literal ) );
+            this._updateFromRdf(triples);
         },
         setObject: function(resource) {
             if (resource.isLiteral()) {
