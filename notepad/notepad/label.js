@@ -156,7 +156,7 @@
             if (query !== undefined) {
                 sparql = Mustache.render(query, {about: aboutResource.toSparqlString()});
             } else {
-                sparql = this.queryFromTemplate(aboutResource); 
+                sparql = this.queryFromTemplate(aboutResource);
             }
 
             var label = this;
@@ -299,7 +299,7 @@
         // Set up the widget
         _create: function() {
             // Object
-            this.element.addClass('notepad-label'); //.attr('contenteditable', 'true');
+            this.element.addClass('notepad-label');
 
             if (this.getUri() !== undefined && this.getLiteral() === undefined) {
                 // A uri but no literal:

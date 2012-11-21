@@ -4,7 +4,7 @@
     var CONTAINER_DEFAULT_PREDICATE_URI = 'rdfs:member';
     var MAX_DEPTH = 2;
     var MAX_TRIPLES = 500;
-    var MAX_TRIPLES_BEFORE_COLLAPSING = 30;
+    var MAX_TRIPLES_BEFORE_COLLAPSING = 10;
     var MAX_TRIPLES_BEFORE_FILTERING = 10;
 
     $.widget("notepad.container", {
@@ -79,7 +79,7 @@
             }
             line.appendTo(this.element);
             if (line.data('line') === undefined) {
-                line.line({initialTriple: triple});    
+                line.line({initialTriple: triple});
             }
             line = line.data('line');
             line._ensureSubjectUriExists();
@@ -203,7 +203,7 @@
                 var lineSelector = new $.fn.Selector(container.getUri(), triple);
                 if ( lineSelector.direction === undefined ) {
                     log.debug("Triple does not relate to this container");
-                    return undefined;   // this triple does not relate to this container
+                    return undefined;
                 }
 
                 var childLines = container.element.find(lineSelector);
@@ -216,10 +216,7 @@
                 } else {
                     line = container.appendLine(undefined, triple);
                 }
-                if (triple.object.toString() === 'http://localhost:3030/dev/699d1fd9-13f0-11e2-90e8-c82a1402d8a8') {
-                    console.log('setting pred uri for our line ');
-                    console.log(triple.predicate.toString());
-                }
+                
                 line.setContainerPredicateUri(triple.predicate, lineSelector.direction, triple);
 
                 if (triple.object.isLiteral()) {
@@ -301,7 +298,6 @@
             if (this.filters() !== undefined) {
                 return;
             }
-            // var filter = $('<select multiple size="10" class="notepad-filters">').prependTo(this.element).container2();
             var filter = $('<div class="notepad-filters">').prependTo(this.element).container2();
             var container2 = filter.data('container2');
             var about = new Resource(this.getUri());
@@ -312,7 +308,6 @@
                 // dev:techdebt
                 // This could be instead modified by setting a triple in the endpoint of the container that defines the label for ... as being the <input> element
                 filter.find('.notepad-fact').prepend('<input type="checkbox">');
-                // filter.find('.notepad-fact').wrap('<input type="checkbox">');
                 filter.find('input').click(function() {
                     container.element.find(":notepad-line").remove();
                     container2.element.find("input:not(:checked)").parent().remove();
