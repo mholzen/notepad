@@ -137,12 +137,11 @@
                 return false;
             }
 
-            var newLine;
             if (target.caret() == 0) {
-                newLine = li.data('line').insertLineBefore();
-                newLine.focus();         // Stay focused on the new line
+                li.data('line').insertLineBefore();
+                // Stay focused on the current line, that moved down
             } else {
-                newLine = li.data('line').insertLineAfter();
+                var newLine = li.data('line').insertLineAfter();
                 newLine.focus();
             }
             
