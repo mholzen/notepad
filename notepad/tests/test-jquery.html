@@ -70,11 +70,16 @@ $(document).ready(function() {
     test("events", function() {
       var parent = $("<div>").appendTo("#qunit-fixture");
       var child = $("<div>").appendTo(parent);
-
+      var handler1called = false, handler2called = false;
       parent.on("myEvent", function() { ok(false, "parent should never be called"); });
-      child.on("myEvent", function() { ok(true, "children is called"); return false; });
+      child.on("myEvent", function() { handler1called = true; ok(true, "children is called"); });
+      child.on("myEvent", function() { handler2called = true; ok(true, "another handler is also called"); return false; });
 
       child.trigger("myEvent");
+
+      ok(handler1called, "handler1 called");
+      ok(handler2called, "handler2 called");
+
     });
 
 });
