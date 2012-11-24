@@ -175,6 +175,7 @@
         },
         toPrettyString: function() {
             return this.toString();
+            //return this.toDatabank().dump({format: "text/turtle"}).replace(/ \. /g, " .\n");
         },
         toSparqlString: function() {
             return this.subject.toSparqlString()+' '+this.predicate.toSparqlString()+' '+this.object.toSparqlString()+' .';
