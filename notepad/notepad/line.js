@@ -265,34 +265,12 @@
             throw new Error("not yet implemented");
         },
         getLineLiteral: function() {
-            return this.getObject().getObjectLiteral();
+            return this.getObject().getLiteral();
         },
         setLineLiteral: function(text) {
             this.getObject().setLiteral(text);
             return this;
         },
-        getLineTriple: function() {
-            if (this.hasObjectLiteral()) {
-                return undefined;
-            }
-            if (this.getLineLiteral() == '') {
-                return undefined;
-            }
-
-            return new Triple(
-                this.getUri(),
-                this.getLinePredicateUri(),
-                this.getLineLiteral()
-                );
-        },
-        setLineTriple: function(triple) {
-            this.setUri(triple.subject);
-            if (triple.predicate !== 'rdfs:label') {
-                throw new Error("line triple predicate is not rdfs:label");
-            }
-            this._setLiteral(triple.object);
-        },
-
         // Children elements
         getChildList: function() {
             var ul = this.getObject().element.find('ul:eq(0)');  // use find instead of children because jqueryui can move the element during transitions
