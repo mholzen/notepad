@@ -21,6 +21,7 @@
         _create: function() {
             this.element.addClass("notepad-container");
             this._createHeadersContainer();
+            this._createFilters();
         },
 
         _destroy: function() {
@@ -172,17 +173,15 @@
                     container.option('describeElements', false);
                 }
 
-                // TODO: it should be up to the object to determine the best way to display itself, given its context
-                if (triples.triples(undefined, "rdf:type", "notepad:imap_import").length !== 0) {
-                    container.lineTemplate = '<div><span>{{{nmo:sender}}}</span>' + 
-                        '<span rel="nmo:messageSubject" class="notepad-column-0">{{{nmo:messageSubject}}}</span><span  class="notepad-column-1">{{{nmo:receivedDate}}}</span></div>';
-                }
                 container._updateFromRdf(triples);
+
             });
         },
         _updateFromRdf: function(triples) {
             // Update the immediate descendant children
             var container = this;
+
+            log.debug("updating container with ", triples.length, " triples.");
 
             _.each(triples, function(triple) {
                 log.debug('updating for triple'+triple.toString());
@@ -229,9 +228,8 @@
 
             this._updateLabelsFromRdf(triples);
 
-            if (container.getLines().length > MAX_TRIPLES_BEFORE_FILTERING) {
-                container._createFilters();
-            }
+            log.debug('triggering contentchanged on ', this.getUri());
+            this.element.trigger('contentchanged');
         },
         _updateLabelsFromRdf: function(triples) {
             // Update the representations of all children line
@@ -294,29 +292,41 @@
         // 
         // Filters
         //
+        filters: function() {
+            return this.element.children('.notepad-filters').data('container2');
+        },
         _createFilters: function() {
             if (this.filters() !== undefined) {
                 return;
             }
-            var filter = $('<div class="notepad-filters">').prependTo(this.element).container2();
-            var container2 = filter.data('container2');
-            var about = new Resource(this.getUri());
+            var filters = $('<div class="notepad-filters">').prependTo(this.element).container2().data('container2');
             var container = this;
-            var clusters = $.notepad.clusterQuery.execute(this.element.findEndpoint(), {about: about.toSparqlString()}, function(triples) {
-                container2.addAllTriples(triples);
 
-                // dev:techdebt
-                // This could be instead modified by setting a triple in the endpoint of the container that defines the label for ... as being the <input> element
-                filter.find('.notepad-fact').prepend('<input type="checkbox">');
-                filter.find('input').click(function() {
-                    container.element.find(":notepad-line").remove();
-                    container2.element.find("input:not(:checked)").parent().remove();
-                    container.load();
-                })
+            this.element.on('contentchanged', function(event) {
+                log.debug('container lines:', container.getLines().length);
+                event.stopPropagation();
+                if (container.getLines().length < MAX_TRIPLES_BEFORE_FILTERING) {
+                    log.debug("too few lines so doing nothing with filters");
+                    return;
+                }
+
+                // Remove unselected filters
+                filters.element.find("input:not(:checked)").parent().remove();
+
+                var about = new Resource(container.getUri());
+
+                $.notepad.clusterQuery.execute(container.element.findEndpoint(), {about: about.toSparqlString()}, function(triples) {
+                    filters.addAllTriples(triples);
+
+                    // dev:techdebt
+                    // This could be instead modified by setting a triple in the endpoint of the container that defines the label for ... as being the <input> element
+                    filters.element.find('.notepad-fact').prepend('<input type="checkbox">');
+                    filters.element.find('input').click(function() {
+                        container.element.find(":notepad-line").remove();
+                        container.load();
+                    });
+                });
             });
-        },
-        filters: function() {
-            return this.element.children('.notepad-filters').data('container2');
         },
     });
 

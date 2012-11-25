@@ -285,6 +285,10 @@
             var container = this.getChildList().container().data('container');
             var line = this;
             objectElement.on("labelurichange", function(event) {
+                if (event.target != objectElement[0]) {
+                    log.debug("ignoring event for another target");
+                    return;
+                }
                 if (!line.collapsed()) {
                     container.load();
                 }
