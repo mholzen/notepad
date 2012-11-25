@@ -50,7 +50,7 @@
 
             var column = this;
             _.each( this.getContainer().getAllLines(), function(line) {
-                var objectElement = $('<div>').insertAfter(line.element.find('.notepad-object')[0]);
+                var objectElement = $('<div>').insertAfter(line.element.find('.notepad-object3')[0]);
 
                 // Display this object within a column
                 objectElement.addClass(column.getCssClass());
