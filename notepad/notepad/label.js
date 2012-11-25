@@ -152,7 +152,7 @@
             return query;
         },
 
-        load: function() {
+        load: function(callback) {
             if (! this.isUri()) {
                 return;
             }
@@ -185,6 +185,10 @@
             log.debug("query for label of ", aboutResource.toString());
             this.getEndpoint().execute(sparql, function(triples) {
                 label._updateFromRdf(triples);
+
+                if (callback !== undefined) {
+                    callback.apply(label);
+                }
             });
         },
         _updateFromRdf: function(triples) {

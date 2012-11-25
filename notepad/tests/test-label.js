@@ -161,6 +161,22 @@ module("given a new label with a URI", {
         this.label.destroy();
     }
 });
+asyncTest("when I display a URI that has no label", function() {
+    var triples = new Triples(0);
+    triples.add(new Triple(":s", "nmo:messageSubject", "a subject"));
+    triples.add(new Triple(":s", "nmo:sender", "a sender"));
+
+    var test = this;
+    var endpoint = TempFusekiEndpoint('http://localhost:3030/test', triples, function() {
+        test.element.data('endpoint').option('endpoint', this);
+        test.label.load( function() {
+            assertThat(test.element.text(), containsString("a subject"), "it should display the subject");
+            assertThat(test.element.text(), containsString("a sender"), "it should display the sender");
+            start();
+        });
+    });
+});
+
 
 module("given a element within a subject and predicate", {
     setup: function() {
