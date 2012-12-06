@@ -350,10 +350,10 @@
                 select: function(event, ui) {
                     var label = $(event.target).closest('.notepad-label').data('label');
                     var uri = ui.item.value;
-                    // var choice = new Triples();
-                    label.set(toTriple(uri, "rdfs:label", ui.item.label));
-                    // label.setUri(uri);
-                    // label._updateFromRdf(choice);
+                    var choice = new Triples();
+                    // label.set(toTriple(uri, "rdfs:label", ui.item.label));
+                    label.setUri(uri);
+                    label._updateFromRdf(choice);
                     event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
                 }
             });
