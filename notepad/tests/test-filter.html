@@ -17,35 +17,42 @@
 <script src="../external/subarray.js" type="text/javascript"></script>
 <script src="../external/underscore.js" type="text/javascript"></script>
 <script src="../external/mustache.js" type="text/javascript"></script>
-<script src="../external/log4js.js" type="text/javascript"></script>
 <script src="../external/jquery.contextMenu.js" type="text/javascript"></script>
 <link  href="../external/jquery.contextMenu.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jquery.simulate.js" type="text/javascript"></script>
 
+
 <!-- Code under test -->
 <link  href="../css/notepad.css" type="text/css" rel="stylesheet" media="screen" />
-<script src="../notepad/notepad-rdf.js" type="text/javascript"></script>
+<script src="../notepad/endpoint.js" type="text/javascript"></script>
+<script src="../notepad/rdf.js" type="text/javascript"></script>
 <script src="../notepad/notepad.js" type="text/javascript"></script>
-<script src="../notepad/notepad-container.js" type="text/javascript"></script>
-<script src="../notepad/notepad-line.js" type="text/javascript"></script>
-<script src="../notepad/notepad-sparql.js" type="text/javascript"></script>
-<script src="../notepad/notepad-column.js" type="text/javascript"></script>
-<script src="../notepad/notepad-predicate.js" type="text/javascript"></script>
-<script src="../notepad/notepad-object.js" type="text/javascript"></script>
-<script src="../notepad/notepad-label.js" type="text/javascript"></script>
-<script src="../notepad/notepad-fact.js" type="text/javascript"></script>
+<script src="../notepad/container.js" type="text/javascript"></script>
+<script src="../notepad/label.js" type="text/javascript"></script>
+<script src="../notepad/fact.js" type="text/javascript"></script>
+<script src="../notepad/container2.js" type="text/javascript"></script>
+<script src="../notepad/line.js" type="text/javascript"></script>
+<script src="../notepad/sparql.js" type="text/javascript"></script>
+<script src="../notepad/column.js" type="text/javascript"></script>
+<script src="../notepad/object.js" type="text/javascript"></script>
+<script src="../notepad/predicate.js" type="text/javascript"></script>
+<script src="../notepad/container2.js" type="text/javascript"></script>
+<script src="../templates/templates.js" type="text/javascript"></script>
+<script src="../notepad/query.js" type="text/javascript"></script>
 
 <!-- Tests -->
-<script src="notepad-label.js" type="text/javascript"></script>
-<script src="notepad-predicate.js" type="text/javascript"></script>
-<script src="notepad-fact.js" type="text/javascript"></script>
-<script src="notepad-filter.js" type="text/javascript"></script>
-
+<script src="test-endpoint.js" type="text/javascript"></script>
+<script src="test-label.js" type="text/javascript"></script>
+<script src="test-predicate.js" type="text/javascript"></script>
+<script src="test-fact.js" type="text/javascript"></script>
+<script src="test-filter.js" type="text/javascript"></script>
+<script src="test-container2.js" type="text/javascript"></script>
 <script>
 var log;
     $(document).ready(function() {
 
-        log = new Log(Log.DEBUG, Log.consoleLogger);
+        log = console;
+        //console.__proto__.debug = function() {};
 
         JsMockito.Integration.QUnit();
         JsHamcrest.Integration.QUnit();

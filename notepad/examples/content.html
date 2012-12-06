@@ -42,6 +42,46 @@
     </div>
 </div>
 
+STAGE 1:
+<div class="fact" about=":s">
+  <div class="label"/>  <!-- load triggered -->
+  <div rel=":p">
+    <div about=":o"/>
+  </div>
+</div>
+->: fact.describe(":s")
+
+STAGE 2:
+<div class="fact" about=":s">
+  <div class="label"/>  <!-- load in progress -->
+  <div class="predicate" rel=":p">
+    <div about=":o"/>
+  </div>
+  <div class="predicate" rel="rdfs:label">S</div>
+</div>
+
+but really, it should be:
+
+<div about=":s">
+    <div class="label" rel="rdfs:label">S</div>
+    <div rel=":p">
+        <div about=":o"/>
+    </div>
+</div>
+
+
+QUESTIONS
+
+1. what is the relationship between container2 and fact?
+ - fact manages a collection of triples relating to one subject.
+ - container manages a collection of facts.
+
+ALTERNATIVES:
+A - within a fact, when adding the second triple (rdfs:label), it should reuse the first element, the label element.
+  => the subject label is nothing special, just another predicate (rdfs:label) whose predicate-label is not displayed.
+  => remove any special treatment i
+
+
 <!-- WITH CLASSES -->
 <div about=":s">
     <div rel="rdfs:label" class="notepad-label">S</div>

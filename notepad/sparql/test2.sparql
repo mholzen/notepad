@@ -1,0 +1,10 @@
+CONSTRUCT { 
+	?s ?predicate ?label
+}
+WHERE
+{
+	BIND (rdf:predicate as ?predicate)
+	?s ?p ?o
+	BIND (str(?p) as ?label)
+	FILTER regex(str(?p), "member", "i")
+}

@@ -1,7 +1,11 @@
 @CHARSET "UTF-8";
 
 body {
-    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;    
+    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
+}
+
+.notepad {
+    font-size: large;
 }
 
 #container {
@@ -11,6 +15,7 @@ body {
     border: solid 1px #888;
     border-radius: 5px;
     padding: 20px;
+    clear: both;
 }
 
 #container h2 {
@@ -20,63 +25,148 @@ body {
 .notepad > ul {
     padding-left: 0;
 }
-.notepad .predicate {
-	font-style: italic;
+
+/*
+ * ICONS
+ */
+
+#icons {
+    display: block;
 }
-.notepad-predicate {
+#icons a {
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    float: left;
+}
+#icons .label {
+    opacity: 0;
+}
+#icons a {
+    text-decoration: none;
+}
+#icons a:hover .label {
+    opacity: 1;
+    color: #bbb;
+    text-align: center;
+}
+
+/*
+ * URI
+ */
+.uri {
+    font-family: 'Courier New', monospace;
+    /*font-family: 'Lucida Console', 'Monaco', monospace;*/
+    font-size: small;
+}
+
+/*
+ * PREDICATES
+ */
+.notepad .predicate {
     font-style: italic;
 }
 
-.notepad [inrel] {
-    background: black;
-    color: white;
+.notepad-predicate-label [rel="rdfs:label"] {
+    font-style: italic;
+    display: inline;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 4px;
+    padding-left: 3px;
+    margin-right: 10px;
+    border-radius: 5px
 }
-.notepad-predicate [inrel] {
-    background: black;
+
+/* Better merge the following with the above */
+.notepad-predicate-label .notepad-template .uri {
+    font-style: italic;
+    display: inline-block;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-right: 3px;
+    padding-left: 3px;
+    margin-right: 10px;
+    border-radius: 5px
+}
+
+.notepad-predicate[rev] > .notepad-predicate-label  [rel="rdfs:label"] {
+    background: #aaa;
     color: white;
 }
 
-.notepad-object {
+.notepad-predicate[rel] > .notepad-predicate-label  [rel="rdfs:label"] {
+    background: #fff0;
+    color: black;
+}
+
+.notepad-predicate[rev] > .notepad-predicate-label  .uri {
+    background: #aaa;
+    color: white;
+}
+
+.notepad-predicate[rel] > .notepad-predicate-label  .uri {
+    background: #fff0;
+    color: #bbb;
+}
+
+
+.notepad-predicate-label [rel="rdfs:label"]:after {
+    content: ":" ;
+}
+
+.notepad-predicate {
+    display: inline;
+}
+
+.notepad-predicate-label {
+    display: inline;
+}
+
+[rel="rdfs:label"] {
     display: inline-block;
+    vertical-align: top;
     width: 600px;
 }
 
-textarea.notepad-object {
-    /* Turn display off to test notepad-object in line */
-    display: none;
+.uri {
+    color: #bbb;
+    font-weight: 100;
+}
+
+.notepad-label {
+    display: inline-block;
+}
+
+.notepad-template {
+    display: inline-block;
 }
 
 .notepad .delete {
     text-decoration: line-through;
 }
-.notepad textarea {
-    font-size: large;
-    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
-}
-
-div.notepad-object {
-    line-height: 28px;
-    font-size: 18px;
-    /*vertical-align: text-bottom;*/
-    display: inline-block;
-}
 
 .notepad li {
     list-style: none;
+    line-height: 30px;
 }
+
 .notepad .ui-effects-wrapper {
     display: inline-block;
 }
 
 .notepad .separator:before {
-	content: ": ";
+    content: ": ";
 }
 
-.notepad textarea {
-    resize: none;
-    border: none;
-    vertical-align: middle;
+.notepad td {
+    vertical-align: top;
 }
+
+/*
+ * PREDICATE TOGGLE
+ */
 
 .notepad .predicateToggle {
     padding: 2px 4px;
@@ -90,10 +180,6 @@ div.notepad-object {
     border-left: solid 1px #eaeaea;
     border-bottom: solid 1px #777;
     border-right: solid 1px #777;
-}
-
-.notepad td {
-    vertical-align: top;
 }
 
 .notepad .predicateToggle.hidden {
@@ -110,6 +196,30 @@ div.notepad-object {
 .notepad .predicateToggle:before {
     content: "<";
 }
+
+/*
+ * OBJECTS
+ */
+
+.notepad-object {
+    display: inline-block;
+    width: 600px;
+}
+
+.notepad-object3 {
+    display: inline;
+}
+
+.notepad-object3:not([about]) {
+    display: inline-block;
+    width: 600px;
+    padding-right: 3px;
+}
+
+
+/*
+ * COLUMNS, HEADERES
+ */
 
 .notepad-headers-container {
     display: inline;
@@ -141,6 +251,17 @@ div.notepad-object {
     display: inline-block;
 }
 
+div.notepad-object {
+    line-height: 28px;
+    font-size: 18px;
+    /*vertical-align: text-bottom;*/
+    display: inline-block;
+}
+
+
+/*
+ * CHILDREN TOGGLE
+ */
 
 .notepad .childrenToggle {
     padding: 2px 4px;
@@ -169,6 +290,10 @@ div.notepad-object {
     content: "-";  /* TODO: replace with triangle pointing down; */
 }
 
+/*
+ * DEBUG
+ */
+
 .debug {
     display: none;  /* turns this off */
     position: absolute; bottom: 0px;
@@ -183,6 +308,19 @@ div.notepad-object {
     font-size: xx-small;
 }
 
+.turtle {
+    font-family: courier;
+    font-size: small;
+    white-space: pre;
+}
+
+#triples .update {
+    background: #CFC;
+}
+#triples .delete {
+    background: #FCC;
+}
+
 
 /* Triple Elements Colors */
 .notepad-colors .notepad-predicate {
@@ -193,12 +331,50 @@ div.notepad-object {
 }
 
 
-.notepad-object-old {
+
+/*
+ * FILTERS
+ */
+
+.notepad-filters > .notepad-fact > .notepad-predicate > .notepad-predicate-label {
     display: none;
 }
+.notepad-filters .notepad-predicate {
+    border: solid 1pt white;
+    display: none;
+}
+.notepad-filters [rel="rdfs:label"] {
+    border: solid 1pt white;
+    display: inline-block;
+}
+.notepad-filters .notepad-predicate {
+    background: #eef;
+}
 
-.uri {
-    color: #aaa;
-    font-family: courier, sans-serif;
-    font-weight: 100;
+
+/*
+ * Menu
+ */
+#menu {
+    width: 400px;
+}
+
+#menu-button {
+    width: 24px;
+}
+
+#status {
+    position: fixed;
+    top: 10px;
+    left: 40%;
+    font-size: x-large;
+    color: grey;
+    background: lightyellow;
+    padding: 20px;
+}
+
+/* Hide predicate label uri rdfs:member; */
+.notepad-predicate[rel='rdfs:member'] > .notepad-predicate-label > .notepad-template > .uri {
+    background: lightblue;
+    display: none
 }

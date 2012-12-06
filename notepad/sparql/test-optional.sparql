@@ -1,0 +1,25 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX fn:   <http://www.w3.org/2005/xpath-functions#>
+PREFIX notepad:   <http://www.vonholzen.org/instruct/notepad#>
+PREFIX : 	 <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
+
+#
+# TEST optional elements in a CONSTRUCT clause
+#
+
+construct {
+	?s ?p ?o .
+	?s a ?type
+}
+WHERE
+{
+	?s ?p ?o  FILTER (regex(?o, "Marc") && ( ?p != nmo:content ))
+
+	optional {
+		?s a ?type
+	}
+
+}
+

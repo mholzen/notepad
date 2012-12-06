@@ -5,6 +5,9 @@ PREFIX fn:   <http://www.w3.org/2005/xpath-functions#>
 PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
 PREFIX : 	 <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
 
+DELETE DATA {
+	rdf:subClassOf rdfs:label "subclass" .
+}
 INSERT DATA {
 	rdf:subClassOf rdfs:label "subclass" .
 }

@@ -1,0 +1,21 @@
+CONSTRUCT {
+	?about ?predicateForward ?neighbourForward .
+	?neighbourBackward ?predicateBackward ?about .
+}
+WHERE {
+
+	LET ( ?about := {{{about}}} )
+
+	{ ?about ?predicateForward ?neighbourForward
+		BIND (?neighbourForward as ?neighbour)
+	}
+	UNION
+	{ ?neighbourBackward ?predicateBackward ?about
+		BIND (?neighbourBackward as ?neighbour)
+		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session }
+	}
+
+	# Ignore 
+
+
+}

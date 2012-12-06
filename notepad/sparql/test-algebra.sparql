@@ -1,0 +1,29 @@
+select  ?label1  ?o1 ?count ?p1 CONCAT( "(", str(?count) )
+WHERE 
+{ 
+	{ 
+		SELECT (count (distinct *) as ?count) ?p1 ?o1
+		WHERE 
+		{ 
+			{  
+				SELECT (coalesce(?neighbourForward, ?neighbourBackward) AS ?s) 
+				WHERE { 
+					LET ( ?about := <http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8> ) 
+ 
+					{ ?about ?predicateForward ?neighbourForward 
+						BIND (?neighbourForward as ?neighbour) 
+					} 
+					UNION 
+					{ ?neighbourBackward ?predicateBackward ?about 
+						BIND (?neighbourBackward as ?neighbour) 
+					} 
+  				} 
+			} 
+			?s ?p1 ?o1 FILTER( ?p1 != nmo:content ) . 
+			?s ?p1 ?o1 FILTER( ?p1 != rdf:type ) . 
+		} 
+		GROUP BY ?p1 ?o1
+		HAVING (?count > 1) 
+	} 
+ 	LET ( ?label1 := CONCAT( ?o1, '(', ?count, ')') )  
+} 

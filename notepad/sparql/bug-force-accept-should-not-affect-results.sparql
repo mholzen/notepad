@@ -1,0 +1,9 @@
+CONSTRUCT { 
+	?subject ?labelPredicate "1"
+} 
+WHERE { 
+	?subject ?predicate ?object  
+	# BIND ( <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> as ?labelPredicate )
+	# BIND ( <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> as ?labelPredicate )
+	BIND ( <foo> as ?labelPredicate )
+} 

@@ -1,0 +1,18 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX ex: <http://example.com/#>
+PREFIX nmo: <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX notepad: <http://www.vonholzen.org/instruct/notepad/#>
+PREFIX : <http://localhost/~holzen/notepad/tests/test-filter.html?filter=test-filter.js%3A%20%20given%20queries%3A%20query&notrycatch=true#>
+
+CONSTRUCT {
+	?filters rdfs:label [ rdfs:object ?o; rdfs:label "o" ] .
+}
+WHERE
+{
+	BIND (bnode() as ?filters)
+
+	?o a nmo:Email .
+} 

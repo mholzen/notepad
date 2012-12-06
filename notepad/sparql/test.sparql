@@ -1,0 +1,29 @@
+CONSTRUCT {
+	?subject ?labelPredicate ?label
+}
+WHERE {
+	{	 
+		?subject ?predicate ?object 
+		FILTER regex(str(?subject), "last name", "i")
+	    BIND (notepad:subject as ?labelPredicate) # using rdf:subject instead of notepad:subject causes a bug in Jena/Fuseki
+	    BIND (str(?subject) as ?label) 
+	} 
+	UNION
+	{	
+		?anySubject ?predicate ?object
+		FILTER regex(str(?predicate), "last name", "i")
+	    BIND (str(?predicate) as ?label) 
+		BIND (?predicate as ?subject)
+	    BIND (notepad:predicate as ?labelPredicate) 
+	}
+	UNION
+	{
+	    ?subject ?predicate ?object	    
+	    BIND (str(?object) as ?label)
+	    FILTER regex(?label, "last name", "i")
+	    BIND (?predicate as ?labelPredicate)
+
+	    # We could add that ?predicate subPropertyOf rdfs:label
+	}
+}
+LIMIT 30

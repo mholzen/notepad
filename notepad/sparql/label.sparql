@@ -1,0 +1,22 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX fn:   <http://www.w3.org/2005/xpath-functions#> 
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX : 	 <file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#>
+
+CONSTRUCT {
+	?s ?p ?o .
+	?s rdfs:inverseLabel ?inverseLabel .
+}
+FROM <http://instruct.vonholzen.org/predicate-labels>
+WHERE {
+	BIND ( rdfs:member as ?predicate )
+	# BIND ( <http://www.w3.org/2000/01/rdf-schema#member> as ?predicate )
+	?s ?p ?o FILTER(
+		sameTerm(?s, ?predicate) &&
+		( ?p in (rdfs:label,nmo:sender,nmo:messageSubject,nmo:receivedDate) )
+	)
+
+	OPTIONAL { ?s owl:inverseOf [ rdfs:label ?inverseLabel ] }
+}

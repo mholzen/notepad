@@ -1,0 +1,3 @@
+INSERT DATA {
+	_:ABC	rdfs:label "abc" ;
+}

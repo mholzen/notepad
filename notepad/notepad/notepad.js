@@ -92,7 +92,11 @@
         },
         _up : function(event) {
             var target = $(event.target);
-            var li = target.parent('li');
+            var li = target.closest(':notepad-line');
+            if (li.length === 0) {
+                return;
+            }
+
             // Get the list of lines
             var lines = li.data('line').getNotepad().getContainer().getAllLineElements();
             var i;
@@ -108,10 +112,13 @@
         },
         _down : function(event) {
             var target = $(event.target);
-            var li = target.parent('li');
+            var li = target.closest(':notepad-line');
+            if (li.length === 0) {
+                return false;
+            }
 
             // Get the list of lines
-            var lines = li.data('line').getNotepad().getContainer().getAllLineElements()
+            var lines = li.data('line').getNotepad().getContainer().getAllLineElements();
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -125,22 +132,23 @@
         },
         _return : function(event) {
             var target = $(event.target);
-            var li = target.parent('li');
-            var ul = li.parent('ul');
-            
-            var newLine;
+            var li = target.closest(":notepad-line");
+            if (li.length === 0) {
+                return false;
+            }
+
             if (target.caret() == 0) {
-                newLine = li.data('line').insertLineBefore();
-                li.focus();         // Focus on the line that moved down
+                li.data('line').insertLineBefore();
+                // Stay focused on the current line, that moved down
             } else {
-                newLine = li.data('line').insertLineAfter();
+                var newLine = li.data('line').insertLineAfter();
                 newLine.focus();
             }
             
             return false;
         },
         _indent : function(event) {
-            var li = $(event.target).parent('li');
+            var li = $(event.target).closest(":notepad-line");
 
             // when on the predicate, then skip to the object
             if ($(event.target).hasClass('notepad-predicate')) {
@@ -148,23 +156,23 @@
                 return false;
             }
 
-            var result = li.data('line').indent();
-
-            li.data('line').focus();
-            return result;
+            var line = li.data('line');
+            var propagateEvent = line.indent();
+            line.focus();
+            return propagateEvent;
         },
         _unindent : function(event) {
-            var li = $(event.target).parent('li');
+            var li = $(event.target).closest(":notepad-line");
 
             if ($(event.target).hasClass('notepad-object') &&
                 li.find('.notepad-predicate').css('display') != 'none') {
                 li.find('.notepad-predicate').focus();
                 return false;
             }
-            
-            var result = li.data('line').unindent();
-            li.data('line').focus();
-            return result;
+            var line = li.data('line');
+            var propagateEvent = line.unindent();
+            line.focus();
+            return propagateEvent;
         },
 
         // TODO: this really should be expressed in RDF
@@ -259,7 +267,25 @@
         },
         expresses: function(triple) {
             return this.triples().expresses(triple);
-        }
+        },
+        loaded: function(triple) {
+            if (!this._loaded) {
+                this._loaded = new Triples(0);
+            }
+            if (triple !== undefined) {
+                this._loaded.add(triple);
+            }
+            return this._loaded;
+        },
+        unloaded: function(triples) {
+            this._loaded = this._loaded.minus(triples);
+        },
+        added: function() {
+            return this.triples().minus( this.loaded() );
+        },
+        removed: function() {
+            return this.loaded().minus( this.triples() );
+        },
     });
 
 }(jQuery));

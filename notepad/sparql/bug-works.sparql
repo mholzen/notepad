@@ -1,0 +1,6 @@
+CONSTRUCT { 
+	?subject ?predicate2 "1"
+} 
+WHERE { 
+	?subject ?predicate ?object  
+} 
