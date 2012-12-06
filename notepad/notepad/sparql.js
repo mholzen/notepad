@@ -100,18 +100,18 @@ FusekiEndpoint.prototype = {
         // rdfs:subPropertyOf is reflexive (ie. "?x rdfs:subPropertyOf ?x ." is true)
         // However, even though it is reflexive, I am adding the UNION clause below to ensure that rdfs:label is returned, even when we run against a triplestore without rules
         var nbsp = String.fromCharCode(160);
-        label = label.replace(nbsp, ' ');
+        label = label.replace(nbsp, ' ').replace(/"/g, '\\"');
 
         var command = 
-        'SELECT DISTINCT ?subject ?label \
+        'SELECT DISTINCT ?subject ?label (substr(?label, 0, 100) as ?reason)  \
         WHERE {  \
-            ?subject ?labelPredicate ?label FILTER regex(?label, "'+label.replace(/"/g, '\\"')+'", "i") \
+            ?subject ?labelPredicate ?label FILTER regex(?label, "'+label+'", "i") \
         } LIMIT 30';
         // { ?labelPredicate rdfs:subPropertyOf rdfs:label } UNION { ?subject rdfs:label ?label } 
         this.execute(command,function(data) { 
             var subjectsLabels = _.map(data.results.bindings, function(binding) {
                 var subject = new Resource(binding.subject);
-                return { label: binding.label.value, value: subject.toString() };
+                return { label: binding.reason.value, value: subject.toString() };
             });
             callback(subjectsLabels);
         });
