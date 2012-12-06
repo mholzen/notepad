@@ -145,8 +145,14 @@ $(function() {
         }
         $(this).show();
     });
-    $("#status").ajaxStop(function(){
-        setTimeout(function() { $("#status").fadeOut(200); }, 200);
+    $("#status").ajaxSuccess(function(){
+        setTimeout(function() {
+            $("#status").fadeOut(200);
+            setTimeout(function() { $("#status").text(""); }, 200);
+        }, 200);
+    });
+    $("#status").ajaxError(function(){
+        $(this).text("Error! (check the console)");
     });
 
 });
