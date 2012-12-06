@@ -57,8 +57,8 @@ console.__proto__.debug = function() { };
 
 $(function() {
 
-    //endpoint = new FusekiEndpoint("http://localhost:3030/dev");
-    endpoint = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
+    endpoint = new FusekiEndpoint("http://localhost:3030/dev");
+    //endpoint = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
     //endpoint = new FusekiEndpoint("http://ec2-50-112-227-110.us-west-2.compute.amazonaws.com:3030/dev");
     $("#notepad").notepad({endpoint: endpoint});
 
@@ -195,14 +195,14 @@ $(function() {
     <ul id="menu">
         <!-- TODO: onclick won't catch menu selection via the keyboard -->
     <li><a href="#" onclick="javascript: predicate.newUri();">New predicate</a></li>
-    <li><a href="#" onclick="javascript: line.recognizePredicate();">Recognize predicate</a></li>
-    <li><a href="#" onclick="javascript: label.newUri();">New URI</a></li>
-    <li><a href="#" onclick="javascript: container.filters();">Add filters</a></li>
+    <li class="ui-state-disabled"><a href="#" onclick="javascript: line.recognizePredicate();">Recognize predicate</a></li>
+    <li class="ui-state-disabled"><a href="#" onclick="javascript: label.newUri();">New URI</a></li>
+    <li class="ui-state-disabled"><a href="#" onclick="javascript: container.filters();">Add filters</a></li>
     <li><a class="delete-line" href="#">Delete line contents and children</a></li>
     <li class="ui-state-disabled"><a href="#" onclick="javascript: line.remove();">Remove line from parent</a></li>
     <li class="ui-state-disabled"><a href="#">Add column</a></li>
     <li class="ui-state-disabled"><a id="search" href="#">Search for/query for keywords ...</a></li>
-    <li>
+    <li class="ui-state-disabled">
         <a href="#">Describe ... </a>
         <ul>
             <li><a href="#">Everything</a></li>
