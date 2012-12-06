@@ -32,7 +32,8 @@ FusekiEndpoint.prototype = {
         //return this.uri + "Inferred" + "/query";
     },
     query: function(command, callback) {
-        var options = { query: command, output:'json'};
+        // var options = { query: command, output:'json', 'force-accept': 'text/json' };
+        var options = { query: command, output:'json' };
         if (this.graph != 'default') {
             options['default-graph-uri'] = this.graph;
         }
@@ -52,10 +53,11 @@ FusekiEndpoint.prototype = {
                 });
             }
         }
-
+        log.info('GET:', command.replace(/\s+/mg,' ').substring(0,120));
         return $.getJSON(this.queryUri(), options, callback);
     },
     update: function(command, callback) {
+        log.info('POST:', command.replace(/\s+/mg,' ').substring(0,120));
         return $.post(this.updateUri(), {update: command}, function() {
             // There is a delay before the updates are available in the query server.
             // So we force the client to wait for this delay here.
@@ -79,10 +81,7 @@ FusekiEndpoint.prototype = {
         });
     },
     execute: function(command, callback) {
-        log.debug('execute:', command.replace(/\s+/mg,' ').substring(0,120));
-        command = this.prefixes() +
-            "PREFIX : <" + $.uri.base() + '#> \n' +
-            command;
+        command = this.prefixes() + command;
         if (command.toLowerCase().contains('construct') || command.toLowerCase().contains('describe')) {
             return this.queryReturningGraph(command, callback);
         } else if (command.toLowerCase().contains('select') ) {
@@ -100,6 +99,9 @@ FusekiEndpoint.prototype = {
     getSubjectsLabelsByLabel: function(label, callback) {
         // rdfs:subPropertyOf is reflexive (ie. "?x rdfs:subPropertyOf ?x ." is true)
         // However, even though it is reflexive, I am adding the UNION clause below to ensure that rdfs:label is returned, even when we run against a triplestore without rules
+        var nbsp = String.fromCharCode(160);
+        label = label.replace(nbsp, ' ');
+
         var command = 
         'SELECT DISTINCT ?subject ?label \
         WHERE {  \

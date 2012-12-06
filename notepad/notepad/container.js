@@ -2,7 +2,7 @@
 
     var CONTAINER_DEFAULT_PREDICATE_ATTR = 'container-default-predicate';
     var CONTAINER_DEFAULT_PREDICATE_URI = 'rdfs:member';
-    var MAX_DEPTH = 2;
+    var MAX_DEPTH = 4;
     var MAX_TRIPLES = 500;
     var MAX_TRIPLES_BEFORE_COLLAPSING = 10;
     var MAX_TRIPLES_BEFORE_FILTERING = 10;
@@ -63,6 +63,9 @@
         },
         getDepth: function() {
             return this.element.parents(".notepad-container").length;
+        },
+        getDistanceToLastQUery: function() {
+            return this.element.parents(".notepad-load-source").length;
         },
         getLines: function() {
             return this.element.children('li').map(function(index, line) { return $(line).data('line'); } );
@@ -136,10 +139,13 @@
         },
         
         triples: function() {
-            var triples = new Triples(0);
+            var triples = new Triples();
             _.each(this.getLines(), function(line) {
                 $.merge(triples, line.triples());
             });
+
+            //$.merge(triples, this.filters().triples());  // important to avoid filter triples appearing as deleted
+
             return triples;
         },
         reverseTriples: function() {
@@ -183,8 +189,10 @@
 
             log.debug("updating container with ", triples.length, " triples.");
 
+            triples.sort();
+
             _.each(triples, function(triple) {
-                log.debug('updating for triple'+triple.toString());
+                log.debug('updating for triple: '+triple.toString());
                 if (container.getDepth() > MAX_DEPTH) {
                     log.debug("Max depth reached");
                     return;
@@ -211,8 +219,10 @@
                 }
                 var line;
                 if (childLines.length == 1) {
+                    log.debug("Using existing line for triple");
                     line = $(childLines[0]).data('line');
                 } else {
+                    log.debug("Adding new line");
                     line = container.appendLine(undefined, triple);
                 }
                 
@@ -222,6 +232,10 @@
                     line.setLineLiteral(triple.object);
                 } else {
                     line.setUri(lineSelector.lineUri);
+                }
+
+                if (container.getNotepad()) {
+                    container.getNotepad().loaded(triple);
                 }
 
             });
@@ -317,6 +331,10 @@
 
                 $.notepad.clusterQuery.execute(container.element.findEndpoint(), {about: about.toSparqlString()}, function(triples) {
                     filters.addAllTriples(triples);
+
+                    // if (container.getNotepad()) {
+                    //     container.getNotepad().loaded(triples);     // to ensure that filter triples are not counted as deleted
+                    // }
 
                     // dev:techdebt
                     // This could be instead modified by setting a triple in the endpoint of the container that defines the label for ... as being the <input> element

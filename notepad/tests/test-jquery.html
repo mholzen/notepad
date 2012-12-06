@@ -79,9 +79,11 @@ $(document).ready(function() {
 
       ok(handler1called, "handler1 called");
       ok(handler2called, "handler2 called");
-
     });
-
+    test("closest, or", function() {
+      $("<div id='above' above='a'><div id='below' below='b'><div id='child'>").appendTo("#qunit-fixture");
+      assertThat($("#child").closest("[above],[below]").attr('id'), 'below', 'below is found first');
+    });
 });
 </script>
 

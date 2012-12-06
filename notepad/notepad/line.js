@@ -276,7 +276,7 @@
             var ul = this.getObject().element.find('ul:eq(0)');  // use find instead of children because jqueryui can move the element during transitions
             if (ul.length === 0) {
                 var parentElement = this.getObject().element;
-                ul = $('<ul>').appendTo(parentElement);
+                ul = $('<ul>').appendTo(parentElement); // .sortable();
             }
             return ul;
         },
@@ -483,8 +483,33 @@
             }
         },
         _destroy : function() {
+            if (this.getNotepad()) {
+                this.getNotepad().unloaded(this.triples());
+            }
             this.element.removeClass("notepad-line").removeAttr('about');
         },
+
+        convertObjectToPredicate: function() {
+            var predicate = this.getObject().extractPredicate();
+            
+            var line = this.getObject().getLiteral();
+            var predicateLabel = line.split(":")[0];
+
+            this.searchByLabelLiteral(predicateLabel, function(triple) {
+                // verify it hasn't changed
+                line = this.getObject().getLiteral();
+                line.match( predicateLabel, separator, rest)
+                if ( ! line.startsWith(predicatLabel)) {
+                    log.debug("line no longer contains label");
+                    return;
+                }
+
+                label.setUri(triples.subject);
+                label._updateFromRdf(triple);
+
+            });
+        },
+
 
     });
 

@@ -1,29 +1,10 @@
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX owl: <http://www.w3.org/2002/07/owl#>
-PREFIX ex: <http://example.com/#>
-PREFIX nmo: <http://www.semanticdesktop.org/ontologies/nmo/#>
-PREFIX notepad: <http://www.vonholzen.org/instruct/notepad/#>
-PREFIX : <http://localhost/~holzen/notepad/tests/test-filter.html?filter=test-filter.js%3A%20%20given%20queries%3A%20query&notrycatch=true#>
-
-SELECT distinct ?p1 ?o1 ?p2 ?o2 
-WHERE 
-{ 
-	{ 
-		SELECT (?neighbour AS ?s) 
-		WHERE { 
-			LET ( ?about := <http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8> ) 
-
-			{ <http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8> ?predicateForward ?neighbourForward
-				BIND (?neighbourForward as ?neighbour) 
-			} 
-			UNION 
-			{ ?neighbourBackward ?predicateBackward <http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8>
-				BIND (?neighbourBackward as ?neighbour) 
-			} 
-		} 
-	} 
-	?s ?p1 ?o1 FILTER( ?p1 != nmo:content && ?p1 != rdf:type ) . 
-	OPTIONAL { ?o1 ?p2 ?o2 } . 
-} 
+CONSTRUCT { 
+	?s ?predicate ?label
+}
+WHERE
+{
+	BIND (rdf:predicate as ?predicate)
+	?s ?p ?o
+	BIND (str(?p) as ?label)
+	FILTER regex(str(?p), "member", "i")
+}

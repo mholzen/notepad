@@ -69,6 +69,15 @@ test("triple", function() {
     // Does not work
     //assertThat(new Triple(':1', ':2', ':3'), equalTo(new Triple(':1', ':2', ':3')), "two identical triples should be identical with ==");
 });
+test ("create a triple from another triple", function() {
+    var triple = new Triple(':1', ':2', ':3');
+    var triple2 = new Triple(triple);
+    assertThat(triple, equalToObject(triple2));
+
+    var rdftriple = $.rdf.triple("<#1> <#2> <#3>");
+    var triple3 = new Triple(rdftriple);
+    assertThat(triple3, equalToObject(triple));
+});
 test("triples", function() {
     var triples = new Triples(new Triple(':1', ':2', ':3'), new Triple(':4', ':5', ':6'));
     equal(triples[0].subject, ':1');

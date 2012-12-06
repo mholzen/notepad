@@ -14,4 +14,4 @@ for file in glob.glob("*.sparql"):
 	content = content.replace(os.linesep, " \\n\\\n");
 	content = content.replace('"', '\\"');
 	output.write('\n')
-	output.write('$.notepad.templates.' + file.replace(".sparql","") + ' = "' + content + '";')
+	output.write('$.notepad.templates.' + file.replace(".sparql","").replace("-", "_") + ' = "' + content + '";')

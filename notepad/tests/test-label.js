@@ -17,10 +17,8 @@ test("when I create a new label", function() {
 
 module("given a element with initial text", {
     setup: function() {
-        this.element = $('<div>');
+        this.element = $('<div>text</div>');
         $("#qunit-fixture").append(this.element);
-        this.text = "initial label";
-        this.element.text(this.text);
     }
 });
 test("when I create a new label", function() {
@@ -28,18 +26,14 @@ test("when I create a new label", function() {
 
     assertThat(label.isLiteral(),   truth(),            "then label is a literal");
     assertThat(label.isUri(),       not(truth()),       "then label is not a URI");
-    assertThat(label.getLiteral(),  equalTo(this.text), "then initial label is equal to the initial object text");
+    assertThat(label.getLiteral(),  equalTo("text"),    "then initial label is equal to the initial object text");
     assertThat(label.triple(),      nil(),              "there is no triple associated");
 });
 
 module("given a element with a URI", {
     setup: function() {
-        this.element = $('<div>');
-        $("#qunit-fixture").append(this.element);
-        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-        this.element.endpoint({endpoint: this.endpoint});
-        this.uri = ":s";
-        this.element.attr("about", this.uri);
+        this.element = $('<div about=":s">');
+        this.endpoint = wrapInEndpoint(this.element);
     }
 });
 test("when I create a new label", function() {
@@ -52,19 +46,12 @@ test("when I create a new label", function() {
     assertThat(label.isUri(),       truth(), "then label is a URI");
 
     verify(this.endpoint,times(1)).execute(containsString("#s"));       // The endpoint should be queried for a label
-    //assertThat(label.triple().toString(), equalTo(labelTriple.toString()), "its triple should be the triple returned by the endpoint");
 });
 
 module("given an element with a URI, with initial text", {
     setup: function() {
-        this.element = $('<div>');
-        $("#qunit-fixture").append(this.element);
-        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-        this.element.endpoint({endpoint: this.endpoint});
-        this.uri = ":s";
-        this.element.attr("about", this.uri);
-        this.text = "initial label";
-        this.element.text(this.text);    
+        this.element = $('<div about=":s">text</div>');
+        this.endpoint = wrapInEndpoint(this.element);
     }
 });
 test("when I create a new label", function() {
@@ -75,35 +62,41 @@ test("when I create a new label", function() {
 
     verify(this.endpoint, never()).execute();           // The endpoint should NOT queried for a label
 
-    assertThat(label)
-    assertThat(label.labelTriple(), equalToObject(new Triple(this.uri, "rdfs:label", this.text)), "there is a triple if a label was returned");
+    assertThat(label.triples(), hasItem(':s rdfs:label "text" .'));
 });
 
 module("given an element within another element with a URI", {
     setup: function() {
-        this.parentElement = $('<div>');
-        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-        this.parentElement.endpoint({endpoint: this.endpoint});
-
-        this.uri = ":s";
-        this.parentElement.attr("about", this.uri);
-
-        this.element = $('<div>');
-        this.element.appendTo(this.parentElement);
+        this.dom = $('<div about=":s"><div id="label">');
+        this.endpoint = wrapInEndpoint(this.dom);
+    },
+    teardown: function() {
+        $("#qunit-fixture").empty();
     }
 });
 test("when I create a new label", function() {
-    var label = this.element.label().data('label');    
-    label.option('uriElement', this.parentElement);
+    var label = $("#label").label().data('label');
+    label.option('uriElement', this.dom);
+    // label.option('uri', $("[about]").uri())
+
+    // label.option('uriSelector', "[about]");
+    // label.option('getUri', function(e) { return e.closest("[about]") } );
+    // label.option('setUri', function(e,uri) { e.attr('about', uri); } );
+
+    // label.option('uriSelector', "[rel],[rev]");
+    // label.option('getUri', function(e) { return e.closest("[rel],[rev])") };
+    // label.option('setUri', function(e,uri) { 
+    //     var attr = e.attr('rel') ? 'rel' : 'rev';
+    //     e.attr(attr, uri);
+    // });
 
     assertThat(label.isLiteral(),      not(truth()),    "then label is not a literal");
     assertThat(label.isUri(),          truth(),         "then label is a URI");
-    assertThat(label.triple(),         nil(),           "it has no triples");
-    assertThat(label.labelTriple(),    nil(),           "it has no triples");
     assertThat(label.triples().length, equalTo(0),      "it has no triples");
 
     verify(this.endpoint,times(1)).execute();       // The endpoint should be queried for a label
 });
+
 module("given a new label", {
     setup: function() {
         this.element = $('<div>');
@@ -203,10 +196,22 @@ test("when I create a new label to describe the predicate", function() {
     var element = $('<div>').appendTo(this.predicateElement);
     var label = element.label({uriElement: this.predicateElement, uriAttr: "rel"}).data('label');
     assertThat(label.getResource(), ":p",  "it has no object");
-    assertThat(label.triple(),      nil(),      "it has no triples");
+    assertThat(label.triple(), nil(), "it has no triples");
 });
 
 
+module("given a label for a predicate", {
+    setup: function() {
+        this.dom = $('<div about=":s"><div rel=":p"><div id="label">');
+        this.endpoint = wrapInEndpoint(this.dom);
+        this.predicate = $("[rel=':p']").predicate().data('predicate');
+        this.label = $("#label").label().data('label');
+    }
+});
+test("when I change the label", function() {
+    this.label.element.text('another label');
+    assertThat(this.label.getUri(), not(":p"));
+});
 
 // test("when I type new text", function() {
 //     this.element.focus();

@@ -60,27 +60,41 @@
                 var uri = this.element.attr('rel');
                 this.element.attr('rev', uri).removeAttr('rel');
             }
+            this.getLabel().option('uriAttr', this.getAttribute());
+        },
+        getOperation: function() {
+            return this.element.hasClass('delete') ? "delete" : "update";
+        },
+        _setUri: function(uri) {
+            this.element.attr(this.getAttribute(), uri);
         },
         setUri: function(uri) {
-            this.element.attr(this.getAttribute(), uri);
-            var label = this.getLabel();
-            if (!label) {
-                this.insertLabel();
-            } else {
-                label.load();
-            }
+            this._setUri(uri);
+            this.getLabel().load();
         },
         getUri: function() {
             return this.element.attr(this.getAttribute())
-            //return this.element.closest('[rel]').attr('rel');
+        },
+        newUri: function(predicate) {
+            predicate = predicate || "new predicate";
+            this._setUri($.notepad.getNewUri());
+            this.getLabel().setLiteral(predicate);
+        },
+        newUriFromTriples: function(triples) {
+            this._setUri($.notepad.getNewUri());
+            this.getLabel()._updateFromRdf(triples);
+        },
+        _createLabel: function() {
+            var element = $('<div class="notepad-predicate-label">').prependTo(this.element);
+            this.options.objectFactory.call($(element), {uriElement: this.element, uriAttr: this.getAttribute()});
+            return element.data('label');
         },
         getLabel: function() {
-            return this.element.children('.notepad-label.notepad-predicate-label').data('label');
-        },
-        insertLabel: function() {
-            var element = $('<div class="notepad-predicate-label">').prependTo(this.element);
-            this.options.objectFactory.call($(element), {uriElement: this.element, uriAttr: 'rel'});  // TODO: when backward, => ?
-            return element.data('label');
+            var label = this.element.children('.notepad-label.notepad-predicate-label').data('label');
+            if (label === undefined) {
+                label = this._createLabel();
+            }
+            return label;
         },
         getObjects: function(object) {
             var objects = this.element.children('.notepad-label, [about]').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
@@ -156,8 +170,8 @@
         },
         triples: function() {
             var triples = new Triples(0);
-            if (this.getLabel() !== undefined && this.getLabel().triple() !== undefined) {
-                triples.add(this.getLabel().triple());
+            if (this.getLabel() !== undefined) {
+                triples.add(this.getLabel().triples());
             }
             _.each(this.getObjects(), function(object) {
                 triples.add(object.triples());

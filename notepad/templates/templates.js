@@ -46,6 +46,7 @@ WHERE \n\
 	# LET ( ?label := CONCAT('filter by ', ?label1, ' and ', ?label2)) \n\
 	# LET ( ?label2 := CONCAT( COALESCE(?p2Label, ?p2), '=\"', ?o2, '\"')) \n\
 } \n\
+LIMIT 5 \n\
 ";
 $.notepad.templates.coalesce = "SELECT (coalesce(?neighbourForward, ?neighbourBackward) AS ?s) \n\
 WHERE { \n\
@@ -74,3 +75,61 @@ WHERE { \n\
  \n\
 } \n\
 ";
+$.notepad.templates.labels_simpler = "CONSTRUCT { \n\
+	?subject a rdf:subject . \n\
+	?subject rdfs:label str(?subject) . \n\
+ \n\
+	?predicate a rdf:predicate . \n\
+	?predicate rdfs:label str(?predicate) . \n\
+ \n\
+	?object a rdf:object . \n\
+	?object rdfs:label str(?object) . \n\
+} \n\
+WHERE { \n\
+	{	  \n\
+		?subject ?anyPredicate ?anyObject  \n\
+		FILTER regex(str(?subject), \"{{{rdfs:label}}}\", \"i\") \n\
+	}  \n\
+	UNION \n\
+	{	 \n\
+		?anySubject ?predicate ?anyObject \n\
+		FILTER regex(str(?predicate), \"{{{rdfs:label}}}\", \"i\") \n\
+	} \n\
+	UNION \n\
+	{ \n\
+	    ?anySubject ?anyPredicate ?object \n\
+	    FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") \n\
+ \n\
+	    # We could add that ?anyPredicate subPropertyOf rdfs:label \n\
+	} \n\
+} \n\
+LIMIT 30";
+$.notepad.templates.labels = "CONSTRUCT { \n\
+	?subject ?labelPredicate ?label \n\
+} \n\
+WHERE { \n\
+	{	  \n\
+		?subject ?predicate ?object  \n\
+		FILTER regex(str(?subject), \"{{{rdfs:label}}}\", \"i\") \n\
+	    BIND (notepad:subject as ?labelPredicate) # using rdf:subject instead of notepad:subject causes a bug in Jena/Fuseki \n\
+	    BIND (str(?subject) as ?label)  \n\
+	}  \n\
+	UNION \n\
+	{	 \n\
+		?anySubject ?predicate ?object \n\
+		FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") \n\
+	    BIND (str(?predicate) as ?label)  \n\
+		BIND (?predicate as ?subject) \n\
+	    BIND (notepad:predicate as ?labelPredicate)  \n\
+	} \n\
+	UNION \n\
+	{ \n\
+	    ?subject ?predicate ?object	     \n\
+	    BIND (str(?object) as ?label) \n\
+	    FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") \n\
+	    BIND (?predicate as ?labelPredicate) \n\
+ \n\
+	    # We could add that ?predicate subPropertyOf rdfs:label \n\
+	} \n\
+} \n\
+LIMIT 30";

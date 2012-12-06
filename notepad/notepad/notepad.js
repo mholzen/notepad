@@ -267,7 +267,25 @@
         },
         expresses: function(triple) {
             return this.triples().expresses(triple);
-        }
+        },
+        loaded: function(triple) {
+            if (!this._loaded) {
+                this._loaded = new Triples(0);
+            }
+            if (triple !== undefined) {
+                this._loaded.add(triple);
+            }
+            return this._loaded;
+        },
+        unloaded: function(triples) {
+            this._loaded = this._loaded.minus(triples);
+        },
+        added: function() {
+            return this.triples().minus( this.loaded() );
+        },
+        removed: function() {
+            return this.loaded().minus( this.triples() );
+        },
     });
 
 }(jQuery));

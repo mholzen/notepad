@@ -1,0 +1,7 @@
+SELECT DISTINCT ?subject ?label ?reason ?search ?before
+WHERE {
+	BIND ( "tail" as ?search )
+    ?subject ?labelPredicate ?label FILTER regex(?label, ?search, "i")
+    BIND ( substr(strbefore(?label, ?search), -100, 100) as ?before )
+}
+LIMIT 30

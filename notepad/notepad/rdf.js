@@ -2,6 +2,10 @@
 
     $.notepad = $.notepad || {};
 
+    $.notepad.uri = function() {
+        return $.uri.base().toString().replace(/#.*$/,'');
+    }
+
     var DEFAULT_NAMESPACES = {
         xsd:        "http://www.w3.org/2001/XMLSchema#",
         rdf:        "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -11,7 +15,7 @@
         nmo:        "http://www.semanticdesktop.org/ontologies/nmo/#",
         notepad:    "http://www.vonholzen.org/instruct/notepad/#",
         sp:         "http://spinrdf.org/sp#",
-        '':         $.uri.base() + (($.uri.base().toString().indexOf('#') === -1) ? '#' : ''),
+        '':         $.notepad.uri()
     };
     $.notepad.DEFAULT_NAMESPACES = DEFAULT_NAMESPACES;
 
@@ -46,7 +50,7 @@
             return $.rdf.resource('<' + value.toString() + '>', {namespaces: DEFAULT_NAMESPACES} );
         }
         if ( value.indexOf(':') == 0) {
-            return $.rdf.resource('<' + $.uri.base() + '#' + value.toString().slice(1) + '>' );
+            return $.rdf.resource('<' + $.notepad.uri() + '#' + value.toString().slice(1) + '>' );
         }
         if ( value.indexOf(':') > 0) {
             try {
@@ -113,7 +117,10 @@
             }
             if (this.isUri()) {
                 try {
-                    var curie = $.createCurie(this.resource.toString().slice(1,-1), {namespaces: DEFAULT_NAMESPACES, reservedNamespace: $.uri.base()+'#' });
+                    var curie = $.createCurie(this.resource.toString().slice(1,-1), {
+                        namespaces: DEFAULT_NAMESPACES,
+                        reservedNamespace: $.notepad.uri()+'#'
+                    });
                     return curie;
                 } catch (err) {
                     return this.resource.toString().slice(1,-1); // Remove encapsulating angle brackets
@@ -148,13 +155,25 @@
     };
 
     toTriple = function(subject,predicate,object,operation) {
-        if (subject === undefined || predicate === undefined || object === undefined) {
+        if (subject === undefined || predicate === undefined || object === undefined || object.length === 0) {
             return undefined;
         }
         return new Triple(subject,predicate,object,operation);
     };
 
-    Triple = function(subject,predicate,object,operation) {
+    Triple = function(tripleOrSubject,predicate,object,operation) {
+        if (tripleOrSubject === undefined) {
+            throw new Error("cannot create a triple from an undefined value");
+        }
+        var subject;
+        if (tripleOrSubject.subject !== undefined) {
+            subject = tripleOrSubject.subject;
+            predicate = tripleOrSubject.property || tripleOrSubject.predicate;
+            object = tripleOrSubject.object;
+        } else {
+            subject = tripleOrSubject;
+        }
+
         this.subject = new Resource(subject);
         this.predicate = new Resource(predicate);
         this.object = new Resource(object);
@@ -171,11 +190,14 @@
     };
     Triple.prototype = {
         toString: function() {
-            return this.subject.toString()+' '+this.predicate.toString()+' '+this.object.toString()+' .';
+            var object = this.object.toString(); 
+            if (this.object.isLiteral()) {
+                object = '"' + object + '"';
+            }
+            return this.subject.toString()+' '+this.predicate.toString() + ' ' + object + ' .';
         },
         toPrettyString: function() {
             return this.toString();
-            //return this.toDatabank().dump({format: "text/turtle"}).replace(/ \. /g, " .\n");
         },
         toSparqlString: function() {
             return this.subject.toSparqlString()+' '+this.predicate.toSparqlString()+' '+this.object.toSparqlString()+' .';
@@ -203,6 +225,12 @@
                 if (value === undefined) { return; }
                 if (value instanceof Array) {
                     $.merge(this, value);
+                } else if (value instanceof $.rdf.databank) {
+                    var triples = this;
+                    value.triples().each(function(i,rdftriple) {
+                        var triple = new Triple(rdftriple);
+                        triples.add(triple);
+                    });
                 } else {
                     this.push(value);
                 }
@@ -213,33 +241,52 @@
             delete: { value: function() {
                 return this.filter(function(triple) { return triple.operation == "delete"; });
             } },
+            insertSparql: { value: function() {
+                var sparql = "";
+                var updateTriplesSparql = _.map( this, function(triple) { return triple.toSparqlString(); } );
+                if (updateTriplesSparql.length > 0) {
+                    sparql = "INSERT DATA {\n" + updateTriplesSparql.join(" \n") + "\n}";    
+                }
+                return sparql;
+            } },
+            deleteSparql: { value: function() {
+                var sparql = "";
+                var updateTriplesSparql = _.map( this, function(triple) { return triple.toSparqlString(); } );
+                if (updateTriplesSparql.length > 0) {
+                    sparql = "DELETE DATA {\n" + updateTriplesSparql.join(" \n") + "\n}";    
+                }
+                return sparql;
+            } },
+
             updateSparql: { value: function() {
                 var sparql = "";
-                var rdfsLabel = '<http://www.w3.org/2000/01/rdf-schema#label>';
+                // var rdfsLabel = '<http://www.w3.org/2000/01/rdf-schema#label>';
 
-                // Overwrite all triples that are receiving new rdfs:label triples
-                var labelTriples = $.grep(this.update(), function(triple) {
-                    return triple.predicate.toString() == rdfsLabel || triple.predicate.toString() == "rdfs:label"
-                });
-                var labelUris = $.map(labelTriples, function(triple) { 
-                    return triple.subject;
-                });
+                // // Overwrite all triples that are receiving new rdfs:label triples
+                // var labelTriples = $.grep(this.update(), function(triple) {
+                //     return triple.predicate.toString() == rdfsLabel || triple.predicate.toString() == "rdfs:label"
+                // });
+                // var labelUris = $.map(labelTriples, function(triple) { 
+                //     return triple.subject;
+                // });
 
-                if (labelUris.length) {
-                    sparql = sparql +
-                        "DELETE { ?s " + rdfsLabel + " ?o } WHERE {\n"+
-                        "   ?s "+ rdfsLabel + " ?o\n" +
-                        "   FILTER (?s in ( " + labelUris.join(",\n") + ") )\n" + 
-                        "} \n";
-                }
+                // if (labelUris.length) {
+                //     sparql = sparql +
+                //         "DELETE { ?s " + rdfsLabel + " ?o } WHERE {\n"+
+                //         "   ?s "+ rdfsLabel + " ?o\n" +
+                //         "   FILTER (?s in ( " + labelUris.join(",\n") + ") )\n" + 
+                //         "} \n";
+                // }
+                var updateTriplesSparql = _.map( this, function(triple) { return triple.toSparqlString(); } );
                 var updateTriplesSparql = _.map( this.update(), function(triple) { return triple.toSparqlString(); } );
                 if (updateTriplesSparql.length) {
                     sparql = sparql + "INSERT DATA {\n" + updateTriplesSparql.join(" \n") + "\n}";    
                 }
                 return sparql;
             } },
-            deleteSparql: { value: function() {
-                var triples = $.each(this.delete(), function(e) { return e.toString().replace(/\\/g,''); }).join(" \n");
+            _deleteSparql: { value: function() {
+                var triples = $.each(this, function(e) { return e.toString().replace(/\\/g,''); }).join(" \n");
+                // var triples = $.each(this.delete(), function(e) { return e.toString().replace(/\\/g,''); }).join(" \n");
                 if (triples.length == 0) {
                     return undefined;
                 }
@@ -326,8 +373,21 @@
             toPrettyString: { value: function() {
                 return this.join("\n");
             } },
+            toTurtle: { value: function() {
+                return this.toDatabank()
+                .dump({format: "text/turtle"})
+                .replace(/ \. /g, " .\n")
+                .replace(/ ; /g, " ;\n\t")
+                .replace(/ , /g, " ,\n\t\t")
+                .replace(/^@.*\n/mg, "");         // remove prefixes
+            } },
             toSparqlString: { value: function() {
                 return _.map(this, function(triple) { return triple.toSparqlString(); }).join("\n");
+            } },
+            minus: { value: function(triples) {
+                var result = new Triples();
+                result.add( this.toDatabank().except(triples.toDatabank()) );
+                return result;
             } }
         };
 

@@ -2,30 +2,30 @@
 
     $.widget("notepad.label", {
 
+        // manages a literal or a uri
+        // displays the label for a URI
+        // can set the URI
+            // => 
+
+
         options: { 
-            // template:           '<div contenteditable="true" rel="rdfs:label">' +
-            //                         '{{{rdfs:label}}}' + 
-            //                         '{{^rdfs:label}}<span contenteditable="false" class="uri">{{{uri}}}</span>{{/rdfs:label}}' +
-            //                     '</div>',
-
-            template:       '{{#rdfs:label}}' +
-                                '<div contenteditable="true" rel="rdfs:label">{{{rdfs:label}}}</div>' +
-                            '{{/rdfs:label}}' +
-                            '{{^rdfs:label}}' +
-                                '{{#nmo:messageSubject}}<span rel="nmo:messageSubject">{{{nmo:messageSubject}}}</span>{{/nmo:messageSubject}}' +
-                                '{{#nmo:sender}}<span class="notepad-column-0">{{{nmo:sender}}}</span><span class="notepad-column-1">{{{nmo:receivedDate}}}</span>{{/nmo:sender}}' +
-                                '{{^nmo:messageSubject}}' +
-                                    '{{#uri}}' +
-                                        '<span contenteditable="false" rel="rdfs:label" class="uri">{{{uri}}}</span>' +
-                                    '{{/uri}}' +
-                                    '{{^uri}}' +
-                                        '<div contenteditable="true" rel="rdfs:label"></div>' +
-                                    '{{/uri}}' +
-                                '{{/nmo:messageSubject}}' +
-                            '{{/rdfs:label}}' +
-                            '',
-
-
+            template:   '{{#rdfs:label}}' +
+                            '<div contenteditable="true" rel="rdfs:label">{{rdfs:label}}</div>' +
+                        '{{/rdfs:label}}' +
+                        '{{^rdfs:label}}' +
+                            '{{#nmo:sender}}<span contenteditable="true" rel="nmo:sender">{{nmo:sender}}</span>{{/nmo:sender}}' +
+                            '{{#nmo:messageSubject}}<span class="notepad-column-0" rel="nmo:messageSubject">{{{nmo:messageSubject}}}</span>{{/nmo:messageSubject}}' +
+                            '{{^nmo:messageSubject}}' +
+                                '{{#uri}}' +
+                                    '<div class="uri">{{{uri}}}</div>' +
+                                '{{/uri}}' +
+                                '{{^uri}}' +
+                                    '<div contenteditable="true" rel="rdfs:label"></div>' +
+                                '{{/uri}}' +
+                            '{{/nmo:messageSubject}}' +
+                            '{{#nmo:receivedDate}}<span rel="nmo:receivedDate" class="notepad-column-1">{{nmo:receivedDate}}</span>{{/nmo:receivedDate}}' +
+                        '{{/rdfs:label}}' +
+                        '',
                                 
             uriAttr:            'about',
             uriElement:         undefined,
@@ -46,6 +46,9 @@
         getEndpoint: function () {
             return this.element.findEndpoint();
         },
+        getNotepad: function() {
+            return this.element.parents('.notepad').data("notepad");
+        },
 
         template: function() {
             // The object should be responsible for determining the best way to display itself, given its context
@@ -56,7 +59,6 @@
 
             return this.options.template;
         },
-
 
         // Object or Literal
         isLiteral: function() {
@@ -96,12 +98,25 @@
             this.getUriElement().attr(this.options.uriAttr, uri);
             return this;
         },
+        newUri: function() {
+            this._setUri($.notepad.getNewUri());
+        },
         ensureUri: function() {
             if (this.getUri() !== undefined) { return this.getUri(); }
             this._setUri($.notepad.getNewUri());
         },
+        _createTemplateElement: function() {
+            return $('<div class="notepad-template">').appendTo(this.element);
+        },
+        getTemplateElement: function() {
+            var el = this.element.children(".notepad-template");
+            if (el.length > 0) {
+                return el;
+            }
+            return this._createTemplateElement();
+        },
         getLabelElement: function() {
-            return this.element.children('[rel="rdfs:label"]');
+            return this.getTemplateElement().children('[rel="rdfs:label"]');
         },
         focus: function() {
             this.getLabelElement().focus();
@@ -109,9 +124,6 @@
         getLiteral: function() {
             var text = this.getLabelElement().text() || this.element.text();
             return (text.length !== 0) ? text : undefined;
-            // return this.element.contents().filter(function(){ return(this.nodeType == 3); }).text();        // Get only the direct children that are text nodes
-            // return literalElement.length > 0 ? literalElement : this._createLiteral();
-            //return this.element.text();
         },
         getLiteralAsTriple: function() {
             return toTriple(":", "rdfs:label", this.getLiteral());
@@ -186,6 +198,10 @@
             this.getEndpoint().execute(sparql, function(triples) {
                 label._updateFromRdf(triples);
 
+                if (label.getNotepad()) {
+                    label.getNotepad().loaded(triples);  // Assumes all triples loaded where displayed
+                }
+
                 if (callback !== undefined) {
                     callback.apply(label);
                 }
@@ -198,7 +214,7 @@
             var predicatesInTemplate = this.getPredicatesInTemplate();
 
             var context = { uri: this.getUri() };
-
+            var label = this;
             _.each(predicatesInTemplate, function(predicate) {
                 var values = triples.filter(function(triple) { return triple.predicate == predicate; });
                 if (values.length == 0) {
@@ -210,13 +226,24 @@
                     log.warn("using first ("+values[0].object+")");
                 }
                 context[predicate] = values[0].object;
+
             });
             var html = Mustache.render(this.template(), context);
-            this.getLabelElement().remove();  // we need to setup autocomplete again later.
-            this.element.prepend(html);
+
+            this.getTemplateElement().empty();
+            this.getTemplateElement().append(html);
+
+            // this.getLabelElement().remove();  // we need to setup autocomplete again later.
+            // this.element.prepend(html);
             this._setupAutocomplete();
         },
 
+        set: function(triple) {
+            this.setUri(triple.subject);
+            var triples = new Triples();
+            triples.push(triple);
+            this._updateFromRdf(triples);
+        },
 
         getPredicate: function() {
             var objectElement = this.getUriElement();
@@ -241,7 +268,7 @@
 
         triple: function() {
             if (this.options.uriElement) {
-                // reason?
+                // if this label is describing a predicate, then it should not return the triple (the object, who knows whether it is defined, should return it instead)
                 return undefined;
             }
 
@@ -250,25 +277,22 @@
             if (! (predicate = this.getPredicateUri())) {
                 return undefined;
             }
-
-            if (! (subject   = this.getSubjectUri())) {
-                throw "cannot find a subject URI but can find a predicate URI";
-                //return undefined;
+            if (! (subject = this.getSubjectUri())) {
+                throw "cannot find a subject URI but can find a predicate URI (ie. inconsistent state)";
             }
-            if (! (object    = this.getResource())) {
+            if (! (object = this.getResource())) {
                 return undefined;
             }
+            var operation = this.getPredicate().getOperation();
+
             if (this.getPredicate().isForward()) {
-                return new Triple(subject, predicate, object);
+                return new Triple(subject, predicate, object, operation);
             }
             // Backward
             if (this.isUri()) {
-                return new Triple(object, predicate, subject);
+                return new Triple(object, predicate, subject, operation);
             }
             return undefined;
-        },
-        getLabelElement: function() {
-            return this.element.children('[rel="rdfs:label"]');
         },
         _getLabelLiteral: function() {
             return this.getLabelElement().text();
@@ -279,11 +303,18 @@
             if (!uri || !label) {
                 return undefined;
             }
+
+            // must return any other triples fetched by the label
+            // return this.getTemplateElement().find("[rel]").map(function(i,e) {
+            //     return new Triple(uri, $(e).attr('rel'), $(e).text());
+            // });
             
             return new Triple(uri, "rdfs:label", label);
         },
         childTriples: function() {
-            var container = this.element.children(":notepad-container").data('container');
+            var container = this.element.find(":notepad-container:eq(0)").data('container');
+                // Must use find instead of children because toggleChildren moves the <ul> element inside a div
+
             if (!container) {
                 return [];
             }
@@ -294,7 +325,15 @@
             var triples = new Triples(0);
             triples.add(this.triple());
             if (this.isUri()) {
-                triples.add(this.labelTriple());  // this could be derived from the template (though label triple is still used in setting the URI)
+                var uri = this.getUri();
+                // must return any other triples fetched by the label
+                this.getTemplateElement().find("[rel]").each(function(i,e) {
+                    var object = $(e).text();
+                    if (object.length === 0) {
+                        return;
+                    }
+                    triples.add(new Triple(uri, $(e).attr('rel'), object) );
+                });
             }
             $.merge(triples, this.childTriples());
             return triples;
@@ -311,13 +350,11 @@
                 select: function(event, ui) {
                     var label = $(event.target).closest('.notepad-label').data('label');
                     var uri = ui.item.value;
-                    var choice = new Triples(0);
-                    choice.push(new Triple(uri, "rdfs:label", ui.item.label));
-
-                    label.setUri(uri);
-                    label._updateFromRdf(choice);
-
-                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value
+                    // var choice = new Triples();
+                    label.set(toTriple(uri, "rdfs:label", ui.item.label));
+                    // label.setUri(uri);
+                    // label._updateFromRdf(choice);
+                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
                 }
             });
         },
@@ -344,11 +381,68 @@
             // });
 
             this._setupAutocomplete();
+            this._createColonHandler();
         },
         _destroy : function() {
-            this.element.removeClass("notepad-label").removeAttr('contenteditable');
-            this.element.autocomplete('destroy');
+            this.element.removeClass("notepad-label");
+            this.getLabelElement().autocomplete('destroy');
         },
+        _createColonHandler: function() {
+            var label = this;
+
+            // Ignore if I am not in an object context
+            if (this.element.closest(".notepad-object3").length == 0) {
+                return;
+            }
+
+            this.getLabelElement().keyup(function(event) {           // might need to bind to the 'change' event instead
+                if (event.keyCode == 186) { // tech:debt            // also, why?  we could do this at every character pressed
+
+                    var parts = label.getLiteral().match(/\s*(.+?)\s*:\s*(.*)/);
+                    if (!parts) {
+                        log.info("can't extract parts");
+                        return;
+                    }
+                    var predicate = parts[1];
+                    var remainder = parts[2];
+
+                    label.getPredicate().getLabel().searchByLabelLiteral(predicate, function(triple) {
+                        label.getPredicate().getLabel().set(triple);
+                        label.setLiteral(remainder);
+                        label.focus();
+                    });  // setUri?
+
+                    // Could also use what the autocomplete menu has returned
+                }
+                
+            });
+        },
+
+        getPredicateLabel: function() {
+            var parts = this.getLiteral().match(/\s*(.+?)\s*:\s*(.*)/);
+            var predicate = parts[1];
+            var remainder = parts[2];
+            this.setLiteral(remainder);
+            return predicate;
+        },
+        searchByLabelLiteral: function(literal, callback) {
+            var label = this;
+            var query = new Query($.notepad.templates.labels);
+            query.appendPattern('?subject rdfs:label "{{{rdfs:label}}}"');
+            query.execute(this.getEndpoint(), {'rdfs:label': literal}, function(triples) {
+                if (triples.length > 1) {
+                    log.info("too many results ("+triples.length+")... ignoring");
+                    log.info(triples.toTurtle());
+                    return;
+                }
+                if (triples.length == 0) {
+                    log.info("no matching results.");
+                    return;
+                }
+                callback(triples[0]);
+            });
+        },
+
 
     });
 

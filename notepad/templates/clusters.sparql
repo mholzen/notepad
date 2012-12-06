@@ -43,3 +43,4 @@ WHERE
 	# LET ( ?label := CONCAT('filter by ', ?label1, ' and ', ?label2))
 	# LET ( ?label2 := CONCAT( COALESCE(?p2Label, ?p2), '="', ?o2, '"'))
 }
+LIMIT 5
