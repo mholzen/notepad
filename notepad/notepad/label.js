@@ -239,7 +239,7 @@
         },
 
         set: function(triple) {
-            this.setUri(triple.subject);
+            this._setUri(triple.subject);
             var triples = new Triples();
             triples.push(triple);
             this._updateFromRdf(triples);
@@ -406,11 +406,21 @@
                     var predicate = parts[1];
                     var remainder = parts[2];
 
-                    label.getPredicate().getLabel().searchByLabelLiteral(predicate, function(triple) {
-                        label.getPredicate().getLabel().set(triple);
+                    label.getPredicate().getLabel().searchByLabelLiteral(predicate, function(triples) {
+                        if (triples.length > 1) {
+                            log.info("too many results ("+triples.length+")... ignoring");
+                            log.info(triples.toTurtle());
+                            return;
+                        }
+                        if (triples.length == 0) {
+                            log.info("no matching results.");
+                            triples.push( toTriple($.notepad.getNewUri(), "rdfs:label", predicate) );
+                        }
+                        log.info(triples.toPrettyString());
+                        label.getPredicate().getLabel().set(triples[0]);
                         label.setLiteral(remainder);
                         label.focus();
-                    });  // setUri?
+                    });
 
                     // Could also use what the autocomplete menu has returned
                 }
@@ -429,18 +439,7 @@
             var label = this;
             var query = new Query($.notepad.templates.labels);
             query.appendPattern('?subject rdfs:label "{{{rdfs:label}}}"');
-            query.execute(this.getEndpoint(), {'rdfs:label': literal}, function(triples) {
-                if (triples.length > 1) {
-                    log.info("too many results ("+triples.length+")... ignoring");
-                    log.info(triples.toTurtle());
-                    return;
-                }
-                if (triples.length == 0) {
-                    log.info("no matching results.");
-                    return;
-                }
-                callback(triples[0]);
-            });
+            query.execute(this.getEndpoint(), {'rdfs:label': literal}, callback);
         },
 
 
