@@ -57,9 +57,8 @@ console.__proto__.debug = function() { };
 
 $(function() {
 
-    endpoint = new FusekiEndpoint("http://localhost:3030/dev");
-    //endpoint = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
-    //endpoint = new FusekiEndpoint("http://ec2-50-112-227-110.us-west-2.compute.amazonaws.com:3030/dev");
+    var host = $.uri.base().authority;
+    endpoint = new FusekiEndpoint("http://"+host+":3030/dev");
     $("#notepad").notepad({endpoint: endpoint});
 
     notepad = $("#notepad").data('notepad');
