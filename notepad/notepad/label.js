@@ -381,62 +381,12 @@
             // });
 
             this._setupAutocomplete();
-            this._createColonHandler();
         },
         _destroy : function() {
             this.element.removeClass("notepad-label");
             this.getLabelElement().autocomplete('destroy');
         },
-        _createColonHandler: function() {
-            var label = this;
-
-            // Ignore if I am not in an object context
-            if (this.element.closest(".notepad-object3").length == 0) {
-                return;
-            }
-
-            this.getLabelElement().keyup(function(event) {           // might need to bind to the 'change' event instead
-                if (event.keyCode == 186) { // tech:debt            // also, why?  we could do this at every character pressed
-
-                    var parts = label.getLiteral().match(/\s*(.+?)\s*:\s*(.*)/);
-                    if (!parts) {
-                        log.info("can't extract parts");
-                        return;
-                    }
-                    var predicate = parts[1];
-                    var remainder = parts[2];
-
-                    label.getPredicate().getLabel().searchByLabelLiteral(predicate, function(triples) {
-                        if (triples.length > 1) {
-                            log.info("too many results ("+triples.length+")... ignoring");
-                            log.info(triples.toTurtle());
-                            return;
-                        }
-                        if (triples.length == 0) {
-                            log.info("no matching results.");
-                            triples.push( toTriple($.notepad.getNewUri(), "rdfs:label", predicate) );
-                        }
-                        log.info(triples.toPrettyString());
-                        label.getPredicate().getLabel().set(triples[0]);
-                        label.setLiteral(remainder);
-                        label.focus();
-                    });
-
-                    // Could also use what the autocomplete menu has returned
-                }
-                
-            });
-        },
-
-        getPredicateLabel: function() {
-            var parts = this.getLiteral().match(/\s*(.+?)\s*:\s*(.*)/);
-            var predicate = parts[1];
-            var remainder = parts[2];
-            this.setLiteral(remainder);
-            return predicate;
-        },
         searchByLabelLiteral: function(literal, callback) {
-            var label = this;
             var query = new Query($.notepad.templates.labels);
             query.appendPattern('?subject rdfs:label "{{{rdfs:label}}}"');
             query.execute(this.getEndpoint(), {'rdfs:label': literal}, callback);

@@ -66,6 +66,50 @@ $(function() {
     line = notepad.getLines()[0];
     object = line.getObject();
 
+
+    // TODO: this should move somewhere else.  Not sure where...
+    $("[rel='rdfs:label']").live('keyup', function(event) {
+        var target = $(event.target);
+        if (event.keyCode != 186) { // tech:debt            // also, why?  we could do this at every character pressed
+            return;
+        }
+        var label = target.closest(":notepad-label").data('label');
+        if (!label) {
+            log.error("cannot find a label widget");
+            return;
+        }
+
+        // We need a label that is in object context
+        if (target.closest(".notepad-object3").length == 0) {
+            return;
+        }
+        var predicateLabel = label.getPredicate().getLabel();
+
+        var parts = label.getLiteral().match(/\s*(.+?)\s*:\s*(.*)/);
+        if (!parts) {
+            log.info("can't extract parts");
+            return;
+        }
+        var predicate = parts[1];
+        var remainder = parts[2];
+
+        predicateLabel.searchByLabelLiteral(predicate, function(triples) {
+            if (triples.length > 1) {
+                log.info("too many results ("+triples.length+")... ignoring");
+                log.info(triples.toTurtle());
+                return;
+            }
+            if (triples.length == 0) {
+                log.info("no matching results.");
+                triples.push( toTriple($.notepad.getNewUri(), "rdfs:label", predicate) );
+            }
+            log.info(triples.toPrettyString());
+            label.getPredicate().getLabel().set(triples[0]);
+            label.setLiteral(remainder);
+            label.focus();
+        });
+    });
+
     $("#triples button").click(function() {
         var removed = notepad.removed().toTurtle();
         $(this).siblings(".delete").text(removed);
