@@ -378,3 +378,9 @@ div.notepad-object {
     background: lightblue;
     display: none
 }
+
+#help {
+    position: fixed;
+    text-align: right;
+    right: 20px;
+}
