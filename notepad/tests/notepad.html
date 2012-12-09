@@ -128,7 +128,7 @@ $(function() {
             .success(function() {
                 $("#status").text('Saved.');
             })
-            .error(function() { status.text('error'); });
+            .error(function() { $("#status").text('error'); });
     });
 
     $(".debug .toggle").click(function() {
