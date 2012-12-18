@@ -41,23 +41,31 @@ FusekiEndpoint.prototype = {
         // $.ajaxSetup({cache: true});
         // options.cache = true;
         // if (cache.shouldCache(command)) {
-        if (command.match(/# query:cache/) ) {
+        if (command.match(/# query:cache/)) {
             if (command in cache) {
                 log.debug("returning cached results");
                 callback ( cache[command] );
                 return;
             } else {
-                return $.getJSON(this.queryUri(), options, function(result) {
+                var previousCallback = callback;
+                callback = function(result) {
                     cache[command] = result;
-                    callback(result);
-                });
+                    previousCallback(result);
+                }
             }
         }
-        log.info('GET:', command.replace(/\s+/mg,' ').substring(0,120));
-        return $.getJSON(this.queryUri(), options, callback);
+        return $.getJSON(this.queryUri(), options, function(response, status, xhr) {
+            var type = xhr.getResponseHeader("Content-Type");
+            if (type.contains('application/rdf+json')) {
+                var databank = $.rdf.databank();
+                databank.load(response);
+                callback($.notepad.toTriples(databank));
+            } else {
+                callback(response);
+            }
+        });
     },
     update: function(command, callback) {
-        log.info('POST:', command.replace(/\s+/mg,' ').substring(0,120));
         return $.post(this.updateUri(), {update: command}, function() {
             // There is a delay before the updates are available in the query server.
             // So we force the client to wait for this delay here.
@@ -80,14 +88,15 @@ FusekiEndpoint.prototype = {
             callback(triples);
         });
     },
-    execute: function(command, callback) {
-        command = this.prefixes() + command;
-        if (command.toLowerCase().contains('construct') || command.toLowerCase().contains('describe')) {
-            return this.queryReturningGraph(command, callback);
-        } else if (command.toLowerCase().contains('select') ) {
-            return this.query(command, callback);
+    execute: function(sparql, callback) {
+        log.debug('execute:', sparql.replace(/\s+/mg,' ').substring(0,120));
+
+        var isRead = sparql.match(/^\s*(construct|describe|ask|select)/i);
+        var sparql = this.prefixes() + sparql;
+        if (isRead) {
+            return this.query(sparql, callback);
         } else {
-            return this.update(command, callback);
+            return this.update(sparql, callback);
         }
     },
     clear: function(callback) {

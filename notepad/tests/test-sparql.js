@@ -25,6 +25,27 @@ module('given a FusekiEndpoint', {
 test("when I query for prefixes, then", function() {
     assertThat(this.endpoint.prefixes(), containsString("PREFIX"));
 });
+asyncTest("select", function() {
+    expect(1);
+    this.endpoint.execute('select * {?s ?p ?o}', function() {
+        assertThat(true);
+        start();
+    });
+});
+asyncTest("construct", function() {
+    expect(1);
+    this.endpoint.execute('construct {?s ?p ?o} {?s ?p ?o}', function() {
+        assertThat(true);
+        start();
+    });
+});
+asyncTest("insert data", function() {
+    expect(1);
+    this.endpoint.execute('INSERT DATA {<> <> <>}', function() {
+        assertThat(true);
+        start();
+    });
+});
 test("when I delete all content, then", function() {
     stop();
     expect(2);
@@ -33,10 +54,12 @@ test("when I delete all content, then", function() {
         ok(true, "the endpoint should clear");
         endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
             equal(subjects.length,0, "the endpoint should be empty after clear");
-            console.log(subjects);
             start();
         });
-    }).error( function(){ start(); ok(false,"the endpoint should not generate an error"); });
+    }).error( function(){
+        ok(false,"the endpoint should not generate an error");
+        start();
+    });
 });
 test("when query for nodes by labels, then", function() {
     expect(2);
@@ -55,19 +78,21 @@ test("when query for nodes by labels, then", function() {
     }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
 });
 test("when I retrieve a literal with a double quote", function() {
-    expect(2);
+    expect(3);
     stop();
     var endpoint = this.endpoint;
     endpoint.clear( function(){
         endpoint.execute("INSERT DATA { <s> rdfs:label 'a literal containing a \" double quote' }", function() {
             endpoint.execute('SELECT ?label WHERE { ?s rdfs:label ?label }',function(response) {
-                console.log(response);
                 equal(response.results.bindings.length,1, "endpoint should have one label");
                 if (response.results.bindings.length === 1) {
                     var label = new Resource(response.results.bindings[0].label);
                     equal(label.toSparqlString(), '"a literal containing a \\" double quote"');
                 }
-                start();
+                endpoint.execute('CONSTRUCT { ?s rdfs:label ?label } WHERE { ?s rdfs:label ?label }',function(response) {
+                    equal(response[0].object.toString(), "a literal containing a \" double quote" );
+                    start();
+                });
             });
         });
     }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
@@ -77,7 +102,7 @@ asyncTest("when I create a named graph", function() {
 
     // Make sure the graph is empty
     var now = Date.now();
-    this.endpoint.graph = "http://www.vonholzen.org/notepad#graph-" + now;
+    this.endpoint.graph = new Resource ("http://www.vonholzen.org/notepad#graph-" + now);
     var endpoint = this.endpoint;
     this.endpoint.constructAll(function(receivedTriples) {
         equal(receivedTriples.length, 0, "the initial results should be empty");
