@@ -100,13 +100,11 @@ test("triples", function() {
 
     equal(triples.update().length, 2, "in a new list of triples, they should all be to updateable");
     equal(triples.delete().length, 0, "in a new list of triples, none should be to delete");
-    equal(triples.sparql().length, 1, "there should be one sparql command");
 
     triples = new Triples(0);
     triples.push(new Triple(':1', ':2', ':3', "delete"));
     equal(triples.update().length, 0, "in a new list of triples, they should all be to deleted");
     equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
-    equal(triples.sparql().length, 1, "there should be one sparql command");
 });
 
 // Skipped because I can't seem to be able to mock Triples, maybe because it uses makeSubArray.
@@ -186,4 +184,4 @@ test("when I query for labels", function() {
     ok(triples.getLabels(':s2').contains(triples[1]), "it should provide the first of two labels for s2");
     ok(triples.getLabels(':s2').contains(triples[2]), "it should provide the second of two labels for s2");
     ok(!triples.getLabels(':s2').contains(triples[0]), "it should not provide a label for s1");
-})
+});

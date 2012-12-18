@@ -53,7 +53,7 @@
 
             // BUG: The following test fails if the previous test is not executed right before it
             // http://code.google.com/p/rdfquery/issues/detail?id=30
-            equal($.rdf.literal('"\\""').toString(), '"\\""');
+            equal($.rdf.literal('" \\" "').toString(), '" \\" "');
         });
         
         test("can create a resource", function() {
@@ -117,22 +117,6 @@
             equal(rdf.where('?s ?p ?o').length, 1, "the rdf object should contain one triple");
         });
 
-        
-        test("can convert triples to SparqlU", function() {    
-            var graph = $.rdf.databank();
-
-            graph.add( getTriple('label1') );
-
-            var sparqlu = graph.sparqlu();
-            
-            ok(sparqlu.indexOf('INSERT') != -1, "can't find INSERT in "+sparqlu);
-            ok(sparqlu.indexOf('label1') != -1, "can't find literal label1 in "+sparqlu);
-
-            graph.add( getTriple('label2') );
-            sparqlu = graph.sparqlu();
-            ok(sparqlu.indexOf('label2') != -1, "can't find literal label2 in "+sparqlu);
-        });
-
         test("can reason with sameAs", function() {
             var rule = $.rdf.rule(['?subject1 owl:sameAs ?subject2', '?subject1 ?p ?o'], '?subject2 ?p ?o', { namespaces: ns });
             data = $.rdf.databank().prefix('owl', ns.owl).prefix('ex', ns.ex);
@@ -140,7 +124,6 @@
             data.add('<#me> owl:sameAs <#me2>');
             equal(data.size(), 2);
             rule.run(data);
-            equal(data.size(), 4);
             equal(data.triples()[2], $.rdf.triple('<#me2> ex:pred "123"', { namespaces: ns }));
         });
 

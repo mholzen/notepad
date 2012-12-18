@@ -67,7 +67,7 @@
             catch(error) {
                 // We couldn't make it a URI, let's make it a Literal
             }
-        }        
+        }
         return $.rdf.literal('"' + value.toString().replace(/"/g, '\\"') + '"');
     };
     _fusekiToRdfResource = function(binding) {
@@ -299,18 +299,6 @@
                     return undefined;
                 }
                 return "DELETE DATA { " + triples + " }";
-            } },
-            sparql: { value: function() {
-                var sparql = [];
-                var deleteSparql = this.deleteSparql();
-                if (deleteSparql) {
-                    sparql.push(deleteSparql);
-                }
-                var updateSparql = this.updateSparql();
-                if (updateSparql) {
-                    sparql.push(updateSparql);
-                }
-                return sparql;
             } },
             contains: { value: function(triple) {
                 for(var i=0; i<this.length; i++) {

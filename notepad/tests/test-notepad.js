@@ -288,9 +288,6 @@ test("a notepad should display RDF", function() {
     ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
     equal(this.div.find('li[about="_:line1"] .notepad-object').text(), '', "First line should be empty");
 });
-test("a notepad should convert RDF to SPARQLU", function() {
-    equal(this.notepad.triples().sparql().length, 1, "it should generate one sparql update command");
-});
 test("when I hit enter at the end of the first line, then it should add a newline before the second line", function() {
     this.firstObject.caretToEnd();
     this.firstObject.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
