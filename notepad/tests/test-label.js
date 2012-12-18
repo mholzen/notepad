@@ -155,7 +155,7 @@ module("given a new label with a URI", {
     }
 });
 asyncTest("when I display a URI that has no label", function() {
-    var triples = new Triples(0);
+    var triples = new Triples();
     triples.add(new Triple(":s", "nmo:messageSubject", "a subject"));
     triples.add(new Triple(":s", "nmo:sender", "a sender"));
 
