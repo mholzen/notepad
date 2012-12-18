@@ -207,13 +207,15 @@
                 }
             });
         },
-        _updateFromRdf: function(triples) {
 
-            // WHEN A label triple is already displayed ... somewhere else on the page, this label does not know about it and still displays the triple
+        _getContextFromTriples: function(triples) {
+            var context = { uri: this.getUri() };
+            if (!triples) {
+                return context;
+            }
 
             var predicatesInTemplate = this.getPredicatesInTemplate();
 
-            var context = { uri: this.getUri() };
             var label = this;
             _.each(predicatesInTemplate, function(predicate) {
                 var values = triples.filter(function(triple) { return triple.predicate == predicate; });
@@ -226,8 +228,14 @@
                     log.warn("using first ("+values[0].object+")");
                 }
                 context[predicate] = values[0].object;
-
             });
+            return context;
+        },
+
+        _updateFromRdf: function(triples) {
+            // WHEN A label triple is already displayed ... somewhere else on the page, this label does not know about it and still displays the triple
+
+            var context = this._getContextFromTriples(triples);
             var html = Mustache.render(this.template(), context);
 
             this.getTemplateElement().empty();
