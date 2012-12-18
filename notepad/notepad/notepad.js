@@ -85,6 +85,16 @@
                     break;
                 }
             });
+
+            // notepad:created rdfs:subPropertyOf dc:created
+            var created = $('<span property="notepad:created" content="'+Date.now()+'">').appendTo('h2');
+            created.attr('about', $.notepad.uri() + '#' + this.getUri().slice(1));
+            setInterval(function() {
+                $("[property='notepad:created']").each(function(i,e) {
+                    $(e).text("Created " + moment(parseInt($(e).attr('content'))).fromNow());
+                });
+            }, 1000);
+
         },
         _destroy : function() {
             this.element.removeClass("notepad").removeAttr('about').unbind();
@@ -254,9 +264,15 @@
         },
         
         triples: function(){
-            var triples = new Triples(0);
+            var triples = new Triples();
+
+            rdfaTriples = $.notepad.toTriples($('h2').rdf().databank);  // This shouldn't need its own code
+            triples.add(rdfaTriples);
+
             triples.push(new Triple(this.getUri(), "rdf:type", "notepad:Session")); // ALT: use RDFAs typeof attribute instead
+
             $.merge(triples,this.getContainer().triples());
+
             return triples;
         },
         deletedTriples: function() {

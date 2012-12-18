@@ -11,15 +11,15 @@ FusekiEndpoint = function(uri) {
 
 TempFusekiEndpoint = function(uri, triples, callback) {
     var endpoint = new FusekiEndpoint(uri);
-    endpoint.graph = "ex" + $.notepad.getNewUri();
+    endpoint.graph = $.notepad.getNewUri();
     endpoint.insertData(triples, callback.bind(endpoint));
 }
 
 FusekiEndpoint.prototype = {
     prefixes: function() {
         var prefixes = "";
-        for (var prefix in $.notepad.DEFAULT_NAMESPACES) {
-            prefixes += "PREFIX " + prefix + ": <" + $.notepad.DEFAULT_NAMESPACES[prefix] + ">\n";
+        for (var prefix in $.notepad.namespaces) {
+            prefixes += "PREFIX " + prefix + ": <" + $.notepad.namespaces[prefix] + ">\n";
         }
         return prefixes;
     },
@@ -35,7 +35,7 @@ FusekiEndpoint.prototype = {
         // var options = { query: command, output:'json', 'force-accept': 'text/json' };
         var options = { query: command, output:'json' };
         if (this.graph != 'default') {
-            options['default-graph-uri'] = this.graph;
+            options['default-graph-uri'] = this.graph.toSparqlString().slice(1,-1);
         }
 
         // $.ajaxSetup({cache: true});
@@ -188,7 +188,7 @@ FusekiEndpoint.prototype = {
     insertData: function(triples, callback) {
         var sparql = '{' + triples.update().toSparqlString() + '}';
         if ( this.graph != 'default') {
-            sparql = '{ GRAPH <' + this.graph + '>' + sparql + '}';
+            sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
         }
         sparql = 'INSERT DATA ' + sparql;
         this.execute(sparql,callback);

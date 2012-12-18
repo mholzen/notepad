@@ -6,7 +6,7 @@
         return $.uri.base().toString().replace(/#.*$/,'');
     }
 
-    var DEFAULT_NAMESPACES = {
+    var namespaces = {
         xsd:        "http://www.w3.org/2001/XMLSchema#",
         rdf:        "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         rdfs:       "http://www.w3.org/2000/01/rdf-schema#",
@@ -15,14 +15,22 @@
         nmo:        "http://www.semanticdesktop.org/ontologies/nmo/#",
         notepad:    "http://www.vonholzen.org/instruct/notepad/#",
         sp:         "http://spinrdf.org/sp#",
-        '':         $.notepad.uri()
+        dc:         "http://purl.org/dc/elements/1.1/#",
+        '':         $.notepad.uri() + '#'
     };
-    $.notepad.DEFAULT_NAMESPACES = DEFAULT_NAMESPACES;
+    $.notepad.namespaces = namespaces;
+
+    // Add namespaces to support RDFa gleaners
+    for (var abbr in $.notepad.namespaces) {
+        $('html').attr('xmlns' + (abbr.length?':':'') + abbr, $.notepad.namespaces[abbr]);
+    }
 
     // TODO: move somewhere general (req: figure out JS dependencies)
     String.prototype.contains = function(text) {
         return (this.indexOf(text)!=-1);
     };
+
+    _.mixin(_.str.exports());
 
     function guidGenerator() {
         var S4 = function() {
@@ -47,14 +55,14 @@
         }
         if ( value.indexOf('http://') == 0 || value.indexOf('file://') == 0) {
             // TODO: make more specific
-            return $.rdf.resource('<' + value.toString() + '>', {namespaces: DEFAULT_NAMESPACES} );
+            return $.rdf.resource('<' + value.toString() + '>', {namespaces: namespaces} );
         }
         if ( value.indexOf(':') == 0) {
             return $.rdf.resource('<' + $.notepad.uri() + '#' + value.toString().slice(1) + '>' );
         }
         if ( value.indexOf(':') > 0) {
             try {
-                return $.rdf.resource(value.toString(), {namespaces: DEFAULT_NAMESPACES} );
+                return $.rdf.resource(value.toString(), {namespaces: namespaces} );
             }
             catch(error) {
                 // We couldn't make it a URI, let's make it a Literal
@@ -70,7 +78,7 @@
             return $.rdf.blank("_:" + binding.value);
         }
         if (binding.type == 'uri') {
-            return $.rdf.resource('<' + binding.value + '>', {namespaces: DEFAULT_NAMESPACES} );
+            return $.rdf.resource('<' + binding.value + '>', {namespaces: namespaces} );
         }
         if (binding.type == 'literal') {
             return $.rdf.literal('"' + binding.value.toString().replace(/"/g, '\\"') + '"');
@@ -118,7 +126,7 @@
             if (this.isUri()) {
                 try {
                     var curie = $.createCurie(this.resource.toString().slice(1,-1), {
-                        namespaces: DEFAULT_NAMESPACES,
+                        namespaces: namespaces,
                         reservedNamespace: $.notepad.uri()+'#'
                     });
                     return curie;
@@ -325,14 +333,14 @@
                 });
             } },
             toDatabank: { value: function() {
-                var databank = $.rdf.databank([], {namespaces: DEFAULT_NAMESPACES });
+                var databank = $.rdf.databank([], {namespaces: namespaces });
                 _.each(this.update(), function(t) {
                     databank.add(t.toSparqlString());
                 });
                 return databank;
             } },
             expresses: { value: function(triple) {
-                var sameAsRuleset = $.rdf.ruleset([], { namespaces: DEFAULT_NAMESPACES });
+                var sameAsRuleset = $.rdf.ruleset([], { namespaces: namespaces });
                 sameAsRuleset.add(['?u1 owl:sameAs ?u2'], '?u2 owl:sameAs ?u1');
                 sameAsRuleset.add(['?s1 owl:sameAs ?s2', '?s1 ?p ?o'], '?s2 ?p ?o');
                 sameAsRuleset.add(['?p1 owl:sameAs ?p2', '?s ?p1 ?o'], '?s ?p2 ?o');
@@ -401,5 +409,11 @@
             return arr;
         };
     })();
+
+    $.notepad.toTriples = function(value) {
+        var triples = new Triples();
+        triples.add(value);
+        return triples;
+    }
 
 }(jQuery));

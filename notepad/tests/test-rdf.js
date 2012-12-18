@@ -137,14 +137,6 @@ test("resources from FusekiEndpoint", function() {
     deepEqual(bnode1, bnode3, "blank nodes created with the same values should be equal");
 });
 test("triples to rdfquery", function() {
-    var DEFAULT_NAMESPACES = {
-        xsd:  "http://www.w3.org/2001/XMLSchema#",
-        rdf:  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-        rdfs: "http://www.w3.org/2000/01/rdf-schema#",
-        owl:  "http://www.w3.org/2002/07/owl#",
-        '':   "http://localhost/this#",
-    };
-
     var triples = new Triples(new Triple(':1', ':2', ':3'), new Triple(':4', ':5', ':6'));
     var data = triples.toDatabank();
     equal(data.size(), 2);

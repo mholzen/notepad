@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:dc="http://purl.org/dc/elements/1.1/">
+<html>
 <head>
 
 <script src="../external/qunit.js" type="text/javascript"></script>
@@ -91,7 +91,7 @@
             return $.rdf.triple($.rdf.blank('[]'), $.rdf.label, $.rdf.literal('"'+label+'"'));
         }
         
-        test("can add triples to a triplestore", function() {    
+        test("can add triples to a databank", function() {    
             var graph = $.rdf.databank();
             equal(graph.size(),0);
             graph.add(getTriple());
@@ -101,7 +101,7 @@
             equal(graph.size(),2);
         });
 
-        test("can iterate over triples in a graph", function() {
+        test("can iterate over triples in a databank", function() {
             var graph = $.rdf.databank();
             graph.add(getTriple());
             equal(graph.triples().length,1, "triples are not of length 1" + graph.triples());
@@ -145,14 +145,40 @@
         });
 
         test("rdfa", function() {
-            //var element = $('<div prefix="notepad: http://www.vonholzen.org/instruct/notepad"> <div about="notepad:s" rel="notepad:p" resource="notepad:o"> <div>');
-            var element = $('<p id="http://ex.com#info">This paper was written by <span rel="http://ex.com#creator" resource="#me"><span property="http://ex.com#name">Ben Adida</span>.</span></p>');
-            element.appendTo("body");
-            $('#main').html('<p>This photo was taken by <span class="author" about="photo1.jpg" property="dc:creator">Mark Birbeck</span>.</p>');
-            var rdf = $('#main > p > span').rdf();
-            assertThat(rdf.databank.triples().length, equalTo(1), "there should be one triple");
-            var dump = rdf.databank.dump({format: "text/turtle"});
-            assertThat(dump, containsString("photo1.jpg"));
+            // $("<div id='container'>").attr('xmlns:notepad', 'http://ex.com/');
+
+            // $('<span class="author" about="photo1.jpg" property="dc:creator">Joe</span>').appendTo('#main');
+            // var rdf = $('#main > span').rdf();
+            // assertThat(rdf.databank.triples().length, equalTo(1), "there should be one triple");
+
+            // // Requires the attribute xmlns:dc in html (in parent?)
+            // assertThat($('<span about="p.jpg" property="dc:creator">Joe</span>').appendTo('#main').rdf().databank.size(), 1);
+
+            var rdf = $('<span xmlns:dc="http://purl.org/dc/elements/1.1/" about="p.jpg" property="dc:created" content="1234">1/1/2012</span>').rdf();
+            assertThat(rdf.databank.size(), 1);
+            rdf = rdf.where('<p.jpg> dc:created "1234"');
+            assertThat(rdf.length, 1);
+            
+            // assertThat(JSON.stringify(rdf.dump({format: "text/turtle"})), "");
+
+            // assertThat($('<span xmlns:dc="http://purl.org/dc/elements/1.1/" about="p.jpg" property="dc:created" content="123">1/1/2012</span>').appendTo('#main').rdf().databank.size(), 1);
+            // assertThat($('<span xmlns:notepad="http://ex.com/" about="p.jpg" property="notepad:creator">Joe</span>').appendTo('#main').rdf().databank.size(), 1);
+            // assertThat($('<span about="p.jpg" property="dc:creator">Joe</span>').appendTo('#main').rdfa().databank.size(), 1);
+        });
+
+        test("add JSON to a databank", function() {
+            var json = { 
+                "http://ex.com/1" : { 
+                    "http://www.w3.org/2000/01/rdf-schema#label" : [ { 
+                        "type" : "literal" ,
+                        "value" : 'Some text'
+                        } ]
+                }
+            };
+            var data = $.rdf.databank();
+            data.load(json);
+            assertThat(data.size(), 1);
+
         });
 
         

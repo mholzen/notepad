@@ -57,7 +57,7 @@ module("given a new notepad", {
         this.div = $("#notepad").notepad();
         this.notepad = this.div.data('notepad');
         this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
-        this.endpoint.graph = 'ex' + $.notepad.getNewUri();
+        this.endpoint.graph = $.notepad.getNewUri();
         this.notepad.option('endpoint', this.endpoint);
         this.container = this.notepad.getContainer();
         this.line = this.div.find('li').data('line');

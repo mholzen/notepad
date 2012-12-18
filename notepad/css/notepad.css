@@ -385,3 +385,14 @@ div.notepad-object {
     text-align: right;
     right: 20px;
 }
+
+/*
+ * notepad:created
+ */
+[property='notepad:created'] {
+    font-size: small;
+    font-weight: lighter;
+}
+[property='notepad:created']:before {
+    content: " ";
+}
