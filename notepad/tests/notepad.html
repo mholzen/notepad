@@ -138,13 +138,8 @@ $(function() {
     $("#menu").menu().css('display', 'none');
 
     $("#menu").bind('menuselect', function(event, ui) {
-        console.log(ui.item[0]);
-        console.log(ui.item.text());
-        if (ui.item.text() == "Delete line") {
-            var line = $(":focus").closest(":notepad-line");
-            line.detach();      // line.remove seems to mess up this eventhandler()
-        }
-        // return false;
+        var uri = $(ui.item[0]).children('a[property="ui:select"]').attr('content');
+        eval(uri);
     });
 
     $("#menu-button").button({
@@ -177,6 +172,11 @@ $(function() {
         object = line.getObject();
         predicate = line.getPredicate();
         predicateLabel = predicate.getLabel();
+
+        // This should also update the menu with available contextual functions
+
+        // Menu entries should also be derived from the rdfs:class of the selected URI (e.g. email a person)
+
     });
 
     setTimeout(function() { object.focus(); }, 100);
@@ -216,6 +216,8 @@ $(function() {
         <h2>Notepad</h2>
         <div id="status"></div>
         <div id="notepad"></div>
+    </div>
+
         <div id="triples">
             <button>Triples</button>
             <div class="turtle delete"></div>
@@ -225,7 +227,6 @@ $(function() {
             <button id="save">Save</button>
             <div class="status"></div>
         </div>
-    </div>
 
     <div class="debug">
         <button class="toggle">Show/Hide Debug</button>
@@ -241,11 +242,11 @@ $(function() {
     <button id="menu-button"></button>
     <ul id="menu">
         <!-- TODO: onclick won't catch menu selection via the keyboard -->
-    <li><a href="#" onclick="javascript: predicate.newUri();">New predicate</a></li>
+        <li><a property="ui:select" content="javascript: predicate.newUri();">New predicate</a></li>
+        <li><a property="ui:select" content="javascript: line.element.detach();">Delete line contents and children</a></li>
     <li class="ui-state-disabled"><a href="#" onclick="javascript: line.recognizePredicate();">Recognize predicate</a></li>
     <li class="ui-state-disabled"><a href="#" onclick="javascript: label.newUri();">New URI</a></li>
     <li class="ui-state-disabled"><a href="#" onclick="javascript: container.filters();">Add filters</a></li>
-    <li><a class="delete-line" href="#">Delete line contents and children</a></li>
     <li class="ui-state-disabled"><a href="#" onclick="javascript: line.remove();">Remove line from parent</a></li>
     <li class="ui-state-disabled"><a href="#">Add column</a></li>
     <li class="ui-state-disabled"><a id="search" href="#">Search for/query for keywords ...</a></li>
@@ -260,6 +261,7 @@ $(function() {
 </ul>
 
 
+    <!--
     <ul id="predicateMenu" class="contextMenu">
     <li class="toggleDirection">
         <a href="#toggleDirection">Toggle Direction</a>
@@ -267,7 +269,7 @@ $(function() {
     <li class="delete">
         <a href="#delete">Delete</a>
     </li>
-    <!-- <li class="edit">
+    <li class="edit">
         <a href="#edit">Edit</a>
     </li>
     <li class="cut separator">

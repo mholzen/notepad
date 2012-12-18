@@ -15,6 +15,7 @@
 <script src="../external-modules/jquery-caret/jquery.caret.js" type="text/javascript"></script>
 <script src="../external/subarray.js" type="text/javascript"></script>
 <script src="../external/underscore.js" type="text/javascript"></script>
+<script src="../external/underscore.string.min.js" type="text/javascript"></script>
 <script src="../external/mustache.js" type="text/javascript"></script>
 
 <!-- Code under test -->
@@ -38,15 +39,7 @@ var log;
             assertThat([2,3,4], hasItem(3));
         });
         test("test jscontextmenu", function() {
-           $("#aThing").contextMenu({ menu: 'aMenu'},
-
-                    console.log(
-                        "Action: " + action + "\n\n" +
-                        "Element ID: " + $(el).attr("id") + "\n\n" +
-                        "X: " + pos.x + "  Y: " + pos.y + " (relative to element)\n\n" +
-                        "X: " + pos.docX + "  Y: " + pos.docY+ " (relative to document)"
-                    );
-                });
+           $("#aThing").contextMenu({ menu: 'aMenu'});
            ok(true);
         });
 
