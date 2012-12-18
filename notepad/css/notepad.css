@@ -1,5 +1,9 @@
 @CHARSET "UTF-8";
 
+.alpha {
+    display: none;
+}
+
 body {
     font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
 }
@@ -30,9 +34,6 @@ body {
  * ICONS
  */
 
-#icons {
-    display: block;
-}
 #icons a {
     padding-left: 50px;
     padding-right: 50px;
