@@ -9,11 +9,7 @@
 <script src="qunit-additions.js" type="text/javascript"></script>
 
 <script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
-<script src="../external/jquery.rdfquery.core-1.0.js" type="text/javascript"></script>
 <script src="../external/jquery.rdfquery.rules-1.0.js" type="text/javascript"></script>
-<script src="../external/jquery.rdfquery.rdfa-1.0.js" type="text/javascript"></script>
-<script src="../external/jquery.rdf.turtle.js" type="text/javascript"></script>
-<script src="../notepad/sparql.js" type="text/javascript"></script>
 
 <script>
     $(document).ready(function() {
@@ -47,9 +43,13 @@
             literal = $.rdf.literal('"a"');
             equal(literal.toString(), '"a"');
 
-            literal = $.rdf.literal('"---\\"---"');
-            equal(literal.toString(), '"---\\"---"');
-            equal($.rdf.literal('"\\\\""').toString(), '"\\""');
+            literal = $.rdf.literal('"a quoted literal with a \\" (an escaped double quote)"');
+            equal(literal.toString(), '"a quoted literal with a \\" (an escaped double quote)"');
+
+            // equal($.rdf.literal('a non-quoted string with a " (a quote character)').toString(),
+            //     '"a non-quoted string with a \\" (a quote character)"');
+
+            // equal($.rdf.literal('"\\\\""').toString(), '"\\""');
 
             // BUG: The following test fails if the previous test is not executed right before it
             // http://code.google.com/p/rdfquery/issues/detail?id=30

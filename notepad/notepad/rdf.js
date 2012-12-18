@@ -73,7 +73,7 @@
             return $.rdf.resource('<' + binding.value + '>', {namespaces: DEFAULT_NAMESPACES} );
         }
         if (binding.type == 'literal') {
-            return $.rdf.literal('"' + binding.value.replace(/"/g, '\\"') + '"');
+            return $.rdf.literal('"' + binding.value.toString().replace(/"/g, '\\"') + '"');
         }
         throw "unknown type "+binding.type;
     };
@@ -127,12 +127,12 @@
                 }
             }
             if (this.isLiteral()) {
-                return this.resource.toString().slice(1,-1); // Remove encapsulating double quotes ""
+                return this.resource.toString().slice(1,-1).replace(/\\"/g, '"'); // Remove encapsulating double quotes ""
             }
         },
         toSparqlString: function() {
             if ( this.isLiteral() ) {
-                return '"' + this.resource.toString().slice(1,-1).replace(/"/g,'\\"') +'"';  // BUG
+                return this.resource.toString();  // BUG
             }
             return this.resource.toString();
         },
