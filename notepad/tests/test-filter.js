@@ -2,29 +2,32 @@ QUnit.file = "test-filter.js";
 module("given queries", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint("http://localhost:3030/dev"));
-        this.emails = "<http://localhost:3030/dev/699676b0-13f0-11e2-9b2e-c82a1402d8a8>";
-        this.marc   = "<file://localhost/Users/holzen/git/notepad/notepad/tests/notepad.html#39f7a8ad-c245-c31d-9907-bb1266ce3417>"
+
+        this.manyTriples = new Triples();
+        for (var i = 0; i < 20; i++) {
+            this.manyTriples.add(new Triple("notepad:s", ":p1", "notepad:o" + i ));
+            this.manyTriples.add(new Triple("notepad:o"+i, ":p2", i%2 ));
+        }
 
     }
 });
-asyncTest("cluster", function() {
-
+test("describe query", function() {
     var q0 = $.notepad.describeQuery;
     assertThat(q0.toSparql(), containsString("CONSTRUCT"));
     assertThat(q0.where(), not(containsString("CONSTRUCT")));
+});
+asyncTest("cluster", function() {
+    TempFusekiEndpoint('http://localhost:3030/test', this.manyTriples, function() {
 
-    var query = $.notepad.clusterQuery;
-
-    console.debug(query.toSparql({about: this.emails}));
-
-    $.notepad.clusterQuery.execute(this.endpoint, {about: this.emails}, function(triples) {
-        console.debug(triples.toPrettyString());
-        assertThat(triples.length, greaterThan(0), "it returns at least one result");
-        start();
+        $.notepad.clusterQuery.execute(this, {about: "notepad:s"}, function(triples) {
+            assertThat(triples.length, greaterThan(0), "it returns at least one result");
+            start();
+        });
     });
 });
 
-asyncTest("query", function() {
+// Skipped because it depends on a hard coded email import URI
+skippedTest("query", function() {
 
     var parent = $('<ul>').container().endpoint({endpoint: this.endpoint}).prependTo($("#fixture"));
     var filter = $('<div class="notepad-filters">').prependTo(parent).container2();
@@ -42,7 +45,8 @@ asyncTest("query", function() {
 
 });
 
-asyncTest("filter a simple describe query", function() {
+// Skipped because it depends on a hard coded email import URI
+skippedTest("filter a simple describe query", function() {
 
     var filter = new Triples(
         new Triple("_:", "sp:predicate",    "nmo:primaryRecipient"),

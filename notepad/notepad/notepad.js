@@ -147,7 +147,7 @@
                 return false;
             }
             var caret = target.caret();
-
+            
             var line = li.data('line');
             if (caret == 0) {
                 line.insertLineBefore();

@@ -45,7 +45,7 @@
         });
 
         var aMockFunction = mock(anotherFunction);
-        test("test the debugger and framework combination", function() {
+        skippedTest("debugger and framework combination", function() {
             // This error simply produces "died on test #1"
             //functionThatThrows();                                   // can break inside of this
 
@@ -55,7 +55,7 @@
             verify(aMockFunction, times(5));                        // test: break here too
 
         });
-        test("test that JsMockito verifier doesn't throw but uses QUnit.ok/fail instead", function() {
+        skippedTest("JsMockito verifier doesn't throw but uses QUnit.ok/fail instead", function() {
             expect(2);
             var mockLog = mock(log);
             mockLog.debug('hello');
