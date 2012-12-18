@@ -146,12 +146,18 @@
             if (li.length === 0) {
                 return false;
             }
+            var caret = target.caret();
 
-            if (target.caret() == 0) {
-                li.data('line').insertLineBefore();
+            var line = li.data('line');
+            if (caret == 0) {
+                line.insertLineBefore();
                 // Stay focused on the current line, that moved down
             } else {
-                var newLine = li.data('line').insertLineAfter();
+                var newLine = line.insertLineAfter();
+
+                var text = line.getLineLiteral();
+                line.setLineLiteral( text.substring(0,caret) );
+                newLine.setLineLiteral( text.substring(caret) );
                 newLine.focus();
             }
             
