@@ -185,17 +185,22 @@ $(function() {
     $("#status").ajaxStart(function(){
         if ($(this).text() == "") {
             $(this).text("Loading...");
+            console.time("load");
         }
         $(this).show();
     });
     $("#status").ajaxSuccess(function(){
         setTimeout(function() {
             $("#status").fadeOut(200);
-            setTimeout(function() { $("#status").text(""); }, 200);
+            setTimeout(function() {
+                $("#status").text("");
+                console.timeEnd("load");
+            }, 200);
         }, 200);
     });
     $("#status").ajaxError(function(){
         $(this).text("Error! (check the console)");
+        console.timeEnd("load");
     });
 
 });
