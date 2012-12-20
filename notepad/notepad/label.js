@@ -129,12 +129,12 @@
             return toTriple(":", "rdfs:label", this.getLiteral());
         },
         updateFromLiteral: function() {
-            var triples = new Triples(0);
+            var triples = new Triples();
             triples.add(this.getLiteralAsTriple());
             this._updateFromRdf(triples);
         },
         setLiteral: function(literal) {
-            var triples = new Triples(0);
+            var triples = new Triples();
             triples.add( toTriple(":", "rdfs:label", literal ) );
             this._updateFromRdf(triples);
         },

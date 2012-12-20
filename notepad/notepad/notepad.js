@@ -292,7 +292,7 @@
         },
         loaded: function(triple) {
             if (!this._loaded) {
-                this._loaded = new Triples(0);
+                this._loaded = new Triples();
             }
             if (triple !== undefined) {
                 this._loaded.add(triple);

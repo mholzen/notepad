@@ -56,7 +56,7 @@
         },
 
         triples: function() {
-            var triples = new Triples(0);
+            var triples = new Triples();
             triples.concat(this.pendingTriples);
             var widget = this;
             _.each(this.elements(), function(element) {
@@ -95,7 +95,7 @@
 
         // addAll
         addAllTriples: function(triples) {
-            this.pendingTriples = this.pendingTriples || new Triples(0);
+            this.pendingTriples = this.pendingTriples || new Triples();
             $.merge(this.pendingTriples, triples);
             var triple;
             while (triple = this.pendingTriples.shift()) {

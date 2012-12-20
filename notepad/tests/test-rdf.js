@@ -101,7 +101,7 @@ test("triples", function() {
     equal(triples.update().length, 2, "in a new list of triples, they should all be to updateable");
     equal(triples.delete().length, 0, "in a new list of triples, none should be to delete");
 
-    triples = new Triples(0);
+    triples = new Triples();
     triples.push(new Triple(':1', ':2', ':3', "delete"));
     equal(triples.update().length, 0, "in a new list of triples, they should all be to deleted");
     equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
@@ -109,7 +109,7 @@ test("triples", function() {
 
 // Skipped because I can't seem to be able to mock Triples, maybe because it uses makeSubArray.
 skippedTest("when I mock Triples", function() {
-    var triples = new Triples(0);
+    var triples = new Triples();
     var mockTriples = mock(triples);
     assertThat(JsMockito.isMock(mockTriples), truth(), "the mock is recognized as such");
 

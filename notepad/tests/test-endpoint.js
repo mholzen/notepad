@@ -15,7 +15,7 @@ module('given two collections of triples', {
 // test("when I create a chain endponit, then", function() {
 //     var chainEndpoint = new ChainEndpoint(this.triples1, this.triples2);
 
-//     var triples = new Triples(0);
+//     var triples = new Triples();
 //     var mockTriples = mock(triples);
 //     assertThat(JsMockito.isMock(mockTriples), truth(), "the variable should be a mock");
 

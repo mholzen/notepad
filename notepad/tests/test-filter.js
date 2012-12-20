@@ -149,7 +149,7 @@ module("given a container with a URI", {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
         this.container = mock(this.element.data('container'));
-        this.largeTriples = new Triples(0);
+        this.largeTriples = new Triples();
         for (var i=0; i < 15; i++) {
             this.largeTriples.push(new Triple(":s", ":p1", "this literal number "+i));
             this.largeTriples.push(new Triple(":s", ":p2", "same value"));

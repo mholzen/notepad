@@ -338,7 +338,7 @@
             return this.getChildContainer().triples();
         },
         triples: function() {
-            var triples = new Triples(0);
+            var triples = new Triples();
 
             var predicateTriples = this.getPredicate().triples();
             $.merge(triples, predicateTriples);
