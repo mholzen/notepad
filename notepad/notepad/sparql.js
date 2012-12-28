@@ -89,7 +89,7 @@ FusekiEndpoint.prototype = {
         });
     },
     execute: function(sparql, callback) {
-        log.debug('execute:', sparql.replace(/\s+/mg,' ').substring(0,120));
+        console.debug('execute:', sparql.replace(/\s+/mg,' ').substring(0,120));
 
         var isRead = sparql.match(/^\s*(construct|describe|ask|select)/i);
         var sparql = this.prefixes() + sparql;
