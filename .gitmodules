@@ -1,6 +1,0 @@
-[submodule "notepad/external-modules/jquery-caret"]
-	path = notepad/external-modules/jquery-caret
-	url = https://github.com/DrPheltRight/jquery-caret.git
-[submodule "notepad/external-modules/jshamcrest"]
-	path = notepad/external-modules/jshamcrest
-	url = https://github.com/danielfm/jshamcrest.git
