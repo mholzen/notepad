@@ -2,10 +2,7 @@
 
 (function($, undefined) {
 
-    var DEFAULT_ENDPOINT = new Triples(
-        new Triple('rdf:Property', 'rdfs:label', 'property'),
-        new Triple('rdfs:member', 'rdfs:label', 'member')
-    );
+    var DEFAULT_ENDPOINT = new Triples();
 
     $.widget("notepad.notepad", {
         options: {
@@ -14,10 +11,10 @@
         _setOption: function(key, value) {
             switch(key) {
                 case 'endpoint':
-                this.element.endpoint({endpoint: value});
+                this.element.endpoint({endpoint: value, display: true});
                 break;
             }
-            this._super(key, value);        // We have jquery-ui 1.9
+            this._super(key, value);
         },
 
         getUri: function() {
@@ -25,6 +22,11 @@
         },
         _setUri: function(uri) {
             this.element.attr('about',uri);
+
+            // The following code is necessary for the rdfa() gleaner to work properly.
+            // Ideally, it would use the same 'about' attribute in the top level notepad element
+            // but it requires the URI to be prefixed with '#' rather than ':'
+            this.element.children('.title').attr('about', $.notepad.uri() + '#' + uri.toString().slice(1));
         },
         setUri: function(uri) {
             this._setUri(uri);
@@ -87,11 +89,11 @@
             });
 
             // notepad:created rdfs:subPropertyOf dc:created
-            var created = $('<span property="notepad:created" content="'+Date.now()+'">').appendTo('h2');
-            created.attr('about', $.notepad.uri() + '#' + this.getUri().slice(1));
+
+            this.element.find('[property="notepad:created"]').attr('content',Date.now());
             setInterval(function() {
                 $("[property='notepad:created']").each(function(i,e) {
-                    $(e).text("Created " + moment(parseInt($(e).attr('content'))).fromNow());
+                    $(e).text(moment(parseInt($(e).attr('content'))).fromNow());
                 });
             }, 1000);
 
@@ -208,7 +210,7 @@
         },
 
         getEndpoint: function() {
-            return this.option('endpoint');
+            return this.element.data('endpoint').getEndpoint();
         },
         getRdf: function(uri, callback) {
             return this.getEndpoint().getRdf(uri,callback);
@@ -272,7 +274,8 @@
         triples: function(){
             var triples = new Triples();
 
-            rdfaTriples = $.notepad.toTriples($('h2').rdf().databank);  // This shouldn't need its own code
+            var rdf = this.element.children('div').rdf();
+            rdfaTriples = $.notepad.toTriples(rdf.databank);  // This shouldn't need its own code
             triples.add(rdfaTriples);
 
             triples.push(new Triple(this.getUri(), "rdf:type", "notepad:Session")); // ALT: use RDFAs typeof attribute instead
@@ -309,5 +312,42 @@
             return this.loaded().minus( this.triples() );
         },
     });
+    
+
+    $.notepad.discoverEndpoint = function(notepad) {
+
+        var host = $.uri.base().authority;
+        var endpointUri = "http://" + host + ":3030/dev";
+        var uris = [endpointUri, 'http://instruct.vonholzen.org:3030/dev'];
+
+        var endpointWidget = notepad.element.data('endpoint');
+
+        var activityDescription = {
+            'a': 'prov:Activity',
+            'rdfs:label': "was set to the first responding server, of the list: [" + uris +"]",
+            'prov:affects': {
+                a: 'sp:TriplePattern',
+                'sp:subject': notepad.uri,
+                'sp:predicate': 'notepad:endpoint',
+                'sp:object': 'spin:_uri'                      // could be ommitted if absent implies a variable
+            },
+            'prov:used': uris,
+            // could add 'prov:agent' or 'prov:plan': this function URI
+
+        };
+        // so that the notepad can display tooltips over the field and value
+        // could be: describeActivity(endpointWidget, uris));
+
+
+        notepad.element.find("[property='notepad:endpoint']").tooltip({content: function() {
+            return activityDescription['rdfs:label'];
+        }, items: "[rel='rdfs:label']",
+        position: { my: "left top", at: "left bottom+10" }
+         });    
+        // could be: displayAffectingActivities(endpointWidget, endpointProvenance);
+        // could be: notepad.displayAffectingActivities(); notepad.add(activityDescription);
+
+        endpointWidget.setUriToFirstResponding(uris);
+    }
 
 }(jQuery));

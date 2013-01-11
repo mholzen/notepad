@@ -16,7 +16,7 @@
 
 <script>
 $(document).ready(function() {
-
+        
     $.widget("notepad.aWidget", {
 
         options: {
@@ -82,6 +82,30 @@ $(document).ready(function() {
       $("<div id='above' above='a'><div id='below' below='b'><div id='child'>").appendTo("#qunit-fixture");
       assertThat($("#child").closest("[above],[below]").attr('id'), 'below', 'below is found first');
     });
+
+    // Trying to understand Cross Domain Security
+    skippedTest("cross domain", function() {
+      var url = 'http://instruct.vonholzen.org:3030/dev';
+      url = 'http://www.nytimes.com';
+      url = 'http://i1.nyt.com/images/2013/01/03/fashion/03MOTH-MADUKA/03MOTH-MADUKA-moth.jpg';
+
+      $.ajax({url: url}).success(function() {
+          assertThat(true);
+          start();
+      });
+
+    });
+
+    asyncTest("deferred", function() {
+      var url = 'http://instruct.vonholzen.org:3030/dev';
+      var response = $.getJSON(url);
+      response.complete();
+      response.error(function() {
+          assertThat(true);
+          start();
+      });
+    });
+
 });
 </script>
 

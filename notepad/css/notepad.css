@@ -387,12 +387,49 @@ div.notepad-object {
 }
 
 /*
- * notepad:created
+ * Notepad title, date created and endpoint
  */
-[property='notepad:created'] {
-    font-size: small;
-    font-weight: lighter;
+
+.notepad .title {
+    font-size: 2em;
 }
-[property='notepad:created']:before {
-    content: " ";
+
+.notepad .title [about] {
+    font-size: .4em;
+    margin-bottom: .5em;
+}
+
+.notepad .title [property] {
+    font-size: .4em;
+    margin-bottom: .5em;
+}
+
+.notepad .title [property="rdfs:label"] {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+
+#notepad-toggle {
+    cursor: pointer;
+    display: inline-block;
+}
+
+#notepad-toggle-target {
+    display: none;    
+}
+
+.table {
+    display: table;
+}
+.row {
+    display: table-row;
+}
+.predicate {
+    display: table-cell;
+    text-align: right;
+    padding-right: .5em;
+}
+.object {
+    display: table-cell;
 }

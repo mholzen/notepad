@@ -1,3 +1,5 @@
+QUnit.config.testTimeout = 3000;
+
 /**
  * testAsyncStepsWithPause
  * Executes any number of async Qunit tests with a pause between each step
@@ -48,7 +50,6 @@ var here = function() {
   console.log('here');  
 }
 var c = console;
-
 
 module = function(label, options) {
   if (QUnit.file) {

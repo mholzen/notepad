@@ -16,6 +16,13 @@ TempFusekiEndpoint = function(uri, triples, callback) {
 }
 
 FusekiEndpoint.prototype = {
+    toString: function() {
+        var value = "Fuseki SPARQL at " + this.uri;
+        if (this.graph != 'default') {
+            value += " and graph " + this.graph;
+        }
+        return value;
+    },
     prefixes: function() {
         var prefixes = "";
         for (var prefix in $.notepad.namespaces) {
@@ -43,7 +50,7 @@ FusekiEndpoint.prototype = {
         // if (cache.shouldCache(command)) {
         if (command.match(/# query:cache/)) {
             if (command in cache) {
-                log.debug("returning cached results");
+                console.debug("returning cached results");
                 callback ( cache[command] );
                 return;
             } else {
@@ -54,16 +61,20 @@ FusekiEndpoint.prototype = {
                 }
             }
         }
-        return $.getJSON(this.queryUri(), options, function(response, status, xhr) {
-            var type = xhr.getResponseHeader("Content-Type");
-            if (type.contains('application/rdf+json')) {
-                var databank = $.rdf.databank();
-                databank.load(response);
-                callback($.notepad.toTriples(databank));
-            } else {
-                callback(response);
+        var finalCallback;
+        if (callback) {
+            finalCallback = function(response, status, xhr) {
+                var type = xhr.getResponseHeader("Content-Type");
+                if (type.contains('application/rdf+json')) {
+                    var databank = $.rdf.databank();
+                    databank.load(response);
+                    callback($.notepad.toTriples(databank));
+                } else {
+                    callback(response);
+                }    
             }
-        });
+        }
+        return $.getJSON(this.queryUri(), options, finalCallback);
     },
     update: function(command, callback) {
         return $.post(this.updateUri(), {update: command}, function() {
@@ -89,7 +100,7 @@ FusekiEndpoint.prototype = {
         });
     },
     execute: function(sparql, callback) {
-        log.debug('execute:', sparql.replace(/\s+/mg,' ').substring(0,120));
+        console.debug('execute:', sparql.replace(/\s+/mg,' ').substring(0,120));
 
         var isRead = sparql.match(/^\s*(construct|describe|ask|select)/i);
         var sparql = this.prefixes() + sparql;
@@ -207,7 +218,9 @@ FusekiEndpoint.prototype = {
         sparql = 'CONSTRUCT { ?s ?p ?o } WHERE ' + sparql;
         this.execute(sparql, callback);
     },
-
+    canAnswer: function(callback) {
+        return this.query("ask {?s ?p ?o}", callback);
+    }
 }
 
     $.notepad.test = new FusekiEndpoint("http://localhost:3030/test");
