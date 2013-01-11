@@ -1,0 +1,71 @@
+<html>
+<head>
+  <style type="text/css">
+.section {
+  margin: 2em;
+  background: #ddd;
+}
+  </style>
+<body>
+
+<div class="section">
+<h2>Predicate label outside of the object context</h2>
+<pre>
+  :s   :p   :o .
+  :s   rdfs:label S .
+  :p   rdfs:label P .
+  :o   rdfs:label O .
+</pre>
+
+<div about=":s">
+    <div rel="rdfs:label">S</div>
+    <div about=":p" rel="rdfs:label">P</div>
+    <div rel=":p" about=":o">
+          <div rel="rdfs:label">O</div>
+    </div>
+</div>
+</div>
+
+
+<div class="section">
+<h2>Same as above + a reified triple</h2>
+<pre>
+  :s   :p   :o .
+  :s   rdfs:label S .
+  :p   rdfs:label P .
+  :o   rdfs:label O .
+  [ rdf:subject :s; rdf:predicate :p, rdf:object :o, prov:activity "set by XYZ" ] .
+</pre>
+
+<div>Question: Can I make the reifed triple hover over its parts?</div>
+
+<div about=":s">
+    <div rel="rdfs:label">S</div>
+
+    <div about=":p">
+      <div rel="rdfs:label">P</div>
+      <div rev="rdf:predicate" about="_:">
+        <div rel="prov:activity">set by XYZ</div>
+        <div rel="rdf:subject" content=":s"></div>
+        <div rel="rdf:object" content=":p"></div>
+
+      <div>
+
+    </div>
+
+    <div rel=":p" about=":o">
+      <div rel="rdfs:label">O</div>
+
+      <!-- reifed triple -->
+      <div rev="rdf:object" about="_:">
+        <div rel="prov:activity">set by XYZ</div>
+        <div rel="rdf:predicate" content=":p"></div>
+        <div rel="rdf:subject" content=":s"></div>
+      <div>
+    </div>
+</div>
+
+</div>
+
+</body>
+</html>
