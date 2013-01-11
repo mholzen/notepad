@@ -107,6 +107,38 @@ test("triples", function() {
     equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
 });
 
+test("triples from JSON", function() {
+    var json = { 
+        "http://ex.com/1" : { 
+            "http://www.w3.org/2000/01/rdf-schema#label" : [ { 
+                "type" : "literal" ,
+                "value" : 'Some text'
+                } ]
+        }
+    };
+    var triples = $.notepad.toTriples(json);
+    assertThat(triples.length, 1);
+
+    triples.add({
+        "http://ex.com/2" : { 
+            "rdfs:label" : [{ value: "1", type: "literal" }]
+        }
+    });
+    assertThat(triples.length, 2);
+
+    var reification = $.notepad.toTriples(
+            { "_:" : {
+                "rdf:subject": [{ type: 'uri', value: ":s" }],
+                "rdf:predicate": [{ type: 'uri', value: ":p" }],
+                "rdf:object": [{ type: 'uri', value: ":o" }],
+                "prov:activity": [{ type: 'uri', value: ":functionABC" }],
+                "dc:created": [{ type: 'literal', value: Date.now().toString() }]
+            } });
+    assertThat(reification.length, 5);
+    console.debug(reification.toPrettyString());
+
+});
+
 // Skipped because I can't seem to be able to mock Triples, maybe because it uses makeSubArray.
 skippedTest("when I mock Triples", function() {
     var triples = new Triples(0);

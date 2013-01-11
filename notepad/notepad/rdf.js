@@ -239,6 +239,13 @@
                         var triple = new Triple(rdftriple);
                         triples.add(triple);
                     });
+                } else if (value instanceof Triple) {
+                    this.push(value);
+                } else if (value instanceof Object) {
+                    var json = value;
+                    var databank = $.rdf.databank();
+                    databank.load(json);
+                    return this.add(databank);
                 } else {
                     this.push(value);
                 }
