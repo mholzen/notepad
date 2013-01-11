@@ -65,7 +65,7 @@ body {
 /*
  * PREDICATES
  */
-.notepad .predicate {
+.predicate {
     font-style: italic;
 }
 
@@ -148,7 +148,7 @@ body {
     text-decoration: line-through;
 }
 
-.notepad li {
+.notepad-line {
     list-style: none;
     line-height: 30px;
 }
@@ -264,7 +264,7 @@ div.notepad-object {
  * CHILDREN TOGGLE
  */
 
-.notepad .childrenToggle {
+.childrenToggle {
     padding: 2px 4px;
     margin-right: 10px;
     border-radius: 10px;      
@@ -279,15 +279,15 @@ div.notepad-object {
   display it initially, make it display on hover after a while.
 */
 
-.notepad .childrenToggle.collapsed {
+.childrenToggle.collapsed {
     /* This is necessary to have the following pseudo selector work right */
 }
 
-.notepad .childrenToggle.collapsed:before {
+.childrenToggle.collapsed:before {
     content: "+";  /* TODO: replace with triangle pointing right; */
 }
 
-.notepad .childrenToggle:before {
+.childrenToggle:before {
     content: "-";  /* TODO: replace with triangle pointing down; */
 }
 

@@ -1,0 +1,10 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nmo:  <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX n:    <http://localhost/~holzen/notepad/tests/notepad.html#>
+
+SELECT ?child
+
+WHERE {
+	n:309da890-02e5-718d-6554-cc33758233f8 rdfs:member+ ?child
+	FILTER NOT EXISTS { ?child rdfs:member ?next }
+}

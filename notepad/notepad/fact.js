@@ -61,7 +61,7 @@
         },
 
         triples: function() {
-            var triples = new Triples(0);
+            var triples = new Triples();
             if (this.getSubjectLabel() && this.getSubjectLabel().triple()) {
                 triples.push(this.getSubjectLabel().triple());
             }

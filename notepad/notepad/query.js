@@ -57,7 +57,7 @@
             clusters[triple.predicate][triple.object] = clusters[triple.predicate][triple.object] || {};
             clusters[triple.predicate][triple.object][triple.subject] = 1;
         });
-        var clusterTriples = new Triples(0);
+        var clusterTriples = new Triples();
         for (var predicate in clusters) {
             for (var object in clusters[predicate]) {
                 var clusterUri = $.notepad.getNewUri();

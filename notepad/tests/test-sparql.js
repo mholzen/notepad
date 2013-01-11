@@ -157,7 +157,7 @@ skippedTest("given a predicate p, when I post a triple with that predicate, then
 asyncTest("when I update a triple, then", function() {
     var uri = $.notepad.getNewUri();
     var triple = new Triple(uri, ":p", ":o");
-    var triples = new Triples(0);
+    var triples = new Triples();
     triples.push(triple);
     var endpoint = this.endpoint;
     endpoint.insertData(triples, function() {
@@ -173,7 +173,7 @@ skippedTest("when I update a triple affected by a semantic rule, then", function
     var uri = $.notepad.getNewUri();
     var triple = new Triple(uri, "rdf:type", "rdf:Property");
     var derivedTriple = new Triple(uri, "rdfs:subPropertyOf", uri);
-    var triples = new Triples(0);
+    var triples = new Triples();
     triples.push(triple);
     var endpoint = this.endpoint;
     endpoint.insertData(triples, function() {

@@ -88,7 +88,7 @@ FusekiEndpoint.prototype = {
     },
     queryReturningGraph: function(command, callback) {
         return this.query(command, function(graph) {
-            var triples = new Triples(0);
+            var triples = new Triples();
             for(s in graph) {
                 for(p in graph[s]) {
                     for(i in graph[s][p]) {

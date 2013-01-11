@@ -316,7 +316,7 @@
                 return false;
             } },
             filter: { value: function(f) {
-                var filteredTriples = new Triples(0);
+                var filteredTriples = new Triples();
                 $.merge(filteredTriples, _.filter(this, f));
                 return filteredTriples;
             } },

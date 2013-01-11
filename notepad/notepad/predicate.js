@@ -169,7 +169,7 @@
             object.setObject(resourceForObject);
         },
         triples: function() {
-            var triples = new Triples(0);
+            var triples = new Triples();
             if (this.getLabel() !== undefined) {
                 triples.add(this.getLabel().triples());
             }
