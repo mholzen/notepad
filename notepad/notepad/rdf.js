@@ -53,7 +53,7 @@
 
             return $.rdf.blank(value);
         }
-        if ( value.indexOf('http://') == 0 || value.indexOf('file://') == 0) {
+        if ( value.indexOf('http://') == 0 || value.indexOf('file://') == 0 || value.indexOf('urn:') == 0) {
             // TODO: make more specific
             return $.rdf.resource('<' + value.toString() + '>', {namespaces: namespaces} );
         }
