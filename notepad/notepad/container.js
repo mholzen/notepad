@@ -201,8 +201,8 @@
                     log.warn("Max triple count reached");
                     return;
                 }                
-                if (container.getNotepad() && container.getNotepad().expresses(triple)) {
-                    log.debug("Triple already expressed in the notepad");
+                if (container.triplesInDomPath().contains(triple)) {
+                    log.debug("Triple already expressed in DOM path", triple);
                     return;
                 }
 
@@ -300,6 +300,14 @@
             this.getHeadersContainer().css('display', 'inline');
             this.getHeadersContainer().css('display', 'block');
             return header.data('column');
+        },
+
+        triplesInDomPath: function() {
+            var label = this.element.closest(":notepad-label");
+            if (label.length === 0) {
+                return new Triples();
+            }
+            return label.data('label').triplesInDomPath();
         },
 
 

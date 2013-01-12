@@ -327,23 +327,39 @@
                 return [];
             }
             return container.triples();
-
+        },
+        labelTriples: function() {
+            // Triples fetched by the label
+            if (!this.isUri()) {
+                return [];
+            }
+            var uri = this.getUri();
+            var triples = new Triples();
+            this.getTemplateElement().find("[rel]").each(function(i,e) {
+                var object = $(e).text();
+                if (object.length === 0) {
+                    return;
+                }
+                triples.add(new Triple(uri, $(e).attr('rel'), object) );
+            });
+            return triples;
         },
         triples: function() {
-            var triples = new Triples(0);
+            var triples = new Triples();
             triples.add(this.triple());
-            if (this.isUri()) {
-                var uri = this.getUri();
-                // must return any other triples fetched by the label
-                this.getTemplateElement().find("[rel]").each(function(i,e) {
-                    var object = $(e).text();
-                    if (object.length === 0) {
-                        return;
-                    }
-                    triples.add(new Triple(uri, $(e).attr('rel'), object) );
-                });
+            triples.add(this.labelTriple());
+            triples.add(this.labelTriples());
+            triples.add(this.childTriples());
+            return triples;
+        },
+        triplesInDomPath: function() {
+            var triples = new Triples();
+            triples.add(this.triple());
+            triples.add(this.labelTriple());
+            var parentNode = this.element.parent().closest(":notepad-label");
+            if (parentNode.length) {
+                triples.add(parentNode.data('notepad-label').triplesInDomPath());
             }
-            $.merge(triples, this.childTriples());
             return triples;
         },
         _setupAutocomplete: function() {
