@@ -405,10 +405,11 @@
         };
     })();
 
-    $.notepad.toTriples = function(value) {
+    toTriples = function(value) {
         var triples = new Triples();
         triples.add(value);
         return triples;
     }
+    $.notepad.toTriples = toTriples;
 
 }(jQuery));
