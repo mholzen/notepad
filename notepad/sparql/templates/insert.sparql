@@ -1,0 +1,6 @@
+INSERT DATA { graph notepad:templates {
+	:u1 notepad:template '<div property=":p">{{:p}}</div>' .
+
+	:u2 a :U .
+	:U  notepad:template '<div property=":p">{{:p}}</div>' .
+} }

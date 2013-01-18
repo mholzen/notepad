@@ -117,7 +117,7 @@ WHERE { \n\
 	UNION \n\
 	{	 \n\
 		?anySubject ?predicate ?object \n\
-		FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") \n\
+		FILTER regex(str(?predicate), \"{{{rdfs:label}}}\", \"i\") \n\
 	    BIND (str(?predicate) as ?label)  \n\
 		BIND (?predicate as ?subject) \n\
 	    BIND (notepad:predicate as ?labelPredicate)  \n\
@@ -133,3 +133,20 @@ WHERE { \n\
 	} \n\
 } \n\
 LIMIT 30";
+$.notepad.templates.templates = "CONSTRUCT { \n\
+	?uri notepad:template ?uriTemplate . \n\
+ 	?uri notepad:template ?classTemplate . \n\
+} \n\
+WHERE \n\
+{ \n\
+	{ \n\
+		?uri notepad:template ?uriTemplate \n\
+			FILTER sameTerm(?uri, {{{uri}}}) \n\
+	} \n\
+	UNION \n\
+	{ \n\
+		?class notepad:template ?classTemplate . \n\
+		?uri a ?class \n\
+			FILTER sameTerm(?uri, {{{uri}}}) \n\
+	} \n\
+}";
