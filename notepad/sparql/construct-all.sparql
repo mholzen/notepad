@@ -1,0 +1,8 @@
+CONSTRUCT {
+	?s ?p ?o
+}
+FROM <urn:x-arq:DefaultGraph>
+FROM notepad:email-senders
+WHERE {
+	?s ?p ?o
+}
