@@ -59,7 +59,7 @@ module = function(label, options) {
 };
 
 function wrapInEndpoint(element, endpoint) {
-    endpoint = endpoint || mock(new FusekiEndpoint("http://ex.com"));
+    var endpoint = endpoint || mock(new FusekiEndpoint("http://ex.com"));
     var endpointElement = $("<div>").appendTo("#qunit-fixture").endpoint({endpoint: endpoint});
     element.appendTo(endpointElement);
     return endpoint;
