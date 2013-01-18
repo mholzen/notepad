@@ -50,6 +50,14 @@ test("resources", function() {
     var resourceWithColon = new Resource("Hello my friend: how are you?");
     assertThat(resourceWithColon.isLiteral(), truth(), "a resource with ':' can be a literal");
 });
+test("string with known scheme prefix should be not interpreted as a namespace", function() {
+    var r = new Resource('urn:uuid:02e123c8-8534-4b4d-b726-3db7eff2b6c3');
+    assertThat(r.isUri());
+    r = new Resource('http://example.com');
+    assertThat(r.isUri());
+    r = new Resource('the site http://example.com is awesome');
+    assertThat(r.isLiteral());
+});
 test("triple", function() {
 
     var r = new Resource(':123');

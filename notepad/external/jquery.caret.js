@@ -90,8 +90,8 @@
     // Set caret to the end of an element
     $.fn.caretToEnd = function () {
         return this.queue(function (next) {
-            $.caretTo(this, $(this).text().length-1);            
+            $.caretTo(this, $(this).text().length);
             next();
         });
     };
-}(jQuery)); 
+}(jQuery));

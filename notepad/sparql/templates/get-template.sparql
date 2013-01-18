@@ -1,0 +1,27 @@
+CONSTRUCT {
+	?uri notepad:template ?uriTemplate .
+ 	?uri notepad:template ?classTemplate .
+}
+
+FROM notepad:templates
+
+WHERE
+{
+
+	{
+		?uri notepad:template ?uriTemplate
+		# FILTER sameTerm(?uri, {{{uri}}})
+	}
+	UNION
+	{
+		?uri a ?class
+		# FILTER sameTerm(?uri, {{{uri}}})
+		.
+		?class notepad:template ?classTemplate
+	}
+
+	# BIND (COALESCE(?uriTemplate, ?classTemplate) as ?template)
+
+}
+
+

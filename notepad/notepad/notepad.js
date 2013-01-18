@@ -142,7 +142,7 @@
             }
             return false;   // Prevent default behaviour
         },
-        _return : function(event) {
+        _return: function(event) {
             var target = $(event.target);
             var li = target.closest(":notepad-line");
             if (li.length === 0) {
@@ -297,19 +297,24 @@
             if (!this._loaded) {
                 this._loaded = new Triples();
             }
-            if (triple !== undefined) {
-                this._loaded.add(triple);
+            if (triple === undefined) {
+                return this._loaded;
             }
+            this._loaded.add(triple);
             return this._loaded;
         },
         unloaded: function(triples) {
             this._loaded = this._loaded.minus(triples);
         },
+        canSave: function(triple) {
+            return (triple.predicate != 'nmo:htmlMessageContent' && triple.predicate != 'nmo:plainTextMessageContent');
+            // could be generalized to excluding any objects that cannot be edited by the current notepad (images, audio, svg, ...)
+        },
         added: function() {
-            return this.triples().minus( this.loaded() );
+            return this.triples().minus( this.loaded() ).filter(this.canSave);
         },
         removed: function() {
-            return this.loaded().minus( this.triples() );
+            return this.loaded().minus( this.triples() ).filter(this.canSave);
         },
     });
     

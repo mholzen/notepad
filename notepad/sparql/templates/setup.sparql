@@ -1,0 +1,13 @@
+WITH notepad:templates
+
+#DELETE 
+#	{ ?s ?p ?o }
+
+INSERT {
+	:u1 notepad:template '<div property=":p">{{:p}}</div>' .
+
+	:u2 a :U .
+	:U  notepad:template '<div property=":p">{{:p}}</div>' .
+}
+WHERE
+	{ ?s ?p ?o }

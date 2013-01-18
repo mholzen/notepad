@@ -53,7 +53,7 @@
 
             return $.rdf.blank(value);
         }
-        if ( value.indexOf('http://') == 0 || value.indexOf('file://') == 0) {
+        if ( value.indexOf('http://') == 0 || value.indexOf('file://') == 0 || value.indexOf('urn:') == 0) {
             // TODO: make more specific
             return $.rdf.resource('<' + value.toString() + '>', {namespaces: namespaces} );
         }
@@ -373,6 +373,9 @@
             subjects: { value: function() {
                 return _.map(this, function(triple) { return triple.subject; });
             } },
+            objects: { value: function() {
+                return _.map(this, function(triple) { return triple.object; });
+            } },
             toPrettyString: { value: function() {
                 return this.join("\n");
             } },
@@ -405,10 +408,11 @@
         };
     })();
 
-    $.notepad.toTriples = function(value) {
+    toTriples = function(value) {
         var triples = new Triples();
         triples.add(value);
         return triples;
     }
+    $.notepad.toTriples = toTriples;
 
 }(jQuery));

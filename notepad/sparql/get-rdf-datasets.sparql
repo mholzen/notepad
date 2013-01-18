@@ -1,0 +1,11 @@
+#
+#  WARNING: this causes an 500 - ISE
+#
+SELECT ?g 
+
+FROM named <urn:x-arq:UnionGraph>
+WHERE {
+	graph ?g {
+		?s ?p ?o
+	}
+}

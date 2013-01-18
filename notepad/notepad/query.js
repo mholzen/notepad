@@ -2,27 +2,27 @@
 
     $.notepad = $.notepad || {};
 
-    Query = function(template, context) {
-        this.template = template;
+    Query = function(sparql, context) {
+        this.sparqlTemplate = sparql;
         this.context = context || {};
     };
     Query.prototype = {
         toSparql: function(context) {
             var ctx = this.context;
             $.extend(ctx, context);
-            return Mustache.render(Mustache.render(Mustache.render(this.template, ctx), ctx), ctx);  // TODO: HAHAHAHA
+            return Mustache.render(Mustache.render(Mustache.render(this.sparqlTemplate, ctx), ctx), ctx);  // TODO: HAHAHAHA
         },
         where: function() {
-            return this.template.match(/WHERE\s*{\s*([\s\S]*)\s*}/i)[1];
+            return this.sparqlTemplate.match(/WHERE\s*{\s*([\s\S]*)\s*}/i)[1];
         },
         execute: function(endpoint, context, callback) {
             var sparql = this.toSparql(context);
             endpoint.execute(sparql, callback);
         },
         appendPattern: function(pattern) {
-            var insertPosition = this.template.lastIndexOf('}');
-            var newTemplate = this.template.substring(0, insertPosition) + pattern + this.template.substring(insertPosition);
-            this.template = newTemplate;
+            var insertPosition = this.sparqlTemplate.lastIndexOf('}');
+            this.sparqlTemplate = this.sparqlTemplate.substring(0, insertPosition) +
+                pattern + this.sparqlTemplate.substring(insertPosition);
             return this;
         },
         appendTriplePattern: function(triplePattern) {
@@ -38,6 +38,17 @@
             return this.appendPattern(sparqlPattern);
         }
     };
+    function queryFromPredicates(predicates) {
+        var whereClauses = predicates.map( function(predicate) { return '?s '+predicate+' ?o .'; });
+        whereClauses.push (' && .');
+        var sparql = 'CONSTRUCT {?s ?p ?o} WHERE { ?s ?p ?o FILTER( sameTerm(?s, {{{about}}}) \
+            && ( ?p in (' + predicates.join(",") + ') ) ) }';
+        sparql = sparql + '\n # sparql:cache';
+        return new Query(sparql);
+    }
+    $.notepad.queryFromPredicates = queryFromPredicates;
+
+
 
     $.notepad.describeQuery = new Query($.notepad.templates.describe);
     $.notepad.coalesceQuery = new Query($.notepad.templates.coalesce, {graphPatterns: $.notepad.describeQuery.where()});

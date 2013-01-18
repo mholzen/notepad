@@ -55,7 +55,7 @@
                 // Display this object within a column
                 objectElement.addClass(column.getCssClass());
 
-                var object = objectElement.object().data('object');
+                var object = objectElement.label().data('label');
                 object.option('predicate', column.element);
             });
         },

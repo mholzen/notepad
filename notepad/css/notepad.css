@@ -141,7 +141,7 @@ body {
 }
 
 .notepad-template {
-    display: inline-block;
+    display: inline;
 }
 
 .notepad .delete {
@@ -237,7 +237,7 @@ body {
 .notepad-column-0 {
     width: 400px;
     position: absolute;
-    left: 700px;
+    left: 740px;
     display: inline-block;
 }
 
@@ -341,14 +341,26 @@ div.notepad-object {
     display: none;
 }
 .notepad-filters .notepad-predicate {
-    border: solid 1pt white;
+    display: inline;
+}
+.notepad-filters .notepad-predicate[rel="rdfs:label"] {
     display: none;
 }
-.notepad-filters [rel="rdfs:label"] {
-    border: solid 1pt white;
-    display: inline-block;
+.notepad-filters .notepad-predicate .notepad-object3 {
+    width: auto;
 }
-.notepad-filters .notepad-predicate {
+.notepad-filters .notepad-predicate .notepad-object3 [rel="rdfs:label"] {
+    width: auto;
+}
+
+.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 [rel="rdfs:label"]:before {
+    content: "(";
+}
+.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 [rel="rdfs:label"]:after {
+    content: ")";
+}
+
+.notepad-filters .notepad-fact {
     background: #eef;
 }
 
