@@ -94,7 +94,7 @@
         // find whether this triple is expressed or not
         addTriple: function(triple) {
             if (this.triples().expresses(triple)) {
-                log.debug("Triple already expressed in the container");
+                console.debug("Triple already expressed in the container");
                 return;
             }
             // We are creating a new line, no matter what, because a container can have several times the same predicate with different objects or even the same predicate
@@ -105,12 +105,12 @@
 
         add: function(triple) {
             if (this.triples().expresses(triple)) {
-                log.debug("Triple already expressed in the container");
+                console.debug("Triple already expressed in the container");
                 return;
             }
             var lineSelector = new $.fn.Selector(this.getUri(), triple);
             if ( lineSelector.direction === undefined ) {
-                log.debug("Triple does not relate to this container");
+                console.debug("Triple does not relate to this container");
                 return;
             }
             var lines = this.element.find(lineSelector);
@@ -164,16 +164,16 @@
 
             // When this URI is in our root path, it was already loaded there.
             // if (this.element.parent().parent().closest('[about='+ $.notepad.toUri(query.context.about)+']').length > 0) {
-            //     log.debug("decline load to avoid repeat", this.element.parent());
-            //     log.debug(this.element.parent().parent());
+            //     console.debug("decline load to avoid repeat", this.element.parent());
+            //     console.debug(this.element.parent().parent());
             //     return;
             // }
 
-            log.debug("describe(", $.notepad.toUri(query.context.about), ") into ", this.element[0], query);
+            console.debug("describe(", $.notepad.toUri(query.context.about), ") into ", this.element[0], query);
 
             query.execute(this.element.findEndpoint(), {}, function(triples) {
 
-                log.debug("received ", triples.length, " triples from describe(", $.notepad.toUri(query.context.about), ")" );
+                console.debug("received ", triples.length, " triples from describe(", $.notepad.toUri(query.context.about), ")" );
 
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
                     container.option('describeElements', false);
@@ -187,22 +187,22 @@
             // Update the immediate descendant children
             var container = this;
 
-            log.debug("updating container with ", triples.length, " triples.");
+            console.debug("updating container with ", triples.length, " triples.");
 
             triples.sort();
 
             _.each(triples, function(triple) {
-                log.debug('updating for triple: '+triple.toString());
+                console.debug('updating for triple: '+triple.toString());
                 if (container.getDepth() > MAX_DEPTH) {
-                    log.debug("Max depth reached");
+                    console.debug("Max depth reached");
                     return;
                 }
                 if (container.getNotepad() && container.getNotepad().triples().length >= MAX_TRIPLES) {
-                    log.warn("Max triple count reached");
+                    console.warn("Max triple count reached");
                     return;
                 }                
                 if (container.triplesInDomPath().contains(triple)) {
-                    log.debug("Triple already expressed in DOM path", triple);
+                    console.debug("Triple already expressed in DOM path", triple);
                     return;
                 }
 
@@ -215,7 +215,7 @@
                 // this.add(triple);
                 var lineSelector = new $.fn.Selector(container.getUri(), triple);
                 if ( lineSelector.direction === undefined ) {
-                    log.debug("Triple does not relate to this container");
+                    console.debug("Triple does not relate to this container");
                     return undefined;
                 }
 
@@ -225,10 +225,10 @@
                 }
                 var line;
                 if (childLines.length == 1) {
-                    log.debug("Using existing line for triple");
+                    console.debug("Using existing line for triple");
                     line = $(childLines[0]).data('line');
                 } else {
-                    log.debug("Adding new line");
+                    console.debug("Adding new line");
                     line = container.appendLine(undefined, triple);
                 }
                 
@@ -248,7 +248,7 @@
 
             this._updateLabelsFromRdf(triples);
 
-            log.debug('triggering contentchanged on ', this.getUri());
+            console.debug('triggering contentchanged on ', this.getUri());
             this.element.trigger('contentchanged');
         },
         _updateLabelsFromRdf: function(triples) {
@@ -331,10 +331,10 @@
             var container = this;
 
             this.element.on('contentchanged', function(event) {
-                log.debug('container lines:', container.getLines().length);
+                console.debug('container lines:', container.getLines().length);
                 event.stopPropagation();
                 if (container.getLines().length < MAX_TRIPLES_BEFORE_FILTERING) {
-                    log.debug("too few lines so doing nothing with filters");
+                    console.debug("too few lines so doing nothing with filters");
                     return;
                 }
 
