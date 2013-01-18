@@ -206,6 +206,12 @@
                     return;
                 }
 
+                if (triple.predicate == "rdfs:label") {
+                    // Ignore labels, because they were most likely displayed above.  dev:techdebt
+                    // This prevents labels from appearing as a duplicate from the label of the parent node.
+                    return;
+                }
+
                 // this.add(triple);
                 var lineSelector = new $.fn.Selector(container.getUri(), triple);
                 if ( lineSelector.direction === undefined ) {
