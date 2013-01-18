@@ -373,6 +373,9 @@
             subjects: { value: function() {
                 return _.map(this, function(triple) { return triple.subject; });
             } },
+            objects: { value: function() {
+                return _.map(this, function(triple) { return triple.object; });
+            } },
             toPrettyString: { value: function() {
                 return this.join("\n");
             } },
