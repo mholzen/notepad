@@ -64,7 +64,7 @@
         getDepth: function() {
             return this.element.parents(".notepad-container").length;
         },
-        getDistanceToLastQUery: function() {
+        getDistanceToLastQuery: function() {
             return this.element.parents(".notepad-load-source").length;
         },
         getLines: function() {
