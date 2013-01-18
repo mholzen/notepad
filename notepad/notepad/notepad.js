@@ -142,7 +142,7 @@
             }
             return false;   // Prevent default behaviour
         },
-        _return : function(event) {
+        _return: function(event) {
             var target = $(event.target);
             var li = target.closest(":notepad-line");
             if (li.length === 0) {
