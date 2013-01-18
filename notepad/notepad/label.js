@@ -5,40 +5,43 @@
         // manages a literal or a uri
         // displays the label for a URI
         // can set the URI
-            // => 
-
 
         options: { 
-            template:   '{{#rdfs:label}}' +
-                            '<div contenteditable="true" rel="rdfs:label">{{rdfs:label}}</div>' +
+            defaultTemplate: '' +
+                        '{{#rdfs:label}}' +
+                            '<div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div>' +
                         '{{/rdfs:label}}' +
                         '{{^rdfs:label}}' +
-                            '{{#nmo:sender}}<span contenteditable="true" rel="nmo:sender">{{nmo:sender}}</span>{{/nmo:sender}}' +
-                            '{{#nmo:messageSubject}}<span class="notepad-column-0" rel="nmo:messageSubject">{{{nmo:messageSubject}}}</span>{{/nmo:messageSubject}}' +
-                            '{{^nmo:messageSubject}}' +
                                 '{{#uri}}' +
-                                    '<div class="uri">{{{uri}}}</div>' +
+                                    '<div about="{{{uri}}}" class="notepad-label"></div>' +
                                 '{{/uri}}' +
                                 '{{^uri}}' +
-                                    '<div contenteditable="true" rel="rdfs:label"></div>' +
+                                    '{{#about}}' +
+                                        '<span class="uri">{{{about}}}</span>' +
+                                    '{{/about}}' +
+                                    '{{^about}}' +
+                                        '<div contenteditable="true" rel="rdfs:label"></div>' +
+                                    '{{/about}}' +
                                 '{{/uri}}' +
-                            '{{/nmo:messageSubject}}' +
-                            '{{#nmo:receivedDate}}<span rel="nmo:receivedDate" class="notepad-column-1">{{nmo:receivedDate}}</span>{{/nmo:receivedDate}}' +
                         '{{/rdfs:label}}' +
                         '',
                                 
             uriAttr:            'about',
             uriElement:         undefined,
             autocomplete:       true,
-            allowBlankNodes:    true
+            allowBlankNodes:    true,
+            dynamicTemplate:    true,
         },
         _setOption: function(key, value) {
             this._super(key, value);
             switch (key) {
                 case 'uriElement':
-                if (value) {
-                    this.load();
-                }
+                    if (value) {
+                        this.load();
+                    }
+                    break;
+                case 'defaultTemplate':
+                    this.template = value;
                 break;
             }
         },
@@ -50,16 +53,6 @@
             return this.element.parents('.notepad').data("notepad");
         },
 
-        template: function() {
-            // The object should be responsible for determining the best way to display itself, given its context
-
-            // if (this.getParent() && this.getParent().lineTemplate) {
-            //     return this.getParent().lineTemplate;
-            // }
-
-            return this.options.template;
-        },
-
         // Object or Literal
         isLiteral: function() {
             return (this.getUri() === undefined && this.getLiteral() !== undefined && this.getLiteral().length > 0);
@@ -69,6 +62,9 @@
         },
         getUri: function() {
             return this.getUriElement().attr(this.options.uriAttr);
+        },
+        getUriSparql: function() {
+            return new Resource(this.getUri()).toSparqlString();
         },
         getUriElement: function() {
             if (this.options.uriElement) { return this.options.uriElement; }
@@ -82,7 +78,8 @@
                 return;
             }
             this._setUri(uri);
-            this.load();
+            //this.load();
+            this.uriChanged();
 
             // Trigger the event only after the label has displayed itself
             // so that: dependent DOM elements can avoid redisplaying a triple that is already displayed here
@@ -146,103 +143,67 @@
             }
             throw new Error("cannot set an object that is neither a literal or a URI");
         },
-        getPredicatesInTemplate: function() {
-            var variables = this.template().match(/{{[a-zA-Z:]*?}}/gm).map(function(s) {return s.replace(/[\{\}]/g, ''); });
-            if (variables.indexOf('uri') != -1) {
-                variables.splice(variables.indexOf('uri'), 1);      // Remove the element 'uri'
+        uriChanged: function(callback) {
+            if (this.getEndpoint() === undefined) {
+                return;
             }
-            return variables;
+            var label = this;
+            if (this.options.dynamicTemplate) {
+                var templateQuery = new Query($.notepad.templates.templates);
+                templateQuery.execute(this.getEndpoint(), {uri: this.getUriSparql()}, function(templateTriples) {
+                    label.templateReceived(templateTriples, callback);
+                });
+            } else {
+                var template = this.options.defaultTemplate;
+                var dataQuery = $.notepad.queryFromTemplate(template);
+                dataQuery.execute(this.getEndpoint(), {about: this.getUriSparql()}, this.dataReceived.bind(this));
+            }
         },
+        templateReceived: function(templateTriples, callback) {
+            var templateStrings = templateTriples.triples(this.getUri(), "notepad:template", undefined).objects();
+            var templateString;
+            if (templateStrings.length === 0) {
+                templateString = this.options.defaultTemplate;
+            } else {
+                templateString = templateStrings[0].toString();
+            }
 
-        queryFromTemplate: function(about) {
-            var predicatesInTemplate = this.getPredicatesInTemplate();
-            var whereClauses = predicatesInTemplate.map( function(predicate) { return '?s '+predicate+' ?o .'; });
-            whereClauses.push (' && .');
-            var query = 'CONSTRUCT {?s ?p ?o} WHERE { ?s ?p ?o FILTER( sameTerm(?s, '+about.toSparqlString()+') \
-                && ( ?p in (' + predicatesInTemplate.join(",") + ') ) ) }';
-            query = query + '\n # query:cache';
-            return query;
+            this.template = templateString;     // for use in updateFromTriples
+            var template = new Template(templateString);
+            var dataQuery = $.notepad.queryFromPredicates(template.predicates());
+            var label = this;
+            dataQuery.execute(this.getEndpoint(), {about: this.getUriSparql()}, function(dataTriples) {
+                label.dataReceived(dataTriples, callback);
+            });
+        },
+        dataReceived: function(triples, callback) {
+            this._updateFromRdf(triples);
+
+            if (this.getNotepad()) {
+                this.getNotepad().loaded(triples);  // Assumes all triples loaded where displayed
+            }
+            if (callback !== undefined) {
+                callback.apply(this);
+            }    
         },
 
         load: function(callback) {
-            if (! this.isUri()) {
-                return;
-            }
-            // dev:perf
-            // When this URI is in our root path, it was already loaded in this context
-            // if (this.element.closest('[about='+this.getUri()+']').length > 0) {
-            //     // We already have all the triples we care about in this context.  We could just updateFromRdf using ...().triples()
-            //     this._updateFromRdf ( this.element.closest('[about='+this.getUri()+']').triples() );
-            // }
-
-            if (this.element.findEndpoint() === undefined) {
-                // This element could be detached
-                return;
-            }
-            // TODO: refactor with container.load
-            var query = this.options.query;
-            var sparql;
-            var aboutResource = new Resource(this.getUri());    
-            if (aboutResource.isBlank()) {
-                // We'll never learn anything from blank nodes (is that really true?  what about any local endpoints?)
-                return;
-            }
-            if (query !== undefined) {
-                sparql = Mustache.render(query, {about: aboutResource.toSparqlString()});
-            } else {
-                sparql = this.queryFromTemplate(aboutResource);
-            }
-
-            var label = this;
-            log.debug("query for label of ", aboutResource.toString());
-            this.getEndpoint().execute(sparql, function(triples) {
-                label._updateFromRdf(triples);
-
-                if (label.getNotepad()) {
-                    label.getNotepad().loaded(triples);  // Assumes all triples loaded where displayed
-                }
-
-                if (callback !== undefined) {
-                    callback.apply(label);
-                }
-            });
+            this.uriChanged(callback);
         },
-
-        _getContextFromTriples: function(triples) {
-            var context = { uri: this.getUri() };
-            if (!triples) {
-                return context;
-            }
-
-            var predicatesInTemplate = this.getPredicatesInTemplate();
-
-            var label = this;
-            _.each(predicatesInTemplate, function(predicate) {
-                var values = triples.filter(function(triple) { return triple.predicate == predicate; });
-                if (values.length == 0) {
-                    // log.debug("cannot find a value for "+predicate+" in template substitution");
-                    return;
-                }
-                if (values.length > 1) {
-                    log.warn("cannot find exactly 1 value ("+values.length+" found) for "+predicate+" in template substitution");
-                    log.warn("using first ("+values[0].object+")");
-                }
-                context[predicate] = values[0].object;
-            });
-            return context;
-        },
-
         _updateFromRdf: function(triples) {
-            // WHEN A label triple is already displayed ... somewhere else on the page, this label does not know about it and still displays the triple
-
-            var context = this._getContextFromTriples(triples);
-            var html = Mustache.render(this.template(), context);
+            var context = {};
+            if (this.getUri()) {
+                context['about'] = this.getUri();
+            }
+            var html = new Template(this.template).render(triples, context);
 
             this.getTemplateElement().empty();
             this.getTemplateElement().append(html);
 
-            // this.getLabelElement().remove();  // we need to setup autocomplete again later.
-            // this.element.prepend(html);
+            // Apply any widget constructors
+            this.getTemplateElement().find(".notepad-label").label({dynamicTemplate: true});
+
+            // This could be done via widget constructors as wel
             this._setupAutocomplete();
         },
 
@@ -335,8 +296,18 @@
             }
             var uri = this.getUri();
             var triples = new Triples();
-            this.getTemplateElement().find("[rel]").each(function(i,e) {
-                var object = $(e).text();
+            this.getTemplateElement().children(".notepad-label").each(function(i,e) {
+                triples.add($(e).data('notepad-label').labelTriples());
+            });
+
+            this.getTemplateElement().children("[rel]").each(function(i,e) {
+                var object;
+
+                if ($(e).attr('about')) {
+                    object = $(e).attr('about');
+                } else {
+                    object = $(e).text();
+                }
                 if (object.length === 0) {
                     return;
                 }
@@ -387,10 +358,11 @@
         _create: function() {
             // Object
             this.element.addClass('notepad-label');
+            this.template = this.options.defaultTemplate;
 
             if (this.getUri() !== undefined && this.getLiteral() === undefined) {
                 // A uri but no literal:
-                this.load();
+                this.uriChanged();
             } else {
                 this.updateFromLiteral();
             }

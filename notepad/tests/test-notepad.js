@@ -54,6 +54,8 @@ test("when I create a notepad, it should be destroyed cleanly", function() {
 
 module("given a new notepad", {
     setup: function() {
+        $("#notepad").remove();
+        $("<div id='notepad'>").appendTo("#qunit-fixture");
         this.div = $("#notepad").notepad();
         this.notepad = this.div.data('notepad');
         this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
@@ -77,7 +79,10 @@ skippedTest("when i place the cursor at the beginning of the line", function() {
     equal(this.div.find("li:first .notepad-object").text(), "", "the first line should be empty");
     equal(this.div.find("li:last .notepad-object").text(), "text", "the second line should be where the text remained");
 });
-test("when set RDF with cycles, then it should not display a triple twice", function() {
+asyncTest("when set RDF with cycles, then it should not display a triple twice", function() {
+
+    // WARNING: this test has a race condition that makes it fail once every other time.
+    // I don't understand this failure at this point.
     expect(6);
     var uri = this.notepad.getUri();
     var triples = Triples(
@@ -102,6 +107,7 @@ test("when set RDF with cycles, then it should not display a triple twice", func
 
                 assertThat(test.line.getLines().length, equalTo(1), "the first line should have one child");
                 assertThat(test.line.getLines()[0].getUri(), ':line1', "the child line should be the uri :line1");                
+                start();
             }
         });
 });
@@ -288,9 +294,15 @@ test("a notepad should display RDF", function() {
     ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
     equal(this.div.find('li[about="_:line1"] .notepad-object').text(), '', "First line should be empty");
 });
+
 test("when I hit enter at the end of the first line, then it should add a newline before the second line", function() {
-    this.firstObject.caretToEnd();
-    this.firstObject.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+
+    // Warning: for some reason, i cannot use this.firstObject.  It holds a detached element.
+    var firstObject = this.notepad.element.find("li:first .notepad-object3 [contenteditable='true']");
+    firstObject.caretToEnd();
+    firstObject.focus();
+
+    firstObject.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
 
     equal(this.div.find("li:eq(0)").data('line').getLineLiteral(),"first line");
     assertThat(this.div.find("li:eq(1)").data('line').getLineLiteral(), not(truth()));
