@@ -43,7 +43,7 @@
         whereClauses.push (' && .');
         var sparql = 'CONSTRUCT {?s ?p ?o} WHERE { ?s ?p ?o FILTER( sameTerm(?s, {{{about}}}) \
             && ( ?p in (' + predicates.join(",") + ') ) ) }';
-        sparql = sparql + '\n # sparql:cache';
+        sparql = sparql + '\n # query:cache';
         return new Query(sparql);
     }
     $.notepad.queryFromPredicates = queryFromPredicates;

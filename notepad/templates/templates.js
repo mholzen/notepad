@@ -149,4 +149,6 @@ WHERE \n\
 		?uri a ?class \n\
 			FILTER sameTerm(?uri, {{{uri}}}) \n\
 	} \n\
-}";
+} \n\
+# query:cache \n\
+";
