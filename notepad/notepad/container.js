@@ -1,7 +1,5 @@
 (function($, undefined) {
 
-    var CONTAINER_DEFAULT_PREDICATE_ATTR = 'container-default-predicate';
-    var CONTAINER_DEFAULT_PREDICATE_URI = 'rdfs:member';
     var MAX_DEPTH = 4;
     var MAX_TRIPLES = 500;
     var MAX_TRIPLES_BEFORE_COLLAPSING = 10;
@@ -16,7 +14,7 @@
         },
 
         _setOption: function(key, value) {
-            this._super(key, value);        // We have jquery-ui 1.9
+            this._super(key, value);
         },
         _create: function() {
             this.element.addClass("notepad-container");
@@ -129,13 +127,6 @@
                 line.setUri(lineSelector.lineUri);
             }
             return line;
-        },
-        getDefaultPredicate: function() {
-            var predicate = this.element.attr(CONTAINER_DEFAULT_PREDICATE_ATTR);
-            if (predicate === undefined) {
-                predicate = CONTAINER_DEFAULT_PREDICATE_URI;
-            }
-            return predicate;
         },
         
         triples: function() {

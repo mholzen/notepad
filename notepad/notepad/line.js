@@ -104,9 +104,6 @@
         getContainerUri: function() {
             return this.getContainer().getUri();
         },
-        _getContainerDefaultPredicate: function() {
-            return this.getContainer().getDefaultPredicate();
-        },
         _setPredicateUri: function(uri) {
             this.getPredicate().setUri(uri);
         },
@@ -451,7 +448,6 @@
             this._createPredicate();                    // Creates the predicate and the first object
                                                         // Sets the URI, which fails to trigger the child container
             this._createColumnObjects();
-            //this._createChildContainer();          
         },
 
         getChildrenToggle: function() {
