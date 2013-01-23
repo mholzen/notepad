@@ -62,9 +62,6 @@
         getDepth: function() {
             return this.element.parents(".notepad-container").length;
         },
-        getDistanceToLastQuery: function() {
-            return this.element.parents(".notepad-load-source").length;
-        },
         getLines: function() {
             return this.element.children('li').map(function(index, line) { return $(line).data('line'); } );
         },
@@ -143,6 +140,15 @@
             var container = this;
             return this.triples().filter(function(triple) { return triple.object.toString() == container.getUri(); });
         },
+        triplesInDomPath: function() {
+            var label = this.element.closest(":notepad-label");
+            if (label.length === 0) {
+                return new Triples();
+            }
+            return label.data('label').triplesInDomPath();
+        },
+
+
         refresh: function() {
             if (this.getUri() === undefined) {
                 return;
@@ -152,13 +158,6 @@
         load: function() {
             var container = this;
             var query = this.getQuery();
-
-            // When this URI is in our root path, it was already loaded there.
-            // if (this.element.parent().parent().closest('[about='+ $.notepad.toUri(query.context.about)+']').length > 0) {
-            //     console.debug("decline load to avoid repeat", this.element.parent());
-            //     console.debug(this.element.parent().parent());
-            //     return;
-            // }
 
             console.debug("describe(", $.notepad.toUri(query.context.about), ") into ", this.element[0], query);
 
@@ -266,6 +265,10 @@
                      function(a,b) { return b>=a; }];
         },
 
+        //
+        // Columns
+        //
+
         _createHeadersContainer: function() {
             this.element.prepend($('<div>').addClass('notepad-headers-container'));
         },
@@ -298,15 +301,6 @@
             this.getHeadersContainer().css('display', 'block');
             return header.data('column');
         },
-
-        triplesInDomPath: function() {
-            var label = this.element.closest(":notepad-label");
-            if (label.length === 0) {
-                return new Triples();
-            }
-            return label.data('label').triplesInDomPath();
-        },
-
 
         // 
         // Filters
