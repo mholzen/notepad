@@ -164,22 +164,6 @@
         getContainerPredicateUri: function() {
             return this.getPredicate().getUri();
         },
-        _getContainerPredicateUriByLabel: function(label) {
-            var uri = this.getContainer().predicateMap[label];
-            if (uri === undefined) {
-                throw "cannot find a uri matching the label " + label;
-            }
-            return uri;
-        },      
-        _getContainerPredicateLabelByUri: function(uri) {
-            var map =  this.getContainer().predicateMap;
-            for (var label in map) {
-                if (map[label] == uri) {
-                    return label;
-                }
-            }
-            throw "cannot find a label from the URI "+uri;
-        },
         subject: function() {
             if (this.getDirection() === FORWARD) {
                 return this.getContainerUri();
