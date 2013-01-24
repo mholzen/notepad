@@ -132,8 +132,6 @@
                 $.merge(triples, line.triples());
             });
 
-            //$.merge(triples, this.filters().triples());  // important to avoid filter triples appearing as deleted
-
             return triples;
         },
         reverseTriples: function() {
