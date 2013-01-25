@@ -1,0 +1,61 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX ex: <http://example.com/#>
+PREFIX nmo: <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX notepad: <http://www.vonholzen.org/instruct/notepad/#>
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/#>
+PREFIX : <http://localhost/~holzen/develop/instruct/notepad-clean/notepad/tests/notepad.html#>
+CONSTRUCT { 
+	_:filter rdfs:label   ?label1 . 
+	_:filter rdfs:count   ?count . 
+	_:filter sp:predicate ?p1 . 
+	_:filter sp:object    ?o1 . 
+ 
+#	_:filter rdfs:label ?label2 . 
+#	_:filter rdfs:label ?label . 
+#	_:filter sp:predicate2 ?p2 . 
+#	_:filter sp:object2    ?o2 . 
+} 
+WHERE 
+{ 
+	BIND (bnode() as ?filters) 
+	{ 
+		SELECT (count (distinct ?s) as ?count) ?p1 ?o1 # ?p2 ?o2 
+		WHERE 
+		{ 
+			{ 
+				# dev:techdebt The variables neighbourForward and neighbourBackward reference  
+				# variables in describe.sparql 
+ 
+				SELECT (coalesce(?neighbourForward, ?neighbourBackward) AS ?s) 
+				#SELECT (?neighbourBackward as ?s)
+				WHERE { 
+					LET ( ?about := <http://localhost/~holzen/develop/instruct/notepad-clean/notepad/tests/notepad.html#5c763181-bab0-445c-88c5-2c68a230d3a7> ) 
+ 
+					{ ?about ?predicateForward ?neighbourForward 
+						BIND (?neighbourForward as ?neighbour) 
+					} 
+					UNION 
+					{ ?neighbourBackward ?predicateBackward ?about 
+						BIND (?neighbourBackward as ?neighbour) 
+						FILTER EXISTS { ?neighbourBackward a notepad:Session }
+					} 
+				} 
+			}
+			?s ?p1 ?o1 .
+			?s ?p1 ?o1 FILTER( ?p1 != nmo:content ) . 
+			?s ?p1 ?o1 FILTER( ?p1 != rdf:type ) . 
+			# OPTIONAL { ?o1 ?p2 ?o2 } . 
+		} 
+		GROUP BY ?p1 ?o1 # ?p2 ?o2 
+ 
+		HAVING (?count > 1) 
+		 
+		ORDER BY DESC(?count) 
+	} 
+ 
+} 
+LIMIT 5 

@@ -1,0 +1,14 @@
+SELECT ?neighbourBackward ?labelBackward
+WHERE { 
+	LET ( ?about := <http://localhost/~holzen/develop/instruct/notepad-clean/notepad/tests/notepad.html#5c763181-bab0-445c-88c5-2c68a230d3a7> ) 
+
+	{ ?about ?predicateForward ?neighbourForward .
+		?predicateForward rdfs:label ?labelForward .
+	} 
+	UNION 
+	{ ?neighbourBackward ?predicateBackward ?about .
+		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } 
+		?predicateBackward rdfs:label ?labelBackward .
+
+	} 
+} 

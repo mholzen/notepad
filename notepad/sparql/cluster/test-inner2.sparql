@@ -1,0 +1,22 @@
+#SELECT (count (distinct ?s) as ?count) # ?p1 ?o1
+SELECT distinct ?s # ?p1 ?o1
+WHERE 
+{ 
+	{ 
+		SELECT (coalesce(?neighbourForward, ?neighbourBackward) as ?s)
+		WHERE {
+			LET ( ?about := <http://localhost/~holzen/develop/instruct/notepad-clean/notepad/tests/notepad.html#5c763181-bab0-445c-88c5-2c68a230d3a7> ) 
+
+			{ ?about ?predicateForward ?neighbourForward } 
+			UNION 
+			{ ?neighbourBackward ?predicateBackward ?about } 
+		}
+	}
+	#?neighbourBackward ?p1 ?o1 .
+	#?neighbourForward ?p1 ?o1 .
+	?s ?p1 ?o1 .
+
+} 
+#GROUP BY ?p1 ?o1
+#HAVING (?count > 1)  
+#ORDER BY DESC(?count) 
