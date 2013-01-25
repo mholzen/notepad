@@ -189,7 +189,7 @@ $(function() {
         }
         $(this).show();
     });
-    $("#status").ajaxSuccess(function(){
+    $("#status").ajaxStop(function(){
         setTimeout(function() {
             $("#status").fadeOut(200);
             setTimeout(function() {
