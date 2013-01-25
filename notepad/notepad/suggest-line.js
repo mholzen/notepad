@@ -1,10 +1,10 @@
 $(function() {
-	ac = $(".notepad-object").data('autocomplete');
+	ac = $(".notepad-object").data('uiAutocomplete');
 });
 
 function foo() {
 
-	ac = $(".notepad-object").data('autocomplete');
+	ac = $(".notepad-object").data('uiAutocomplete');
 	ac.search("Patr");
 
 

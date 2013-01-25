@@ -66,7 +66,7 @@
             this.getContainer().appendLine();  // Start with one empty line
             
             this.element.on("keydown.notepad", function(event) {
-                if($(event.target).data('autocomplete') && $(event.target).data('autocomplete').menu.active) {
+                if($(event.target).data('uiAutocomplete') && $(event.target).data('uiAutocomplete').menu.active) {
                     // The autocomplete menu is active, let it handle keyboard events
                     return;
                 }
