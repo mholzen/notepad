@@ -57,7 +57,7 @@ test("when I add a triple where the container is the subject, then the container
     assertThat(line.getObject().isUri(), truth(), "the object should be a URI");
     assertThat(line.getObject().getResource(), equalTo(":o"), "the object should have a value of :o");
     assertThat(line.getPredicate().getLabel(), not(nil), "then the line's predicate label should be ...");
-    assertThat(line.getContainerPredicateUri(), ":p", "then the line's predicate should be :p");
+    assertThat(line.getPredicate().getUri(), ":p", "then the line's predicate should be :p");
     ok(!triplesPre.contains(triple), "the initial triples do not contain it");
     assertThat(this.container.triples(), hasItem(equalToObject(triple)), "the triples contains it");
     ok(!this.container.reverseTriples().contains(triple), "the reverse triples does not contain it");

@@ -12,7 +12,7 @@ test("when I create a new notepad with options", function() {
 
     this.div.notepad( {endpoint: endpoint} );
 
-    equal(this.div.data('notepad').getEndpoint(), endpoint, "the notepad should provide the endpoint");
+    equal(this.div.data('notepadNotepad').getEndpoint(), endpoint, "the notepad should provide the endpoint");
 });
 
 
@@ -29,7 +29,7 @@ test("when I create a notepad, it should have initial components", function(){
    assertThat(this.div.find("li [contenteditable='true']").length, greaterThan(0), "the first line should have at least one contenteditable area");
    assertThat(this.div.find('li .notepad-predicate-label').length, greaterThan(0), "the first line should have a predicate label");
 
-   var notepad = this.div.data('notepad');
+   var notepad = this.div.data('notepadNotepad');
    ok(notepad,"it should have a widget");
 
    assertThat(notepad.triples(), hasItem(equalToObject(new Triple(notepad.getUri(), "rdf:type", "notepad:Session"))));
@@ -43,7 +43,7 @@ test("when I create a notepad, it should have initial components", function(){
 });
 test("when I create a notepad, it should be destroyed cleanly", function() {
     this.div.notepad();
-    var notepad = this.div.data('notepad');
+    var notepad = this.div.data('notepadNotepad');
     notepad.destroy();
 
     equal(this.div.children().length,0,"it leaves children element");
@@ -57,7 +57,7 @@ module("given a new notepad", {
         $("#notepad").remove();
         $("<div id='notepad'>").appendTo("#qunit-fixture");
         this.div = $("#notepad").notepad();
-        this.notepad = this.div.data('notepad');
+        this.notepad = this.div.data('notepadNotepad');
         this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
         this.endpoint.graph = $.notepad.getNewUri();
         this.notepad.option('endpoint', this.endpoint);
@@ -192,7 +192,7 @@ test("when I add two lines", function() {
 module("given a notepad with one line of text", {
     setup: function() {
         this.div = $("#notepad").notepad();
-        this.notepad = this.div.data('notepad');
+        this.notepad = this.div.data('notepadNotepad');
         this.firstLineElement = this.div.find("li:first");
         this.firstObject = this.div.find("li:first .notepad-object3");
         this.firstObject.val("first line").change();
@@ -223,7 +223,7 @@ test("when I unindent the first line, then it should not move", function() {
 module("given a notepad with two lines", {
     setup: function() {
         this.div = $("#notepad").notepad();
-        this.notepad = this.div.data('notepad');
+        this.notepad = this.div.data('notepadNotepad');
         this.firstObject = this.div.find("li:first .notepad-object3 [contenteditable='true']");
         this.firstObject.text("first line").change();
 
@@ -314,7 +314,7 @@ test("when I hit enter at the end of the first line, then it should add a newlin
 module("given a notepad with two lines (first empty, second with a label)", {
     setup: function() {
         this.div = $("#notepad").notepad();
-        this.notepad = this.div.data('notepad');
+        this.notepad = this.div.data('notepadNotepad');
         enterNewLine(this.div);
         this.firstLine = this.div.find("li:first").data('notepadLine');
         this.line = this.firstLine;

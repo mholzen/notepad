@@ -97,7 +97,7 @@ $(document).ready(function() {
     });
 
     asyncTest("deferred", function() {
-      var url = 'http://instruct.vonholzen.org:3030/dev';
+      var url = 'http://localhost:11111/dev';
       var response = $.getJSON(url);
       response.complete();
       response.error(function() {

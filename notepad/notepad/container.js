@@ -1,9 +1,9 @@
 (function($, undefined) {
 
-    var MAX_DEPTH = 4;
+    var MAX_DEPTH = 8;
     var MAX_TRIPLES = 500;
     var MAX_TRIPLES_BEFORE_COLLAPSING = 10;
-    var MAX_TRIPLES_BEFORE_FILTERING = 10;
+    var MAX_TRIPLES_BEFORE_FILTERING = 2;
 
     $.widget("notepad.container", {
 
@@ -121,7 +121,7 @@
             if (triple.object.isLiteral()) {
                 line.setLineLiteral(triple.object);
             } else {
-                line.setUri(lineSelector.lineUri);
+                line.setUri(lineSelector.line);
             }
             return line;
         },
@@ -182,17 +182,17 @@
             _.each(triples, function(triple) {
                 console.debug('updating for triple: '+triple.toString());
                 if (container.getDepth() > MAX_DEPTH) {
-                    console.debug("Max depth reached");
+                    console.info("Max depth reached");
+                    return;
+                }
+                if (container.triplesInDomPath().contains(triple)) {
+                    console.debug("Triple already expressed in DOM path", triple);
                     return;
                 }
                 if (container.getNotepad() && container.getNotepad().triples().length >= MAX_TRIPLES) {
                     console.warn("Max triple count reached");
                     return;
                 }                
-                if (container.triplesInDomPath().contains(triple)) {
-                    console.debug("Triple already expressed in DOM path", triple);
-                    return;
-                }
 
                 if (triple.predicate == "rdfs:label") {
                     // Ignore labels, because they were most likely displayed above.  dev:techdebt
@@ -207,7 +207,7 @@
                     return undefined;
                 }
 
-                var childLines = container.element.find(lineSelector);
+                var childLines = container.element.find(":notepad-line").filter(lineSelector.filter());
                 if (childLines.length > 1) {
                     throw new Error("cannot update multiple occurence of the childUri");
                 }
@@ -225,7 +225,7 @@
                 if (triple.object.isLiteral()) {
                     line.setLineLiteral(triple.object);
                 } else {
-                    line.setUri(lineSelector.lineUri);
+                    line.setUri(lineSelector.line);
                 }
 
                 if (container.getNotepad()) {
@@ -307,7 +307,7 @@
             return this.element.children('.notepad-filters').data('notepadContainer2');
         },
         _createFilters: function() {
-            if (this.filters() !== undefined) {
+            if (this.filters()) {
                 return;
             }
             var filters = $('<div class="notepad-filters">').prependTo(this.element).container2().data('notepadContainer2');

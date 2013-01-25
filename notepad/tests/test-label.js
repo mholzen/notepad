@@ -117,8 +117,11 @@ asyncTest("when I type new text and select the choice", function() {
     this.label.getLabelElement().text('lab').keydown();     // Can't seem to trigger events with a keyCode.  This is how autocomplete() tests keyboard events
 
     setTimeout(function() {
-        test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.DOWN } );
-        test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.ENTER } );
+        //test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.DOWN } );
+        test.label.getLabelElement().trigger( "keydown", { keyCode: $.ui.keyCode.DOWN } );
+        //test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.ENTER } );
+        test.label.getLabelElement().trigger( "keydown", { keyCode: $.ui.keyCode.ENTER } );
+
     }, 300);
 
     setTimeout(function() {
@@ -166,7 +169,7 @@ asyncTest("when I display a URI that has no label", function() {
         test.element.data('notepadEndpoint').option('endpoint', this);
         test.label.load( function() {
             assertThat(test.element.text(), containsString("a subject"), "it should display the subject");
-                start();
+            start();
         });
     });
 });

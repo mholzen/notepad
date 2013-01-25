@@ -14,8 +14,6 @@
 <script src="../external/underscore.js" type="text/javascript"></script>
 <script src="../external/underscore.string.min.js" type="text/javascript"></script>
 <script src="../external/mustache.js" type="text/javascript"></script>
-<script src="../external/jquery.contextMenu.js" type="text/javascript"></script>
-<link  href="../external/jquery.contextMenu.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/moment.min.js"></script>
 
 <!-- Notepad code -->
@@ -153,15 +151,17 @@ $(function() {
         });        
     });
 
-    $("body").click(function() {
-        $("#menu").fadeOut("100");
+    $("body").click(function(event) {
+        if ($(event.target).parents("#menu-button").length === 0) {         // if we are not clicking on the menu button
+            $("#menu").fadeOut("100");
+        }
     });
 
     $('#notepad').on("focus", ':notepad-label [rel="rdfs:label"]', function(event) {
         $("#menu-button").position({
             my: "right top",
             at: "right top",
-            of: $(event.target).closest(".notepad-label")
+            of: $(event.target) //.closest(":notepad-label")
         });
         line = $(event.target).closest(":notepad-line").data('notepadLine');
         container = $(event.target).closest(":notepad-container").data('notepadContainer');
@@ -177,7 +177,9 @@ $(function() {
 
     });
 
-    setTimeout(function() { object.focus(); }, 100);
+    setTimeout(function() {
+        object.focus(); 
+    }, 100);
 
     $("#status").hide();
     $("#status").ajaxStart(function(){
@@ -280,7 +282,16 @@ $(function() {
     <li class="ui-state-disabled"><a href="#" onclick="javascript: container.filters();">Add filters</a></li>
     <li class="ui-state-disabled"><a href="#" onclick="javascript: line.remove();">Remove line from parent</a></li>
     <li class="ui-state-disabled"><a href="#">Add column</a></li>
-    <li class="ui-state-disabled"><a id="search" href="#">Search for/query for keywords ...</a></li>
+
+    <li>
+        <a href="#">Search within ...</a>
+        <ul>
+            <li><a href="#"><span class="ui-icon ui-icon-check"></span>Labels</a></li>
+            <li><a href="#">Relationships</a></li>
+            <li><a href="#">Everything</a></li>
+        </ul>
+    </li>
+
     <li class="ui-state-disabled">
         <a href="#">Describe ... </a>
         <ul>

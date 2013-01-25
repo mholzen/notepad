@@ -9,13 +9,12 @@
 
     // A line matcher, based on the container uri and the triple
     Selector = $.fn.Selector = function(uri, triple) {
-        var lineUri, direction;
         if (uri == triple.subject) {
             this.direction = FORWARD;
-            this.lineUri = triple.object;
+            this.line = triple.object;
         } else if (uri == triple.object) {
             this.direction = BACKWARD;
-            this.lineUri = triple.subject;
+            this.line = triple.subject;
         } else {
             return undefined;
         }
@@ -24,17 +23,42 @@
     }
 
     Selector.prototype = {
+        // WARNING:  the jQuery selector obtained via toString() does not have the same effect as the filter obtained using filter().
+        // IN patricular, matching the line based on a literal will not produce the same results.
+        // I need to fix tests before removing the toString() jquery selector.
+
         toString: function() {
             var selector = "";
             if (this.predicate) {
-                selector = selector + '[' + getAttrName(direction) + '="' + this.predicate +'"]';
+                selector = selector + '[' + getAttrName(this.direction) + '="' + this.predicate +'"]';
             }
-            if (this.lineUri) {
-                selector = selector + '[about="' + this.lineUri +'"]';
+            if (this.line.isUri()) {
+                selector = selector + '[about="' + this.line +'"]';
+            } else if (this.line.isLiteral()) {
+                selector = selector + ':contains(' + this.line +')';   
             }
             return selector;
+        },
+        filter: function() { 
+            var selector = this;
+            return function() {
+                var matchPredicate = $(this).children(":notepad-predicate[" + getAttrName(selector.direction) +'="' + selector.predicate + '"]');
+                if (!matchPredicate.length === 0) {
+                    return;
+                }
+                var matchLine;
+                if (selector.line.isUri()) {
+                    matchLine = ( $(this).find(':notepad-label[about="' + selector.line + '"]').length !== 0 );
+                } else {
+                    matchLine = ( $(this).find('.notepad-object3 [rel="rdfs:label"]').text() == selector.line );
+                }
+                return matchLine;
+            };
         }
+
     }
+
+    var DEFAULT_DESCRIBE_DEPTH = 1;     // descend 1 level when describing the object of a line
 
     $.widget("notepad.line", {
 
@@ -270,10 +294,15 @@
                     log.debug("ignoring event for another target");
                     return;
                 }
+                event.stopPropagation();
+
+                if (line.options.describeDepth === 0) {
+                    return;
+                }
+
                 if (!line.collapsed()) {
                     container.load();
                 }
-                event.stopPropagation();
                 return false; // prevent this event from being caught by any labels in the path to root
             });
 
@@ -311,9 +340,6 @@
         },
 
         childTriples: function() {
-            // if (this.getUri() === undefined) {
-            //     return [];
-            // }
             if (this.getChildContainer() === undefined) {
                 throw new Error("somehow, we can't find a child container anymore");
             }
@@ -361,15 +387,17 @@
             var childrenToggle = $('<a>').addClass('childrenToggle');
             var line = this;
             childrenToggle.click(function(event) {
+                line.option('describeDepth', 1);
                 line.childrenToggle();
             });
             this.element.prepend(childrenToggle);
 
             // Initial state depends on the container
             var describeElements = this.getContainer().option('describeElements');
-            if (!describeElements) {
+            if (!describeElements || this.options.describeDepth === 0) {
                 this.hideChildren();
             }
+
             // No need to show because the initial state is: not collapsed, children shown
             // thus avoiding an unnecessarey refresh and reload
         },
@@ -418,8 +446,17 @@
                 enclosingLabel.data('notepad-label').ensureUri();
             }
         },
+        _getDefaultDescribeDepth: function() {
+            var parentLine = this.element.parents(":notepad-line");
+            return parentLine.length ? parentLine.data('notepadLine').option('describeDepth') - 1 : DEFAULT_DESCRIBE_DEPTH;
+        },
         // Set up the line widget
         _create: function() {
+
+            if (this.options.describeDepth === undefined) {
+                this.option('describeDepth', this._getDefaultDescribeDepth());
+            }
+
             // Verify the container
 
             this._ensureSubjectUriExists();
@@ -454,11 +491,14 @@
                 hide = ! this.collapsed();
             }
             var toggleElement = this.getChildrenToggle();
-            if (hide) {
+            if (hide) {  // collapse
                 toggleElement.addClass('collapsed');
                 this.getChildList().hide('blind', {}, 100);
             } else {  // expand
                 toggleElement.removeClass('collapsed');
+                if (this.getObject().isLiteral()) {
+                    return;
+                }
                 this.getChildList().show('blind', {}, 100);
                 this.getChildContainer().refresh();
             }

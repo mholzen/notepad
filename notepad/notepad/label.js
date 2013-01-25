@@ -78,7 +78,6 @@
                 return;
             }
             this._setUri(uri);
-            //this.load();
             this.uriChanged();
 
             // Trigger the event only after the label has displayed itself
@@ -154,9 +153,11 @@
                     label.templateReceived(templateTriples, callback);
                 });
             } else {
-                var template = this.options.defaultTemplate;
-                var dataQuery = $.notepad.queryFromTemplate(template);
-                dataQuery.execute(this.getEndpoint(), {about: this.getUriSparql()}, this.dataReceived.bind(this));
+                var template = new Template(this.options.defaultTemplate);
+                var dataQuery = $.notepad.queryFromPredicates(template.predicates());
+                dataQuery.execute(this.getEndpoint(), {about: this.getUriSparql()}, function(dataTriples) {
+                    label.dataReceived(dataTriples, callback);
+                });
             }
         },
         templateReceived: function(templateTriples, callback) {
@@ -347,6 +348,13 @@
                     var uri = ui.item.value;
                     var choice = new Triples();
                     choice.push(toTriple(uri, "rdfs:label", ui.item.label));        // TODO: consider this.set() instead
+
+                    var line = label.element.parents(":notepad-line").data('notepadLine');
+                    if (line) {
+                        var showChildren = (line.getContainer().getDepth() === 0);
+                        line.showChildren(showChildren);
+                    }
+
                     label.setUri(uri);
                     label._updateFromRdf(choice);
                     event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
