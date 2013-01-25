@@ -299,7 +299,7 @@
         },
         insertLineAfter: function() {
             // When a line has children, it should insert before any child
-            if (this.getLines().length > 0) {
+            if (!this.collapsed() && this.getLines().length > 0) {
                 return this.getLines()[0].insertLineBefore();
             }
             var li = $('<li>').insertAfter(this.element).line();
