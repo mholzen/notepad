@@ -293,8 +293,9 @@
             return this.getChildContainer().getLines();
         },
         appendChildLine: function(li) {
+            var newLine = this.getChildContainer().appendLine(li);
             this.showChildren();
-            return this.getChildContainer().appendLine(li);
+            return newLine;
         },
         insertLineAfter: function() {
             // When a line has children, it should insert before any child
