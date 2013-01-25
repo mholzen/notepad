@@ -57,8 +57,8 @@ body {
  * URI
  */
 .uri {
-    font-family: 'Courier New', monospace;
-    /*font-family: 'Lucida Console', 'Monaco', monospace;*/
+    /*font-family: 'Courier New', monospace;*/
+    font-family: 'Lucida Console', 'Monaco', monospace;
     font-size: small;
 }
 
@@ -361,6 +361,18 @@ div.notepad-object {
 
 .notepad-filters .notepad-fact {
     background: #eef;
+}
+
+[rel="sp:predicate"] {
+    margin-right: 5px;
+    font-style: italic;
+}
+[rel="sp:predicate"] .notepad-label:after {
+    content: ": ";
+}
+
+[rel="sp:object"] {
+    margin-right: 5px;
 }
 
 
