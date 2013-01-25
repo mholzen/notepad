@@ -37,9 +37,18 @@
                 container._updateFromRdf(triples);
             });
         },
-
+        open: function(uri) {
+            this.unloaded(this.getContainer().triples());           // to avoid triples being marked as deleted
+            this.getContainer().element.remove();
+            var line = this.getContainer().appendLine();            // getContainer() will recreate the deleted element
+            line.setUri(uri);
+        },
         getContainer: function() {
-            return this.element.children('ul').data('container');
+            var element = this.element.children('ul');
+            if (element.length === 0) {
+                element = $('<ul>').appendTo(this.element).container();
+            }
+            return element.data('notepadContainer');
         },
         getLines: function() {
             return this.getContainer().getLines();
@@ -54,12 +63,11 @@
 
             this._setUri($.notepad.getNewUri());
 
-            var ul = $('<ul>').appendTo(this.element).container();  // Create an empty container
             this.getContainer().appendLine();  // Start with one empty line
             
             this.element.on("keydown.notepad", function(event) {
                 if($(event.target).data('autocomplete') && $(event.target).data('autocomplete').menu.active) {
-                    // The autocomplete menu is active, do nothing here
+                    // The autocomplete menu is active, let it handle keyboard events
                     return;
                 }
 
