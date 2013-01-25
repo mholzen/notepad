@@ -12,7 +12,7 @@
 
         setUri: function(uri) {
             this.element.attr('about', uri);
-            if (this.getSubjectLabel() === undefined) {
+            if (!this.getSubjectLabel()) {
                 this._insertSubjectLabel();
                 this.getSubjectLabel().load();
             }
@@ -21,7 +21,7 @@
             return this.element.closest('[about]').attr('about');
         },
         getSubjectLabel: function() {
-            return this.element.children('.notepad-label').data('label');
+            return this.element.children('.notepad-label').data('notepadLabel');
         },
         _insertSubjectLabel: function() {
             $('<div>').prependTo(this.element).label({uriElement: this.element});
@@ -32,10 +32,10 @@
             if (predicateUri !== undefined) {
                 predicates = predicates.filter('[rel="'+predicateUri+'"]');
             }
-            return predicates.map(function(i,e) {return $(e).data('predicate');});
+            return predicates.map(function(i,e) {return $(e).data('notepadPredicate');});
         },
         insertPredicate: function(predicateUri) {
-            return $('<div>').appendTo(this.element).predicate().data('predicate');
+            return $('<div>').prependTo(this.element).predicate().data('notepadPredicate');
         },
         setTriple: function(triple) {
             this.setUri(triple.subject);

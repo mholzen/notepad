@@ -2,7 +2,7 @@ QUnit.file="test-container2.js";
 module("given a container2 with no uri", {
     setup: function() {
         this.element = $('<div>').container2();
-        this.container = this.element.data('container2');
+        this.container = this.element.data('notepadContainer2');
     },
     teardown: function() {
         this.container.destroy();
@@ -13,7 +13,7 @@ test("when a child element queries for triples, it interject its content before 
     var childElement = $('<div>').appendTo(this.container.element);
     var foundEndpoint = childElement.findEndpoint();
     
-    assertThat(foundEndpoint, equalTo(this.container.element.data('endpoint').getEndpoint()), "the endpoint found by a child element is the container");
+    assertThat(foundEndpoint, equalTo(this.container.element.data('notepadEndpoint').getEndpoint()), "the endpoint found by a child element is the container");
     // WOW.  some more ugly ass shit
 });
 

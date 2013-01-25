@@ -44,16 +44,16 @@
             if (this.filters()) {
                 //var filters = this.filters().element.find(":checked").triples();
                 var filters = this.filters().element.find(":checked").parent().each(function(i,element) {
-                    query = query.appendTriplePattern($(element).data('fact').triples());
+                    query = query.appendTriplePattern($(element).data('notepadFact').triples());
                 });
             }
             return query;
         },
         getNotepad: function() {
-            return this.element.parents('.notepad').data("notepad");
+            return this.element.parents('.notepad').data("notepadNotepad");
         },
         getParent: function() {
-            var parent = this.element.parents(".notepad-container").data("notepad-container");
+            var parent = this.element.parents(".notepad-container").data('notepadContainer');
             if (parent) {
                 return parent;
             }
@@ -63,13 +63,13 @@
             return this.element.parents(".notepad-container").length;
         },
         getLines: function() {
-            return this.element.children('li').map(function(index, line) { return $(line).data('line'); } );
+            return this.element.children('li').map(function(index, line) { return $(line).data('notepadLine'); } );
         },
         getAllLineElements: function() {
             return this.element.find('li');
         },
         getAllLines: function() {
-          return this.getAllLineElements().map(function(index, line) { return $(line).data('line'); } );  
+          return this.getAllLineElements().map(function(index, line) { return $(line).data('notepadLine'); } );  
         },
         appendLine: function(line, triple) {
             line = line || $("<li>");
@@ -77,10 +77,10 @@
                 line = $('<li>').text(line);
             }
             line.appendTo(this.element);
-            if (line.data('line') === undefined) {
+            if (line.data('notepadLine') === undefined) {
                 line.line({initialTriple: triple});
             }
-            line = line.data('line');
+            line = line.data('notepadLine');
             line._ensureSubjectUriExists();
             return line;
         },
@@ -143,7 +143,7 @@
             if (label.length === 0) {
                 return new Triples();
             }
-            return label.data('label').triplesInDomPath();
+            return label.data('notepadLabel').triplesInDomPath();
         },
 
 
@@ -214,7 +214,7 @@
                 var line;
                 if (childLines.length == 1) {
                     console.debug("Using existing line for triple");
-                    line = $(childLines[0]).data('line');
+                    line = $(childLines[0]).data('notepadLine');
                 } else {
                     console.debug("Adding new line");
                     line = container.appendLine(undefined, triple);
@@ -248,7 +248,7 @@
                 }
                 // Find a line with the subject as URI
                 container.element.find('li[about="'+triple.subject+'"]').each(function(i,li) {
-                    $(li).data('line').setLineLiteral(triple.object);
+                    $(li).data('notepadLine').setLineLiteral(triple.object);
                 })
             });
         },
@@ -277,7 +277,7 @@
             return this.getHeadersContainer().children('.notepad-column'); // Shouldn't this come from notepad-column?
         },
         getColumns: function() {
-            return _.map(this.getHeaders(), function(header) { return $(header).data('column'); });
+            return _.map(this.getHeaders(), function(header) { return $(header).data('notepadColumn'); });
         },
         getHeaderPosition: function(header) {
             return this.getHeaders().index(header);
@@ -297,20 +297,20 @@
             // The following appears necessary to: layout the header on the same line as the subject head
             this.getHeadersContainer().css('display', 'inline');
             this.getHeadersContainer().css('display', 'block');
-            return header.data('column');
+            return header.data('notepadColumn');
         },
 
         // 
         // Filters
         //
         filters: function() {
-            return this.element.children('.notepad-filters').data('container2');
+            return this.element.children('.notepad-filters').data('notepadContainer2');
         },
         _createFilters: function() {
             if (this.filters() !== undefined) {
                 return;
             }
-            var filters = $('<div class="notepad-filters">').prependTo(this.element).container2().data('container2');
+            var filters = $('<div class="notepad-filters">').prependTo(this.element).container2().data('notepadContainer2');
             var container = this;
 
             this.element.on('contentchanged', function(event) {

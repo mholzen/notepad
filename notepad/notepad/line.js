@@ -99,7 +99,7 @@
 
         // Container Membership
         getContainer: function() {
-            return this.element.parents('.notepad-container').data("container");
+            return this.element.parents('.notepad-container').data("notepadContainer");
         },
         getContainerUri: function() {
             return this.getContainer().getUri();
@@ -192,7 +192,7 @@
             this.predicateToggle.parent().children(".notepad-separator").slideToggle(100);  
         },
         getObject: function() {
-            return this.getPredicate().element.find('.notepad-object3').data('label');
+            return this.getPredicate().element.find('.notepad-object3').data('notepadLabel');
         },
 
         setObjectResource: function(resource) {
@@ -263,7 +263,7 @@
         },
         _createChildContainer: function() {
             var objectElement = $(this.getObject().element[0]);
-            var container = this.getChildList().container().data('container');
+            var container = this.getChildList().container().data('notepadContainer');
             var line = this;
             objectElement.on("labelurichange", function(event) {
                 if (event.target != objectElement[0]) {
@@ -283,7 +283,7 @@
         },
 
         getChildContainer: function() {
-            var container = this.getChildList().data('container');
+            var container = this.getChildList().data('notepadContainer');
             if (!container) {
                 container = this._createChildContainer();
             }
@@ -302,11 +302,11 @@
                 return this.getLines()[0].insertLineBefore();
             }
             var li = $('<li>').insertAfter(this.element).line();
-            return li.data('line');
+            return li.data('notepadLine');
         },
         insertLineBefore: function() {
             var li = $('<li>').insertBefore(this.element).line();
-            return li.data('line');
+            return li.data('notepadLine');
         },
 
         childTriples: function() {
@@ -338,7 +338,7 @@
             }
 
             // Move current line to newParent
-            return newParentLine.data('line').appendChildLine(this.element);
+            return newParentLine.data('notepadLine').appendChildLine(this.element);
         },
         unindent : function(event) {
             // Determine the new location
@@ -353,7 +353,7 @@
             return this.element.insertAfter(newPredecessor); 
         },
         getPredicate: function() {
-            return this.element.children(":notepad-predicate").data('predicate');
+            return this.element.children(":notepad-predicate").data('notepadPredicate');
         },
         _createChildToggle: function() {
             // Children collapse/expand
@@ -374,7 +374,7 @@
         },
         _createPredicate: function() {
             var element = $('<div>').appendTo(this.element).predicate();
-            var predicate = element.data('predicate');
+            var predicate = element.data('notepadPredicate');
 
             if (this.options.initialTriple) {
                 predicate.setUri(this.options.initialTriple.predicate);
@@ -403,7 +403,7 @@
                 objectElement.appendTo(this.element);
                 objectElement.object();
 
-                var object = objectElement.data('object');
+                var object = objectElement.data('notepadObject');
                 object.setPredicate(column);
                 object.setSubject(line);
             });

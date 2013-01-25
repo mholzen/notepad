@@ -6,7 +6,7 @@
         if (i.subject !== undefined) {
             return i.subject;
         } else {
-            return $(i).data('fact').getUri(); // TODO: tie to container2.options
+            return $(i).data('notepadFact').getUri(); // TODO: tie to container2.options
         }
     }
 

@@ -50,7 +50,7 @@
             return this.element.findEndpoint();
         },
         getNotepad: function() {
-            return this.element.parents('.notepad').data("notepad");
+            return this.element.parents('.notepad').data("notepadNotepad");
         },
 
         // Object or Literal
@@ -216,7 +216,7 @@
 
         getPredicate: function() {
             var objectElement = this.getUriElement();
-            return objectElement.parent().closest(":notepad-predicate").data('predicate');
+            return objectElement.parent().closest(":notepad-predicate").data('notepadPredicate');
         },
         getPredicateUri: function() {
             var predicate = this.getPredicate();
@@ -281,7 +281,7 @@
             return new Triple(uri, "rdfs:label", label);
         },
         childTriples: function() {
-            var container = this.element.find(":notepad-container:eq(0)").data('container');
+            var container = this.element.find(":notepad-container:eq(0)").data('notepadContainer');
                 // Must use find instead of children because toggleChildren moves the <ul> element inside a div
 
             if (!container) {
@@ -343,7 +343,7 @@
                     label.getEndpoint().getSubjectsLabelsByLabel(term.term,callback);
                 },
                 select: function(event, ui) {
-                    var label = $(event.target).closest('.notepad-label').data('label');
+                    var label = $(event.target).closest('.notepad-label').data('notepadLabel');
                     var uri = ui.item.value;
                     var choice = new Triples();
                     choice.push(toTriple(uri, "rdfs:label", ui.item.label));        // TODO: consider this.set() instead

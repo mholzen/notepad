@@ -148,7 +148,7 @@
         if (element.length === 0) {
             return;
         }
-        return element.data('endpoint').getEndpoint();
+        return element.data('notepadEndpoint').getEndpoint();
     }
 
 }(jQuery));

@@ -3,8 +3,8 @@ module("given a new line", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
     	this.dom = $('<div id="container" about=":s"><div id="line"/></div>');
-    	this.container = this.dom.container().endpoint({endpoint: this.endpoint}).data('container');
-        this.line = this.dom.find('#line').line().data('line');
+    	this.container = this.dom.container().endpoint({endpoint: this.endpoint}).data('notepadContainer');
+        this.line = this.dom.find('#line').line().data('notepadLine');
     },
     teardown: function() {
         this.line.destroy();

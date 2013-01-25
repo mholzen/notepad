@@ -9,7 +9,7 @@ module("given an empty element", {
 });
 test("when I create a new fact", function() {
     this.element.fact();
-    var fact = this.element.data('fact');
+    var fact = this.element.data('notepadFact');
     assertThat(fact, truth(), "it has a fact widget");
     assertThat(fact.triples().length, equalTo(0), "it has no triples");
 });
@@ -17,7 +17,7 @@ test("when I create a new fact", function() {
 test("when I create a new fact and a triple", function() {
     this.element.fact();
 
-    var fact = this.element.data('fact');
+    var fact = this.element.data('notepadFact');
     var triple = new Triple(':s', ':p', ':o');
     fact.setUri(':s')
     fact.add(triple);
@@ -40,7 +40,7 @@ test("when I create a new fact and a triple", function() {
 //     }
 // });
 // test("when I create a new label", function() {
-//     var label = this.element.label().data('label');
+//     var label = this.element.label().data('notepadLabel');
 
 //     assertThat(label.isLiteral(),   truth(),            "then label is a literal");
 //     assertThat(label.isUri(),       not(truth()),       "then label is not a URI");
@@ -54,7 +54,7 @@ test("when I create a new fact and a triple", function() {
 //         this.element = $("<div>");
 //         this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
 //         this.element.endpoint({endpoint: this.endpoint});
-//         this.fact = this.element.fact().data('fact');
+//         this.fact = this.element.fact().data('notepadFact');
 //     }
 // });
 // test("when I set the URI", function() {

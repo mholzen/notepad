@@ -31,7 +31,7 @@ skippedTest("query", function() {
 
     var parent = $('<ul>').container().endpoint({endpoint: this.endpoint}).prependTo($("#fixture"));
     var filter = $('<div class="notepad-filters">').prependTo(parent).container2();
-    var container2 = filter.data('container2');
+    var container2 = filter.data('notepadContainer2');
     var about = new Resource(this.emails);
     var clusters = $.notepad.clusterQuery.execute(this.endpoint, {about: about.toSparqlString()}, function(triples) {
         container2.addAllTriples(triples);
@@ -72,7 +72,7 @@ module("given a container with filters", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
-        this.container = this.element.data('container');
+        this.container = this.element.data('notepadContainer');
         this.container._createFilters();
     }
 });
@@ -93,8 +93,8 @@ module("given a container with no uri", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<ul>').container().endpoint({endpoint: this.endpoint});
-        this.container = this.element.data('container');
-        this.line = this.element.find("li:first").data('line');
+        this.container = this.element.data('notepadContainer');
+        this.line = this.element.find("li:first").data('notepadLine');
     },
     teardown: function() {
         this.container.destroy();
@@ -105,7 +105,7 @@ module("given a container with an 'about' attribute", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
-        this.container = this.element.data('container');
+        this.container = this.element.data('notepadContainer');
     }
 });
 test("when I add a triple to it", function() {
@@ -134,7 +134,7 @@ skippedTest("when I create another container inside of it", function() {
     var container = spy(this.container);
     var query = spy($.notepad.clustersFromContainer(container));
     var newContainerElement = $('<ul>').appendTo(this.element).container({query: query});
-    var newContainer = spy(newContainerElement.data('container'));
+    var newContainer = spy(newContainerElement.data('notepadContainer'));
 
     newContainer.load();
 
@@ -148,7 +148,7 @@ module("given a container with a URI", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
-        this.container = mock(this.element.data('container'));
+        this.container = mock(this.element.data('notepadContainer'));
         this.largeTriples = new Triples();
         for (var i=0; i < 15; i++) {
             this.largeTriples.push(new Triple(":s", ":p1", "this literal number "+i));

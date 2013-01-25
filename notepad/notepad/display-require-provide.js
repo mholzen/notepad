@@ -9,7 +9,7 @@ function insertBefore() {
 	var td = $('<td> <ul class="notepad-container"/> </td>').insertBefore("td:first");
 	var ul = td.find("ul");
 	ul.container();
-	ul.data('container').appendLine()
+	ul.data('notepadContainer').appendLine()
 }
 
 function insertAfter() {
@@ -17,5 +17,5 @@ function insertAfter() {
 	var td = $('<td> <ul class="notepad-container"/> </td>').insertAfter("td:last");
 	var ul = td.find("ul");
 	ul.container();
-	ul.data('container').appendLine()
+	ul.data('notepadContainer').appendLine()
 }

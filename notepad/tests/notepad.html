@@ -5,7 +5,7 @@
 <title>inStruct - Notepad</title>
 
 <!-- External Dependencies of notepad.js -->
-<script src="../external/jquery-1.7.2.js" type="text/javascript"></script>
+<script src="../external/jquery.js" type="text/javascript"></script>
 <script src="../external/jquery-ui.js" type="text/javascript"></script>
 <link  href="../external/jquery-ui.css" type="text/css" rel="stylesheet" media="screen" />
 <script src="../external/jquery.rdfquery.rules-1.0.js" type="text/javascript"></script>
@@ -57,7 +57,7 @@ console.__proto__.debug = function() { };
 
 $(function() {
 
-    notepad = $("#notepad").notepad().data('notepad');
+    notepad = $("#notepad").notepad().data('notepadNotepad');
 
     $.notepad.discoverEndpoint(notepad);
     
@@ -66,12 +66,12 @@ $(function() {
     object = line.getObject();
 
     // TODO: this should move somewhere else.  Not sure where...
-    $("[rel='rdfs:label']").live('keyup', function(event) {
+    $("[rel='rdfs:label']").on('keyup', function(event) {
         var target = $(event.target);
         if (event.keyCode != 186) { // tech:debt            // also, why?  we could do this at every character pressed
             return;
         }
-        var label = target.closest(":notepad-label").data('label');
+        var label = target.closest(":notepad-label").data('notepadLabel');
         if (!label) {
             log.error("cannot find a label widget");
             return;
@@ -157,15 +157,15 @@ $(function() {
         $("#menu").fadeOut("100");
     });
 
-    $(":notepad-label").live("focus", function(event) {
+    $('#notepad').on("focus", ':notepad-label [rel="rdfs:label"]', function(event) {
         $("#menu-button").position({
             my: "right top",
             at: "right top",
             of: $(event.target).closest(".notepad-label")
         });
-        line = $(event.target).closest(":notepad-line").data('line');
-        container = $(event.target).closest(":notepad-container").data('container');
-        label = $(event.target).closest(":notepad-label").data('label');
+        line = $(event.target).closest(":notepad-line").data('notepadLine');
+        container = $(event.target).closest(":notepad-container").data('notepadContainer');
+        label = $(event.target).closest(":notepad-label").data('notepadLabel');
 
         object = line.getObject();
         predicate = line.getPredicate();

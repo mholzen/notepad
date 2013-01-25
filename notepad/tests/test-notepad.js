@@ -36,7 +36,7 @@ test("when I create a notepad, it should have initial components", function(){
    
    // The following tests may be too highly coupled
    equal(notepad.getLines().length,1, "should have one line widget");
-   ok(this.div.find('li').data('line'), "a line should provide it's widget");
+   ok(this.div.find('li').data('notepadLine'), "a line should provide it's widget");
    ok(this.div.find("li .notepad-predicate").attr('rel'), "the first line's predicate uri should be defined");
 
    this.div.notepad('destroy');
@@ -62,7 +62,7 @@ module("given a new notepad", {
         this.endpoint.graph = $.notepad.getNewUri();
         this.notepad.option('endpoint', this.endpoint);
         this.container = this.notepad.getContainer();
-        this.line = this.div.find('li').data('line');
+        this.line = this.div.find('li').data('notepadLine');
     },
     teardown: function() {
         this.notepad.destroy();
@@ -153,7 +153,7 @@ test("when create a new line, then it should have two lines", function() {
 
     assertThat(this.div.find("li").length, 2, "should have 2 lines");
 
-    var line = this.div.find("li:first").data('line');
+    var line = this.div.find("li:first").data('notepadLine');
     equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
 });
 test("when I add a second line with text", function() {
@@ -197,9 +197,9 @@ module("given a notepad with one line of text", {
         this.firstObject = this.div.find("li:first .notepad-object3");
         this.firstObject.val("first line").change();
 
-        this.firstLine = this.div.find("li:first").data('line');
+        this.firstLine = this.div.find("li:first").data('notepadLine');
         this.line = this.firstLine;
-        this.lastLine = this.div.find("li:last").data('line');
+        this.lastLine = this.div.find("li:last").data('notepadLine');
     },
     teardown: function() { this.notepad.destroy(); }    
 });
@@ -233,9 +233,9 @@ module("given a notepad with two lines", {
         this.lastObject = this.div.find("li:last .notepad-object3")
         this.lastObject.text("second line").change();
 
-        this.firstLine = this.div.find("li:first").data('line');
+        this.firstLine = this.div.find("li:first").data('notepadLine');
         this.line = this.firstLine;
-        this.lastLine = this.div.find("li:last").data('line');
+        this.lastLine = this.div.find("li:last").data('notepadLine');
     },
     teardown: function() { this.notepad.destroy(); }    
 });
@@ -304,9 +304,9 @@ test("when I hit enter at the end of the first line, then it should add a newlin
 
     firstObject.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
 
-    equal(this.div.find("li:eq(0)").data('line').getLineLiteral(),"first line");
-    assertThat(this.div.find("li:eq(1)").data('line').getLineLiteral(), not(truth()));
-    equal(this.div.find("li:eq(2)").data('line').getLineLiteral(),"second line");
+    equal(this.div.find("li:eq(0)").data('notepadLine').getLineLiteral(),"first line");
+    assertThat(this.div.find("li:eq(1)").data('notepadLine').getLineLiteral(), not(truth()));
+    equal(this.div.find("li:eq(2)").data('notepadLine').getLineLiteral(),"second line");
 });
 
 
@@ -316,9 +316,9 @@ module("given a notepad with two lines (first empty, second with a label)", {
         this.div = $("#notepad").notepad();
         this.notepad = this.div.data('notepad');
         enterNewLine(this.div);
-        this.firstLine = this.div.find("li:first").data('line');
+        this.firstLine = this.div.find("li:first").data('notepadLine');
         this.line = this.firstLine;
-        this.lastLine = this.div.find("li:last").data('line');
+        this.lastLine = this.div.find("li:last").data('notepadLine');
     },
     teardown: function() { this.notepad.destroy(); }
 });

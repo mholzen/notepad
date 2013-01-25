@@ -20,7 +20,7 @@ asyncTest("canAnswer", function() {
 
 test("create", function() {
     var element = $("<div>").endpoint();
-    var endpoint = element.data('endpoint');
+    var endpoint = element.data('notepadEndpoint');
     assertThat(endpoint.options.uri, containsString('localhost'));
 });
 
@@ -35,7 +35,7 @@ module("given an element", {
 
 test("create with URI", function() {
     var element = $("#endpoint").endpoint({uri: testEndpointUri});
-    var endpoint = element.data('endpoint');
+    var endpoint = element.data('notepadEndpoint');
     assertThat(endpoint.getEndpoint().uri, testEndpointUri);
     assertThat(endpoint.element.children('[property="notepad:endpoint"]').length, 0);
     endpoint.option('display', true);
@@ -45,13 +45,13 @@ test("create with URI", function() {
 test("create with endpoint", function() {
     var endpoint = new ContainerChainEndpoint(this);
     var element = $("#endpoint").endpoint({endpoint: endpoint, display: false});
-    var endpoint = element.data('endpoint');
+    var endpoint = element.data('notepadEndpoint');
     assertThat(endpoint.element.children('[property="notepad:endpoint"]').length, 0);
 });
 
 asyncTest("setUriToFirstResponding", function() {
     var element = $("#endpoint").endpoint();
-    var endpoint = element.data('endpoint');
+    var endpoint = element.data('notepadEndpoint');
     endpoint.setUriToFirstResponding(['http://example.com', testEndpointUri],
         function() {
             assertThat(endpoint.options.uri, testEndpointUri);
@@ -66,7 +66,7 @@ asyncTest("setUriToFirstResponding", function() {
 
 asyncTest("setUriToFirstResponding all failing", function() {
     var element = $("#endpoint").endpoint();
-    var endpoint = element.data('endpoint');
+    var endpoint = element.data('notepadEndpoint');
     endpoint.setUriToFirstResponding(['http://example.com', 'http://this-site-should-not-exist-mvh.com'],
         function() {
             assertThat(false, "unexpected success");
@@ -79,7 +79,7 @@ asyncTest("setUriToFirstResponding all failing", function() {
 
 skippedTest("setUriToFirstRespondingUsingDeferred", function() {
     var element = $("#endpoint").endpoint();
-    var endpoint = element.data('endpoint');
+    var endpoint = element.data('notepadEndpoint');
     endpoint.setUriToFirstResponding(['http://instruct.vonholzen.org:3030/dev']).complete(
         function() {
             assertThat(endpoint.options.uri, testEndpointUri);

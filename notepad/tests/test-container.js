@@ -3,8 +3,8 @@ module("given a container with no uri", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<ul>').container().endpoint({endpoint: this.endpoint});
-        this.container = this.element.data('container');
-        this.line = this.element.find("li:first").data('line');
+        this.container = this.element.data('notepadContainer');
+        this.line = this.element.find("li:first").data('notepadLine');
     },
     teardown: function() {
         this.container.destroy();
@@ -26,8 +26,8 @@ module("given a container with the uri :s", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
-        this.container = this.element.data('container');
-        this.line = this.element.find("li:first").data('line');
+        this.container = this.element.data('notepadContainer');
+        this.line = this.element.find("li:first").data('notepadLine');
     },
     teardown: function() {
         this.container.destroy();
@@ -148,7 +148,7 @@ asyncTest("when I configure a container to retrieve triples from another contain
     sourceElement.endpoint({endpoint: endpoint});
 
     var containerElement = $('<ul>').container({query: $.notepad.describeObject(sourceElement), sourceElement: sourceElement});
-    var container = containerElement.data('container');
+    var container = containerElement.data('notepadContainer');
 
     containerElement.endpoint({endpoint: endpoint});        // This container needs an endpoint to retrieve labels
     
@@ -196,7 +196,7 @@ module("given a container2 with no uri", {
     setup: function() {
         this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
         this.element = $('<div>').container2().endpoint({endpoint: this.endpoint});
-        this.container = this.element.data('container2');
+        this.container = this.element.data('notepadContainer2');
     },
     teardown: function() {
         this.container.destroy();

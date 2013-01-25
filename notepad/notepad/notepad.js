@@ -110,7 +110,7 @@
             }
 
             // Get the list of lines
-            var lines = li.data('line').getNotepad().getContainer().getAllLineElements();
+            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements();
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -118,7 +118,7 @@
                 }
             }
             if (i>0) {
-                $(lines[i-1]).data('line').focus();
+                $(lines[i-1]).data('notepadLine').focus();
             }
             return false;   // Prevent default behaviour
         },
@@ -130,7 +130,7 @@
             }
 
             // Get the list of lines
-            var lines = li.data('line').getNotepad().getContainer().getAllLineElements();
+            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements();
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -138,7 +138,7 @@
                 }
             }
             if (i<lines.length-1) {
-                $(lines[i+1]).data('line').focus();
+                $(lines[i+1]).data('notepadLine').focus();
             }
             return false;   // Prevent default behaviour
         },
@@ -150,7 +150,7 @@
             }
             var caret = target.caret();
             
-            var line = li.data('line');
+            var line = li.data('notepadLine');
             if (caret == 0) {
                 line.insertLineBefore();
                 // Stay focused on the current line, that moved down
@@ -174,7 +174,7 @@
                 return false;
             }
 
-            var line = li.data('line');
+            var line = li.data('notepadLine');
             var propagateEvent = line.indent();
             line.focus();
             return propagateEvent;
@@ -187,7 +187,7 @@
                 li.find('.notepad-predicate').focus();
                 return false;
             }
-            var line = li.data('line');
+            var line = li.data('notepadLine');
             var propagateEvent = line.unindent();
             line.focus();
             return propagateEvent;
@@ -210,7 +210,7 @@
         },
 
         getEndpoint: function() {
-            return this.element.data('endpoint').getEndpoint();
+            return this.element.data('notepadEndpoint').getEndpoint();
         },
         getRdf: function(uri, callback) {
             return this.getEndpoint().getRdf(uri,callback);
@@ -325,7 +325,7 @@
         var endpointUri = "http://" + host + ":3030/dev";
         var uris = [endpointUri, 'http://instruct.vonholzen.org:3030/dev'];
 
-        var endpointWidget = notepad.element.data('endpoint');
+        var endpointWidget = notepad.element.data('notepadEndpoint');
 
         var activityDescription = {
             'a': 'prov:Activity',

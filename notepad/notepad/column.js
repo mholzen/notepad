@@ -6,7 +6,7 @@
         // *** what a moutfull !!!! *****
 
         getContainer: function() {
-            return this.element.closest('.notepad-container').data('container');
+            return this.element.closest('.notepad-container').data('notepadContainer');
         },
 
         setPredicateUri: function(predicateUri) {
@@ -25,13 +25,13 @@
                 line = $('<li>').text(line);
             }
             line.appendTo(this.element).object();
-            return line.data('object');
+            return line.data('notepadObject');
         },
         getCssClass: function() {
             return "notepad-column-" + this.getContainer().getHeaderPosition(this.element);
         },
         getObjects: function() {
-            return this.element.children('li').map(function(index, line) { return $(line).data('object'); } );      // TODO: refactor with container.getLines()
+            return this.element.children('li').map(function(index, line) { return $(line).data('notepadObject'); } );      // TODO: refactor with container.getLines()
         },
 
         // Set up the widget
@@ -55,7 +55,7 @@
                 // Display this object within a column
                 objectElement.addClass(column.getCssClass());
 
-                var object = objectElement.label().data('label');
+                var object = objectElement.label().data('notepadLabel');
                 object.option('predicate', column.element);
             });
         },

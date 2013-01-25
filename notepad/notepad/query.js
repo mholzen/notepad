@@ -55,7 +55,7 @@
     $.notepad.clusterQuery = new Query($.notepad.templates.clusters, {graphPatterns: $.notepad.describeQuery.where()});
 
     $.notepad.describeObject = function(element) {
-        var uri = element.data('object') ? element.data('object').getUri() : element.attr('about');
+        var uri = element.data('notepadObject') ? element.data('notepadObject').getUri() : element.attr('about');
         var resource = new Resource(uri);
         var about = resource.toSparqlString();
         return new Query($.notepad.templates.describe, {about: about});

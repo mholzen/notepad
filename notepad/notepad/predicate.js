@@ -87,11 +87,11 @@
         _createLabel: function() {
             var element = $('<div class="notepad-predicate-label">').prependTo(this.element);
             this.options.objectFactory.call($(element), {uriElement: this.element, uriAttr: this.getAttribute()});
-            return element.data('label');
+            return element.data('notepadLabel');
         },
         getLabel: function() {
-            var label = this.element.children('.notepad-label.notepad-predicate-label').data('label');
-            if (label === undefined) {
+            var label = this.element.children('.notepad-label.notepad-predicate-label').data('notepadLabel');
+            if (!label) {
                 label = this._createLabel();
             }
             return label;
@@ -101,7 +101,7 @@
             if (object) {
                 if (object.isUri() || (this.options.allowBlankNodes && object.isBlank())) {
                     objects = objects.filter(function() {
-                        var label = $(this).data('label');
+                        var label = $(this).data('notepadLabel');
                         if (label && label.getUri() == undefined) {
                             // Include objects with an "undefined" uri
                             return true;
@@ -113,7 +113,7 @@
                     });
                 } else if (object.isLiteral()) {
                     objects = objects.filter(function() {
-                        var label = $(this).data('label');
+                        var label = $(this).data('notepadLabel');
                         if (label && label.getLiteral() == undefined) {
                             // Include objects with an "undefined" literal
                             return true;
@@ -129,7 +129,7 @@
                     throw new Error("cannot add an unknown object type");
                 }
             }
-            return objects.map(function(i,e) { return $(e).data('label'); });
+            return objects.map(function(i,e) { return $(e).data('notepadLabel'); });
         },
         getObjectLocation: function(object) {
             var objects = this.getObjects(object);
@@ -145,7 +145,7 @@
             return object;
         },
         insertObject: function() {
-            return $('<div class="notepad-object3">').appendTo(this.element).label().data('label');
+            return $('<div class="notepad-object3">').appendTo(this.element).label().data('notepadLabel');
         },
         ensureOneObject: function() {
             if (this.getObjects().length > 0) { return; }
@@ -189,18 +189,6 @@
                 var uri = this.getUri() || "rdfs:member";
                 this.setUri(uri);
             }
-            //this.element.append("<div>");
-            // this.element.contextMenu({menu: 'predicateMenu'}, function(action, element, pos) {
-            //     if (action == 'delete') {
-            //         element.toggleClass('delete');
-            //         return;
-            //     } else if (action == 'toggleDirection') {
-            //         element.data('predicate').toggleDirection();
-            //         return;
-            //     }
-            //     throw ("unknown action from contextmenu", action);
-            // });
-
 
         },
         _destroy : function() {
