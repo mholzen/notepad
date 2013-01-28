@@ -1,5 +1,5 @@
-DESIGN
-======
+FAQ
+===
 
 Q - should I search the DOM based on .notepad-* classes or attribute?  How should the various widget interface with each other?
 

@@ -1,3 +1,6 @@
+NOTEPAD
+=======
+
 URI: address to retrieve content
 CONTENT:
 TRIPLE: (uri, uri, content)  or (uri,uri,uri)
