@@ -55,7 +55,7 @@
         },
 
         // Set up the notepad
-        _create : function() {
+        _create: function() {
             var self = this;
 
             this.element.addClass("notepad");
