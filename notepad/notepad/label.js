@@ -12,17 +12,17 @@
                             '<div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div>' +
                         '{{/rdfs:label}}' +
                         '{{^rdfs:label}}' +
-                                '{{#uri}}' +
-                                    '<div about="{{{uri}}}" class="notepad-label"></div>' +
-                                '{{/uri}}' +
-                                '{{^uri}}' +
-                                    '{{#about}}' +
-                                        '<span class="uri">{{{about}}}</span>' +
-                                    '{{/about}}' +
-                                    '{{^about}}' +
-                                        '<div contenteditable="true" rel="rdfs:label"></div>' +
-                                    '{{/about}}' +
-                                '{{/uri}}' +
+                            '{{#uri}}' +
+                                '<div about="{{{uri}}}" class="notepad-label"></div>' +
+                            '{{/uri}}' +
+                            '{{^uri}}' +
+                                '{{#about}}' +
+                                    '<span class="uri">{{{about}}}</span>' +
+                                '{{/about}}' +
+                                '{{^about}}' +
+                                    '<div contenteditable="true" rel="rdfs:label"></div>' +
+                                '{{/about}}' +
+                            '{{/uri}}' +
                         '{{/rdfs:label}}' +
                         '',
                                 
