@@ -30,12 +30,7 @@
         },
         setUri: function(uri) {
             this._setUri(uri);
-            
-            // Setting the URI should update the line representation and any children
-            var container = this.getContainer();
-            this.getRdf(uri, function(triples) {
-                container._updateFromRdf(triples);
-            });
+            this.getContainer().load();
         },
         open: function(uri) {
             this.unloaded(this.getContainer().triples());           // to avoid triples being marked as deleted
