@@ -183,24 +183,26 @@ $(function() {
     }, 100);
 
     $("#status").hide();
-    $("#status").ajaxStart(function(){
-        if ($(this).text() == "") {
-            $(this).text("Loading...");
+    $(document).ajaxStart(function(){
+        var status = $("#status");
+        if (status.text() == "") {
+            status.text("Loading...");
             console.time("load");
         }
-        $(this).show();
+        status.show();
     });
-    $("#status").ajaxStop(function(){
+    $(document).ajaxStop(function(){
+        var status = $("#status");
         setTimeout(function() {
-            $("#status").fadeOut(200);
+            status.fadeOut(200);
             setTimeout(function() {
-                $("#status").text("");
+                status.text("");
                 console.timeEnd("load");
             }, 200);
         }, 200);
     });
-    $("#status").ajaxError(function(){
-        $(this).text("Error! (check the console)");
+    $(document).ajaxError(function(){
+        $("#status").text("Error! (check the console)");
         console.timeEnd("load");
     });
 
