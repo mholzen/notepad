@@ -2,6 +2,7 @@
 
     var MAX_DEPTH = 8;
     var MAX_TRIPLES = 500;
+    var MAX_ROWS = 50;
     var MAX_TRIPLES_BEFORE_COLLAPSING = 10;
     var MAX_TRIPLES_BEFORE_FILTERING = 2;
 
@@ -178,6 +179,11 @@
             console.debug("updating container with ", triples.length, " triples.");
 
             triples.sort();
+
+            if (triples.length > MAX_ROWS) {
+                console.debug("too many rows.  Displaying only " + MAX_ROWS)
+                triples = triples.slice(-MAX_ROWS);
+            }
 
             _.each(triples, function(triple) {
                 console.debug('updating for triple: '+triple.toString());
