@@ -27,6 +27,7 @@
             // Ideally, it would use the same 'about' attribute in the top level notepad element
             // but it requires the URI to be prefixed with '#' rather than ':'
             this.element.children('.title').attr('about', $.notepad.uri() + '#' + uri.toString().slice(1));
+            this.element.find('[property="notepad:uri"]').text(uri.toURL());
         },
         setUri: function(uri) {
             this._setUri(uri);

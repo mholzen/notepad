@@ -138,6 +138,9 @@
                 return this.resource.toString().slice(1,-1).replace(/\\"/g, '"'); // Remove encapsulating double quotes ""
             }
         },
+        toURL: function() {
+            return this.resource.toString().slice(1,-1);
+        },
         toSparqlString: function() {
             if ( this.isLiteral() ) {
                 return this.resource.toString();  // BUG
