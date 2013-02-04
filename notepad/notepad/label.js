@@ -341,7 +341,7 @@
             var label = this;
             this.getLabelElement().autocomplete({
                 source: function(term,callback) {
-                    label.getEndpoint().getSubjectsLabelsByLabel(term.term,callback);
+                    label.getEndpoint().getSubjectsLabelsByLabel(term.term.trim(),callback);
                 },
                 select: function(event, ui) {
                     var label = $(event.target).closest('.notepad-label').data('notepadLabel');
