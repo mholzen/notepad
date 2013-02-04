@@ -3,7 +3,7 @@
     $.notepad = $.notepad || {};
 
     Query = function(sparql, context) {
-        this.sparqlTemplate = sparql;
+        this.sparqlTemplate = sparql;           // default to describe?
         this.context = context || {};
     };
     Query.prototype = {
