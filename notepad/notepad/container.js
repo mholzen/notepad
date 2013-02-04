@@ -73,7 +73,7 @@
           return this.getAllLineElements().map(function(index, line) { return $(line).data('notepadLine'); } );  
         },
         appendLine: function(line, triple) {
-            line = line || $("<li>");
+            var line = line || $("<li>");
             if (line.appendTo === undefined) {
                 line = $('<li>').text(line);
             }
