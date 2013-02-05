@@ -1,0 +1,11 @@
+SELECT DISTINCT ?subject ?label (substr(?label, 0, 100) as ?reason)
+WHERE {
+    ?subject ?labelPredicate ?label
+    FILTER (
+    	regex(?label, "{{{label}}}", "i")
+    	&&
+    	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent)
+    )
+}
+ORDER BY strlen(?label)
+LIMIT 30
