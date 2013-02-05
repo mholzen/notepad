@@ -180,7 +180,7 @@
         },
 
         // Set up the widget
-        _create : function() {
+        _create: function() {
             this.element.addClass('notepad-predicate');
             if (this.options.initialTriple) {
                 this.setUri(this.options.initialTriple.predicate);

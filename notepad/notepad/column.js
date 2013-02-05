@@ -35,7 +35,7 @@
         },
 
         // Set up the widget
-        _create : function() {
+        _create: function() {
             this.element.addClass("notepad-column");
 
             // Turn the header element into a predicate
