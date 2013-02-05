@@ -1,92 +1,101 @@
-NOTEPAD
-=======
+Notepad Overview
+================
 
-URI: address to retrieve content
-CONTENT:
-TRIPLE: (uri, uri, content)  or (uri,uri,uri)
+Core Concepts
+-------------
 
-PREDICATE: a URI used as the second item of a triple, (or a predicate from a semantic statement)
+### URI, Resource, Triple, Triples: rdf.js
 
+A `Resource` is used to represent either a URI or a Literal.
 
-ENDPOINT
-========
-An endpoint retrieves and stores triples.
-An endpoint can be:
-    - a SPARQL endpoint
-    - a memory triplestore
-    - a multiplexing endpoint, that queries a list of endpoints and joins results
+A URI is essentially just a string, that can be displayed in one of several forms.  In its default format, it is displayed as a CURIE (Compact URI), in the form `namespace`:`value`.  For consumption in SPARQL queries, a URI can be displayed with angle brackets `<http://example.com/#foo>`.
 
-A query searches an endpoint.
+A Literal is a typed value.  String literals are the only type of literals handled so far.
 
-OBJECT
-======
-An object is a DOM element that participates in a triple as the object, i.e. either as a literal or as a URI/label combination.
+The `Resource` class is implemented by using the excellent [rdfquery](http://code.google.com/p/rdfquery/) package, which offers signficantly more functionality than is exposed in the `Resource` class.
 
-It maintains the relationship between the URI and a representation of it.
-It is configurable with a query that defines that relationship.
-It defaults to ?about rdfs:label ?label.
+A `Triple` implements the RDF Triple concept, which is a collection of 3 resources: a subject, a predicate and an object.  The subject and predicate have to be URIs.  The object can be a URI or a literal. So, a valid triple is either (URI, URI, URI) or (URI, URI, Literal).
 
-It is configurable with a template that defines how to represent the resulting graph
-It defaults to <div>{{{rdfs:label}}}</div>
+An instance of `Triples` is a collection of triples, forming a directed graph, implemeting the RDF Dataset concepts.
 
-Its subject and predicate can be set to ?reason
-
-CONTAINER2
-=========
-A container2 is a DOM element that provides editing (display and save) a collection of triples.
-It maintains consistency between DOM elements and triples
-A container
-    - has the collection interface (isEmpty, contains, add, remove, addAll, removeAll, clear) :  for TRIPLES and for DOM elements.
-    =>  e = addTriple(t)
-    =>  t = addElement(e)
-
-    - has an optional query
-        - requires an endpoint (searches up the DOM for #notepad-endpoint) or #notepad-notepad
-    - has a element widget (defaults to notepad-line)
-        - to: delegate displaying and editing members of the collection
-    - executes the query using (at minimum) the URI as a parameter
-
-    POSSIBLE FUTURE CHANGES:
-    - right now, this is essentially a "named container".  When we remove the need to have a URI; make a container simply about displaying a list of triples returned by a query
+The file `test-rdf.js` is a good starting point to understand these classes.
 
 
-CONTAINER
-=========
-A container is a DOM element that provides editing (display and save) a collection of triples relating to a given URI.
-A container
-    - has a query (defaults to Describe)
-        - to: discover triples
-    - requires a URI (searches up for attribute about)
-        - to: know what triples to retrieve and save
-        - provides the URI
-    - requires an endpoint (searches up the DOM for #notepad-endpoint) or #notepad-notepad
-        - to: know where to run the query
-    - has a element widget (defaults to notepad-line)
-        - to: delegate displaying and editing members of the collection
-    - executes the query using (at minimum) the URI as a parameter
+### FusekiEndpoint: sparql.js
 
-    POSSIBLE FUTURE CHANGES:
-    - right now, this is essentially a "named container".  When we remove the need to have a URI; make a container simply about displaying a list of triples returned by a query
+A `FusekiEnpoint` is a standard JavaScript class that provides an interface with a SPARQL endpoint, as served by [Jena's Fuseki project](http://jena.apache.org/documentation/serving_data).  Although no other SPARQL endpoint have been tested, it is believed that this class makes use of very few Fuseki-specific aspects.
+
+A FusekiEndpoint will take a string containing a SPARQL query, send it to the SPARQL endpoint and return results, if applicable.  If the query returns a collection of triples (for example, using the CONSTRUCT form), the results will be converted to a `Triples` instance before being returned to the caller.
+
+The file `endpoint.js` provides a jQuery widget. [see endpoint.js]
 
 
-LINE
-====
-A line is a DOM element that provides editing a single triple, related to a container, where the container's uri is either the subject or the object.
-    - requires a container
-    - has one triple (currently getContainerTriple())
-    - has a method to display itself
-        - has a method to display the predicate
-        - has a method to display the object of the triple (either a URI or a literal)
-            - has a method to provide a new method for displaying the object
-    - triples(): provides a list of all triples expressed by this element, including labels
+### Query: query.js
 
-    POSSIBLE FUTURE CHANGES:
-    - generalize to "a triple in a container", which would require reification (to associate any triple with the container URI)
+A `Query` is used to represent a SPARQL query that can be executed against a FusekiEndpoint.
 
-A container, with lines as its element, is "one node a in graph, all its connected nodes and their edges"
+### SPARQL Query Templates: templates/*.sparql
+
+Because JavaScript's multiline string handling is so annoying, I wrote a small utility (`templates/toJavaScript.py`) to convert SPARQL files into JavaScript strings, and place them all in a single JavaScript file (`templates/templates.js`) that can be easily referenced in JavaScript code.
+
+So, after creating a new query or modifying an existing one, you *must* run ./toJavascript.py.  You can then reference that query at `$.notepad.templates.<filename>`.
 
 
+### Templates: template.js
 
-A URI is a DOM element that represents a URI
-    - has a method to display itself
-        - has a method to change the template used to display the graph, from <div>{{{rdfs:label}}}</div>  to  <div> <... html ...> {{{nmo:summary}}} {{{ any predicate }}}</div>
+A `Template` is a class used to wrap a [Mustache](http://mustache.github.com/) template so that it can accept an RDF graph as context.
+
+
+## Notepad jQuery Widgets
+
+All following classes are jQuery widgets.
+
+### endpoint.js
+
+A `notepad.endpoint` widget is a DOM element that defines the FusekiEndpoint that all DOM elements under it can use to persist themselves and query for RDF.  It also manages an element that displays the URI of the endpoint.
+
+### notepad.js
+
+A `notepad.notepad` widget is a DOM element that manages a notepad on page.  It manages the `notepad.endpoint`, a URI for the notepad session, and a single `notepad.container` element, used to manage the content of the session.
+
+### container.js
+
+A `notepad.container` widget is a DOM element that manages a collection of lines, using a `<ul>` element.  A container contains triples that all relate to a single URI, the container's URI (`container.getUri()`).  Triples can either have their subject be the container URI (a "forward triple") or their object, as long as it is not a literal, (a "backward triple").
+
+A container also implements filters on its content.
+
+### line.js
+
+A `notepad.line` widget is a DOM element that is an element of a `notepad.container` widget.  Every line contains a single predicate and a single object.  A line also contains a child container, which contains children lines of the object, thereby creating a tree structure.
+
+### predicate.js
+
+A `notepad.predicate` widget is a DOM element that manages a predicate and its label.  It uses a `notepad.urilabel` to display and capture the label used to display the predicate.
+
+
+### urilabel.js
+
+A `notepad.urilabel` is a DOM element that manages the display and editing of the string representation of a URI, ie. its label.  This class is currently only used to manage the label for a predicate (`notepad.label` is used for the object).
+
+This widget fetches and displays a label given a URI.  It also uses the autocomplete widget to allow the user to select a URI, or edit the label of a URI.
+
+### label.js
+
+A `notepad.label` is a DOM element that manages the display and editing of the string representation of an object, ie either a URI or a Literal.  This class is currently only used to manage the object of a line.
+
+
+### notepad.html
+
+The `notepad.html` file wires it all up together.  It currently contains quite a bit of code (event handling, etc…) that probably lives somewhere else.
+
+
+## Additional Concepts
+
+### Filters: container2.js, fact.js, object.js
+
+The `notepad.container2` and `notepad.fact` widgets are used to implement filters.  Their design is not well formed quite yet.
+
+
+### Columns: columns.js
+
+Not quite well formed yet.
