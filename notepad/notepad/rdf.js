@@ -228,6 +228,9 @@
         toPrettyString: function() {
             return this.toString();
         },
+        pp: function() {
+            return this.toPrettyString();
+        },
         toSparqlString: function() {
             return this.subject.toSparqlString()+' '+this.predicate.toSparqlString()+' '+this.object.toSparqlString()+' .';
         },
@@ -399,6 +402,9 @@
             } },
             toPrettyString: { value: function() {
                 return this.join("\n");
+            } },
+            pp: { value: function() {
+                return this.toPrettyString();
             } },
             toTurtle: { value: function() {
                 return this.toDatabank()
