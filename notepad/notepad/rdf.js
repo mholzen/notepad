@@ -50,6 +50,13 @@
         return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
     }
 
+    function scheme(value) {
+        return value.substr(0,value.indexOf(':'));
+    }
+    function knownScheme(value) {
+        return ["http", "https", "file", "urn"].indexOf(scheme(value)) != -1;
+    }
+
     // Resource and Triple abstract the interface between Notepad and an RDF library
     _stringToRdfResource = function(value) {
         if (value.indexOf('[]')==0) {
@@ -64,7 +71,7 @@
 
             return $.rdf.blank(value);
         }
-        if ( value.indexOf('http://') == 0 || value.indexOf('file://') == 0 || value.indexOf('urn:') == 0) {
+        if ( knownScheme(value) ) {
             // TODO: make more specific
             return $.rdf.resource('<' + value.toString() + '>', {namespaces: namespaces} );
         }
