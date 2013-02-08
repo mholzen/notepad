@@ -17,8 +17,8 @@ A `Resource` is used to represent either a URI or a Literal.
 
 A URI is essentially just a string, that can be displayed in one of several
 forms.  In its default format, it is displayed as a CURIE (Compact URI), in the
-form `namespace`:`value`.  For consumption in SPARQL queries, a URI can be
-displayed with angle brackets `<http://example.com/#foo>`.
+form `namespace:value` (`ex:foo`,  `rdfs:member` or `dc:created`).  For consumption
+in SPARQL queries, a URI can be displayed with angle brackets `<http://example.com/#foo>`.
 
 A Literal is a typed value.  String literals are the only type of literals
 handled so far.
@@ -33,25 +33,28 @@ to be URIs.  The object can be a URI or a literal. So, a valid triple is either
 (URI, URI, URI) or (URI, URI, Literal).
 
 An instance of `Triples` is a collection of triples, forming a directed graph,
-implemeting the RDF Dataset concepts.
+implemeting the RDF Dataset concept.
 
 The file `test-rdf.js` is a good starting point to understand these classes.
 
 
 ### FusekiEndpoint: sparql.js
 
-A `FusekiEnpoint` is a standard JavaScript class that provides an interface with
-a SPARQL endpoint, as served by [Jena's Fuseki
-project](http://jena.apache.org/documentation/serving_data).  Although no other
-SPARQL endpoint have been tested, it is believed that this class makes use of
-very few Fuseki-specific aspects.
+A `FusekiEnpoint` is a standard JavaScript class that provides an interface
+with a SPARQL endpoint, as served by [Jena's Fuseki
+project](http://jena.apache.org/documentation/serving_data).  Although no
+other SPARQL endpoint have been tested, I suspect that this class makes use of
+very few Fuseki-specific features and could be easily ported to any SPARQL
+endpoints.
 
-A FusekiEndpoint will take a string containing a SPARQL query, send it to the
-SPARQL endpoint and return results, if applicable.  If the query returns a
-collection of triples (for example, using the CONSTRUCT form), the results will
-be converted to a `Triples` instance before being returned to the caller.
+A `FusekiEndpoint` is defined by its URI.  Its main function is to execute a
+query: it accepts a string containing a SPARQL query, send it to the endpoint
+URI and return results, if applicable.  If the query returns a collection of
+triples (for example, using the `CONSTRUCT` form), the results will be converted
+to a `Triples` instance before being returned to the caller.
 
-The file `endpoint.js` provides a jQuery widget. [see endpoint.js]
+The file `endpoint.js` provides a jQuery widget, that manages the display of a
+`FusekiEndpoint`. [see endpoint.js]
 
 
 ### Query: query.js
