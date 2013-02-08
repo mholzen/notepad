@@ -200,20 +200,19 @@
             return undefined;
         },
 
-        showContainerPredicate: function() {
-            this.predicateToggle.removeClass("hidden");
-            this.predicateToggle.parent().children(".notepad-predicate").slideDown(100);
-            this.predicateToggle.parent().children(".notepad-separator").slideDown(100);
+        showPredicate: function() {
+            this.getPredicate().getLabel().element.show();
         },
-        hideContainerPredicate: function() {
-            this.predicateToggle.addClass("hidden");
-            this.predicateToggle.parent().children(".notepad-predicate").slideUp(100);
-            this.predicateToggle.parent().children(".notepad-separator").slideUp(100);
+        hidePredicate: function() {
+            this.getPredicate().getLabel().element.hide();
         },
-        toggleContainerPredicate: function() {
-            this.predicateToggle.toggleClass("hidden");
-            this.predicateToggle.parent().children(".notepad-predicate").slideToggle(100);
-            this.predicateToggle.parent().children(".notepad-separator").slideToggle(100);  
+        updatePredicateDisplay: function() {
+            if (this.getPredicate().getUri() === this.getContainer().options.predicate
+                && this.getDirection() === FORWARD) {
+                this.hidePredicate();
+            } else {
+                this.showPredicate();
+            }
         },
         getObject: function() {
             return this.getPredicate().element.find('.notepad-object3').data('notepadLabel');

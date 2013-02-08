@@ -12,6 +12,7 @@
 
         options: {
             describeElements: true,
+            predicate: 'rdfs:member'
         },
 
         _setOption: function(key, value) {

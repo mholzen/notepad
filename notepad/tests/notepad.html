@@ -275,6 +275,7 @@ $(function() {
     <ul id="menu">
         <!-- TODO: onclick won't catch menu selection via the keyboard -->
         <li><a property="ui:select" content="javascript: predicate.newUri();">New predicate</a></li>
+        <li><a property="ui:select" content="javascript: line.showPredicate();">Reveal predicate</a></li>
         <li><a property="ui:select" content="javascript: line.element.detach();">Delete line contents and children</a></li>
         <li><a property="ui:select" content="javascript: notepad.open(line.getUri());">Open in notepad</a></li>
     <li class="ui-state-disabled"><a href="#" onclick="javascript: line.recognizePredicate();">Recognize predicate</a></li>
