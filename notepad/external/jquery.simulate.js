@@ -94,7 +94,7 @@ $.extend($.simulate.prototype, {
 			evt = document.createEventObject();
 			$.extend(evt, e);
 		}
-		if ($.browser.msie || $.browser.opera) {
+		if (jQuery.fn.jquery < "1.9.0" && ($.browser.msie || $.browser.opera)) {
 			evt.keyCode = (e.charCode > 0) ? e.charCode : e.keyCode;
 			evt.charCode = undefined;
 		}
