@@ -1,0 +1,32 @@
+CONSTRUCT {
+	?subject a rdf:subject .
+	?subject rdfs:label ?label .
+
+	?predicate a rdf:predicate .
+	?predicate rdfs:label ?label .
+
+	?object a rdf:object .
+	?object rdfs:label ?label .
+}
+WHERE {
+	{	 
+		?subject ?anyPredicate ?anyObject 
+			FILTER regex(str(?subject), "{{{rdfs:label}}}", "i")
+			BIND (str(?subject) as ?label)
+	} 
+	UNION
+	{	
+		?anySubject ?predicate ?anyObject
+			FILTER regex(str(?predicate), "{{{rdfs:label}}}", "i")
+			BIND (str(?predicate) as ?label)
+	}
+	UNION
+	{
+	    ?anySubject ?anyPredicate ?object
+		    FILTER regex(str(?object), "{{{rdfs:label}}}", "i")
+		    BIND (str(?object) as ?label)
+
+	    # We could add that ?anyPredicate subPropertyOf rdfs:label
+	}
+}
+LIMIT 30

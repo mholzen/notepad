@@ -1,0 +1,14 @@
+CONSTRUCT {
+	?predicate rdfs:label ?label .
+	?predicate notepad:inverseLabel ?inverseLabel .
+}
+WHERE {
+	{ ?anySubject ?predicate ?object }
+	UNION
+	{ ?predicate a rdf:Property }
+
+	OPTIONAL { ?predicate rdfs:label 		   ?label 	     FILTER regex(?label, "{{{rdfs:label}}}", "i") } .
+	OPTIONAL { ?predicate notepad:inverseLabel ?inverseLabel FILTER regex(?inverseLabel, "{{{rdfs:label}}}", "i") } .
+
+	# optional { ?predicate owl:inverseOf [ rdfs:label ?inverseLabel ] } .
+}

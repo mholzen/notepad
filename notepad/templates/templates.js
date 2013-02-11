@@ -1,6 +1,57 @@
 $.notepad = $.notepad || {};
 $.notepad.templates = $.notepad.templates || {};
 
+$.notepad.templates.c_paths_by_words = "CONSTRUCT {  \n\
+    ?subject rdfs:label ?reason . \n\
+	?subject ?predicate ?object  .  \n\
+#    ?subject   ?labelPredicate ?word1  . \n\
+#    ?predicate ?labelPredicate ?word2  . \n\
+#    ?object    ?labelPredicate ?word3  . \n\
+}  \n\
+WHERE {  \n\
+	{  \n\
+	    ?subject   ?predicate ?object   FILTER ( regex(?object, \"{{{word2}}}\", \"i\")) . \n\
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, \"{{{word1}}}\", \"i\"))  . \n\
+	    BIND	   (?word1 + \"...\" + ?word2 as ?reason) . \n\
+	} \n\
+	UNION \n\
+	{  \n\
+	    ?subject   ?predicate ?object . \n\
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, \"{{{word1}}}\", \"i\"))  . \n\
+	    ?object    rdfs:label ?word2 	FILTER ( regex(?word2, \"{{{word2}}}\", \"i\")) . \n\
+	    BIND	   (?word1 + \"...\" + ?word2 as ?reason) . \n\
+	} \n\
+	UNION \n\
+	{  \n\
+	    ?subject   ?predicate ?object . \n\
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, \"{{{word1}}}\", \"i\"))  . \n\
+	    ?predicate rdfs:label ?word2 	FILTER ( regex(?word2, \"{{{word2}}}\", \"i\")) . \n\
+	    BIND	   (?word1 + \"...\" + ?word2 as ?reason) . \n\
+	} \n\
+	UNION \n\
+	{ \n\
+	    ?subject   ?predicate ?object   FILTER ( regex(?object, \"{{{word3}}}\", \"i\")) . \n\
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, \"{{{word1}}}\", \"i\"))  . \n\
+	    ?predicate rdfs:label ?word2 	FILTER ( regex(?word2, \"{{{word2}}}\", \"i\")) . \n\
+	    BIND	   (?word1 + \"...\" + ?word2 + \"...\" + ?object  as ?reason ). \n\
+	} \n\
+}  \n\
+LIMIT 30";
+$.notepad.templates.c_predicate_label_by_label = "CONSTRUCT { \n\
+	?predicate rdfs:label ?label . \n\
+	?predicate notepad:inverseLabel ?inverseLabel . \n\
+} \n\
+WHERE { \n\
+	{ ?anySubject ?predicate ?object } \n\
+	UNION \n\
+	{ ?predicate a rdf:Property } \n\
+ \n\
+	OPTIONAL { ?predicate rdfs:label 		   ?label 	     FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") } . \n\
+	OPTIONAL { ?predicate notepad:inverseLabel ?inverseLabel FILTER regex(?inverseLabel, \"{{{rdfs:label}}}\", \"i\") } . \n\
+ \n\
+	# optional { ?predicate owl:inverseOf [ rdfs:label ?inverseLabel ] } . \n\
+} \n\
+";
 $.notepad.templates.clusters = "CONSTRUCT { \n\
 	_:filter rdfs:label   ?label1 . \n\
 	_:filter rdfs:count   ?count . \n\
@@ -53,6 +104,23 @@ WHERE { \n\
 	{{{graphPatterns}}} \n\
 } \n\
 ";
+$.notepad.templates.describe_with_sessions = "CONSTRUCT { \n\
+	?about ?predicateForward ?neighbourForward . \n\
+	?neighbourBackward ?predicateBackward ?about . \n\
+} \n\
+WHERE { \n\
+ \n\
+	LET ( ?about := {{{about}}} ) \n\
+ \n\
+	{ ?about ?predicateForward ?neighbourForward \n\
+		BIND (?neighbourForward as ?neighbour) \n\
+	} \n\
+	UNION \n\
+	{ ?neighbourBackward ?predicateBackward ?about \n\
+		BIND (?neighbourBackward as ?neighbour) \n\
+	} \n\
+} \n\
+";
 $.notepad.templates.describe = "CONSTRUCT { \n\
 	?about ?predicateForward ?neighbourForward . \n\
 	?neighbourBackward ?predicateBackward ?about . \n\
@@ -69,69 +137,50 @@ WHERE { \n\
 		BIND (?neighbourBackward as ?neighbour) \n\
 		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } \n\
 	} \n\
- \n\
-	# Ignore  \n\
- \n\
- \n\
 } \n\
 ";
-$.notepad.templates.labels_simpler = "CONSTRUCT { \n\
+$.notepad.templates.find_uri_literal_matching_pattern = "CONSTRUCT { \n\
 	?subject a rdf:subject . \n\
-	?subject rdfs:label str(?subject) . \n\
+	?subject rdfs:label ?label . \n\
  \n\
 	?predicate a rdf:predicate . \n\
-	?predicate rdfs:label str(?predicate) . \n\
+	?predicate rdfs:label ?label . \n\
  \n\
 	?object a rdf:object . \n\
-	?object rdfs:label str(?object) . \n\
+	?object rdfs:label ?label . \n\
 } \n\
 WHERE { \n\
 	{	  \n\
 		?subject ?anyPredicate ?anyObject  \n\
-		FILTER regex(str(?subject), \"{{{rdfs:label}}}\", \"i\") \n\
+			FILTER regex(str(?subject), \"{{{rdfs:label}}}\", \"i\") \n\
+			BIND (str(?subject) as ?label) \n\
 	}  \n\
 	UNION \n\
 	{	 \n\
 		?anySubject ?predicate ?anyObject \n\
-		FILTER regex(str(?predicate), \"{{{rdfs:label}}}\", \"i\") \n\
+			FILTER regex(str(?predicate), \"{{{rdfs:label}}}\", \"i\") \n\
+			BIND (str(?predicate) as ?label) \n\
 	} \n\
 	UNION \n\
 	{ \n\
 	    ?anySubject ?anyPredicate ?object \n\
-	    FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") \n\
+		    FILTER regex(str(?object), \"{{{rdfs:label}}}\", \"i\") \n\
+		    BIND (str(?object) as ?label) \n\
  \n\
 	    # We could add that ?anyPredicate subPropertyOf rdfs:label \n\
 	} \n\
 } \n\
 LIMIT 30";
-$.notepad.templates.labels = "CONSTRUCT { \n\
-	?subject ?labelPredicate ?label \n\
-} \n\
+$.notepad.templates.s_subject_label_by_label = "SELECT DISTINCT ?subject ?label (substr(?label, 0, 100) as ?reason) \n\
 WHERE { \n\
-	{	  \n\
-		?subject ?predicate ?object  \n\
-		FILTER regex(str(?subject), \"{{{rdfs:label}}}\", \"i\") \n\
-	    BIND (notepad:subject as ?labelPredicate) # using rdf:subject instead of notepad:subject causes a bug in Jena/Fuseki \n\
-	    BIND (str(?subject) as ?label)  \n\
-	}  \n\
-	UNION \n\
-	{	 \n\
-		?anySubject ?predicate ?object \n\
-		FILTER regex(str(?predicate), \"{{{rdfs:label}}}\", \"i\") \n\
-	    BIND (str(?predicate) as ?label)  \n\
-		BIND (?predicate as ?subject) \n\
-	    BIND (notepad:predicate as ?labelPredicate)  \n\
-	} \n\
-	UNION \n\
-	{ \n\
-	    ?subject ?predicate ?object	     \n\
-	    BIND (str(?object) as ?label) \n\
-	    FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") \n\
-	    BIND (?predicate as ?labelPredicate) \n\
- \n\
-	    # We could add that ?predicate subPropertyOf rdfs:label \n\
-	} \n\
+    ?subject ?labelPredicate ?label \n\
+    FILTER ( \n\
+    	regex(?label, \"{{{label}}}\", \"i\") \n\
+    	&& \n\
+    	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent) \n\
+    ) \n\
 } \n\
+ORDER BY strlen(?label) \n\
 LIMIT 30";
 $.notepad.templates.templates = "CONSTRUCT { \n\
 	?uri notepad:template ?uriTemplate . \n\

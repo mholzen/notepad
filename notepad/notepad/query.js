@@ -95,6 +95,4 @@
         }
     }
 
-    $.notepad.labels = new Query($.notepad.templates.labels);
-
 }(jQuery));
