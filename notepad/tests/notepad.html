@@ -59,12 +59,20 @@ var log = console;
 console.__proto__.debug = function() { };
 function here() { console.log('here'); }
 
+function hashToResource(hash) {
+    var fragment = hash.substring(1);
+    var resource = new Resource(fragment);
+    if (resource.isLiteral()) {
+        resource = new Resource(":" + fragment);
+    }
+    return resource;
+}
+
 $(function() {
 
     var hash = window.location.hash;
     if (hash) {
-        var uri = ':' + hash.substring(1);
-        $("#notepad").attr('about', uri);
+        $("#notepad").attr('about', hashToResource(hash));
     }
 
     var defaultEndpoints = [
