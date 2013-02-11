@@ -37,21 +37,6 @@ WHERE {  \n\
 	} \n\
 }  \n\
 LIMIT 30";
-$.notepad.templates.c_predicate_label_by_label = "CONSTRUCT { \n\
-	?predicate rdfs:label ?label . \n\
-	?predicate notepad:inverseLabel ?inverseLabel . \n\
-} \n\
-WHERE { \n\
-	{ ?anySubject ?predicate ?object } \n\
-	UNION \n\
-	{ ?predicate a rdf:Property } \n\
- \n\
-	OPTIONAL { ?predicate rdfs:label 		   ?label 	     FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") } . \n\
-	OPTIONAL { ?predicate notepad:inverseLabel ?inverseLabel FILTER regex(?inverseLabel, \"{{{rdfs:label}}}\", \"i\") } . \n\
- \n\
-	# optional { ?predicate owl:inverseOf [ rdfs:label ?inverseLabel ] } . \n\
-} \n\
-";
 $.notepad.templates.clusters = "CONSTRUCT { \n\
 	_:filter rdfs:label   ?label1 . \n\
 	_:filter rdfs:count   ?count . \n\
@@ -137,6 +122,25 @@ WHERE { \n\
 		BIND (?neighbourBackward as ?neighbour) \n\
 		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } \n\
 	} \n\
+ \n\
+	# Ignore  \n\
+ \n\
+ \n\
+} \n\
+";
+$.notepad.templates.find_predicate_label_by_label = "CONSTRUCT { \n\
+	?predicate rdfs:label ?label . \n\
+	?predicate notepad:inverseLabel ?inverseLabel . \n\
+} \n\
+WHERE { \n\
+	{ ?anySubject ?predicate ?object } \n\
+	UNION \n\
+	{ ?predicate a rdf:Property } \n\
+ \n\
+	OPTIONAL { ?predicate rdfs:label 		   ?label 	     FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") } . \n\
+	OPTIONAL { ?predicate notepad:inverseLabel ?inverseLabel FILTER regex(?inverseLabel, \"{{{rdfs:label}}}\", \"i\") } . \n\
+ \n\
+	# optional { ?predicate owl:inverseOf [ rdfs:label ?inverseLabel ] } . \n\
 } \n\
 ";
 $.notepad.templates.find_uri_literal_matching_pattern = "CONSTRUCT { \n\
