@@ -65,11 +65,14 @@ body {
 /*
  * PREDICATES
  */
+.notepad-predicate-label,
+.predicate-label,
 .predicate {
     font-style: italic;
 }
 
-.notepad-predicate-label [rel="rdfs:label"] {
+.notepad-predicate-label [rel="rdfs:label"],
+.notepad-predicate-label [rel="notepad:inverseLabel"] {
     font-style: italic;
     display: inline;
     padding-top: 4px;
@@ -91,28 +94,11 @@ body {
     border-radius: 5px
 }
 
-.notepad-predicate[rev] > .notepad-predicate-label  [rel="rdfs:label"] {
-    background: #aaa;
-    color: white;
-}
-
-.notepad-predicate[rel] > .notepad-predicate-label  [rel="rdfs:label"] {
-    background: #fff0;
-    color: black;
-}
-
-.notepad-predicate[rev] > .notepad-predicate-label  .uri {
-    background: #aaa;
-    color: white;
-}
-
-.notepad-predicate[rel] > .notepad-predicate-label  .uri {
-    background: #fff0;
-    color: #bbb;
-}
-
-
 .notepad-predicate-label [rel="rdfs:label"]:after {
+    content: ":" ;
+}
+
+.notepad-predicate-label [rel="notepad:inverseLabel"]:after {
     content: ":" ;
 }
 
@@ -314,10 +300,10 @@ div.notepad-object {
     white-space: pre;
 }
 
-#triples .update {
+.update {
     background: #CFC;
 }
-#triples .delete {
+.delete {
     background: #FCC;
 }
 
@@ -455,4 +441,13 @@ div.notepad-object {
 }
 .object {
     display: table-cell;
+}
+
+
+/*
+ * Tooltip
+ */
+
+.tooltip .content {
+    display: none;      /* Start by hiding the content */
 }

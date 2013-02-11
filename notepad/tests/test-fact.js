@@ -26,7 +26,6 @@ test("when I create a new fact and a triple", function() {
     assertThat(fact.getSubjectLabel(), truth());
 
     assertThat(fact.getPredicates(':p').length, equalTo(1));
-    assertThat(fact.triples(), everyItem(equalToObject(triple)));
 });
 
 

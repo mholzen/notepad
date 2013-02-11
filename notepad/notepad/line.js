@@ -1,11 +1,6 @@
 (function($, undefined) {
 
-    FORWARD = 0;    // TODO: put in a namespace
-    BACKWARD = 1;
-
-    getAttrName = $.fn.getAttrName = function(direction) {
-        return ( direction === undefined || direction === FORWARD ? "rel" : "rev" );
-    }
+    $.notepad = $.notepad || {};
 
     // A line matcher, based on the container uri and the triple
     Selector = $.fn.Selector = function(uri, triple) {
@@ -30,7 +25,7 @@
         toString: function() {
             var selector = "";
             if (this.predicate) {
-                selector = selector + '[' + getAttrName(this.direction) + '="' + this.predicate +'"]';
+                selector = selector + '[' + $.fn.getAttrName(this.direction) + '="' + this.predicate +'"]';
             }
             if (this.line.isUri()) {
                 selector = selector + '[about="' + this.line +'"]';
@@ -42,7 +37,7 @@
         filter: function() { 
             var selector = this;
             return function() {
-                var matchPredicate = $(this).children(":notepad-predicate[" + getAttrName(selector.direction) +'="' + selector.predicate + '"]');
+                var matchPredicate = $(this).children(":notepad-predicate[" + $.fn.getAttrName(selector.direction) +'="' + selector.predicate + '"]');
                 if (!matchPredicate.length === 0) {
                     return;
                 }
@@ -132,58 +127,12 @@
             this.getPredicate().setUri(uri);
         },
         setContainerPredicateUri: function(uri, direction) {
-            this.getPredicate().setUri(uri);
-            if (direction === BACKWARD) {
-                this.getPredicate().toggleDirection(false);
-            }
+            this.getPredicate().setUriDirection(uri, direction);
+            this.updatePredicateDisplay();
         },
-        _setContainerPredicateUri: function(uri, direction, triple) {
-            direction = (direction !== undefined) ? direction : this.getDirection();
-            this._setContainerPredicateUri(uri, direction);
-
-            var line = this;
-            this.getEndpoint().getLabels(uri, function(labels) {
-                if (labels.length == 0) {
-                    log.debug("Can't find a label given a predicate uri ("+uri+")");
-                    labels[0] = '';
-                }
-                if (labels.length > 1) {
-                    log.debug("Warning: more than one ("+labels.length+") label ["+labels+"] for a given uri ("+uri+").  Picking first ("+labels[0]+")");
-                }
-                var label = labels[0];
-
-                line._setContainerPredicateLabel(label);
-
-                if ((uri.toString() === 'rdfs:member' || label === 'member') && direction === FORWARD) {
-                    line.hideContainerPredicate();
-                } else {
-                    line.showContainerPredicate();
-                }
-            });
-        },
-        _setContainerPredicateUri: function(uri, direction) {
-            this.predicate.removeAttr(getAttrName(FORWARD));
-            this.predicate.removeAttr(getAttrName(BACKWARD));
-            this.predicate.attr(getAttrName(direction),uri);
-        },
-        setContainerPredicateLabel: function(label) {
-            this._setContainerPredicateLabel(label);
-            var line = this;
-            this.getEndpoint().getPredicatesLabelsByLabel(label,function(results) {
-                var uri;
-                if (results.length == 0) {
-                    uri = $.notepad.getNewUri();
-                } else {
-                    uri = results[0].value;
-                }
-                if (results.length > 1) {
-                    log.debug("Warning: more than one ("+results.length+") uri ["+results.toString()+"] for a given label ("+label+").  Picking first ("+uri+")");
-                }
-                line._setContainerPredicateUri(uri);
-            });
-        },
-        _setContainerPredicateLabel: function(label) {
-            this.predicate.val(label);
+        newContainerPredicateUri: function(term) {
+            this.getPredicate().newUri(term);
+            this.updatePredicateDisplay();
         },
         getContainerPredicateUri: function() {
             return this.getPredicate().getUri();
@@ -199,7 +148,9 @@
             }
             return undefined;
         },
-
+        isPredicateShown: function() {
+            return this.getPredicate().getLabel().element.is(":visible");
+        },
         showPredicate: function() {
             this.getPredicate().getLabel().element.show();
         },
@@ -229,13 +180,10 @@
             if (this.getUri() === undefined) {
                 if (this.getContainerUri() == triple.subject) {
                     // Forward
-                    this.getPredicate().setUri(triple.predicate);
                     this.setContainerPredicateUri(triple.predicate, FORWARD);
                     this.setObjectResource(triple.object);
                 } else if ( this.getContainerUri() == triple.object ) {
                     // Backward
-                    this.getPredicate().setUri(triple.predicate);
-                    this.getPredicate().toggleDirection(false);
                     this.setContainerPredicateUri(triple.predicate, BACKWARD);
                     this.setObjectResource(triple.subject);
                 }
@@ -243,20 +191,16 @@
             }
             if (triple.subject.equals(this.getUri())) {
                 // No need to set the subject
-                this.getPredicate().setUri(triple.predicate);
                 this.setContainerPredicateUri(triple.predicate, FORWARD);
                 this.setObjectResource(triple.object);
                 return;
             }
             if (triple.object.equals(this.getUri())) {
-                this.getPredicate().setUri(triple.predicate);
-                this.getPredicate().toggleDirection(false);
                 this.setContainerPredicaterUri(triple.predicate, BACKWARD);
                 this.setObjectResource(this.subject);
                 return;
             }
             this.setSubjectUri(triple.subject)
-            this.getPredicate().setUri(triple.predicate);
             this.setContainerPredicateUri(triple.predicate, FORWARD);
             this.setObjectResource(triple.object);
         },
@@ -273,6 +217,7 @@
         },
         setLineLiteral: function(text) {
             this.getObject().setLiteral(text);
+            this.showChildren();        // A literal has no children, so this effectively ensures we have a '-' and not a '+'
             return this;
         },
         // Children elements
@@ -391,6 +336,9 @@
             });
             this.element.prepend(childrenToggle);
 
+            // Setting the label to a literal (or to nothing) should show '-' (ie no children)
+            // When the child container has no elements, show '-'
+
             // Initial state depends on the container
             var describeElements = this.getContainer().option('describeElements');
             if (!describeElements || this.options.describeDepth === 0) {
@@ -401,7 +349,14 @@
             // thus avoiding an unnecessarey refresh and reload
         },
         _createPredicate: function() {
-            var element = $('<div>').appendTo(this.element).predicate();
+            var line = this;
+            var element = $('<div>').appendTo(this.element).predicate({
+                urichange: function() {
+                    line.updatePredicateDisplay();
+                }
+            });
+            line.updatePredicateDisplay();
+
             var predicate = element.data('notepadPredicate');
 
             if (this.options.initialTriple) {
@@ -492,44 +447,28 @@
             var toggleElement = this.getChildrenToggle();
             if (hide) {  // collapse
                 toggleElement.addClass('collapsed');
-                this.getChildList().hide('blind', {}, 100);
+                this.getChildList().hide();
             } else {  // expand
                 toggleElement.removeClass('collapsed');
-                if (this.getObject().isLiteral()) {
+                if (!this.getObject().isUri()) {
                     return;
                 }
-                this.getChildList().show('blind', {}, 100);
+                this.getChildList().show();
                 this.getChildContainer().refresh();
             }
         },
         _destroy : function() {
+            console.log('destroying line');
             if (this.getNotepad()) {
                 this.getNotepad().unloaded(this.triples());
             }
+            this.getPredicate().element.remove();
             this.element.removeClass("notepad-line").removeAttr('about');
         },
 
-        convertObjectToPredicate: function() {
-            var predicate = this.getObject().extractPredicate();
-            
-            var line = this.getObject().getLiteral();
-            var predicateLabel = line.split(":")[0];
-
-            this.searchByLabelLiteral(predicateLabel, function(triple) {
-                // verify it hasn't changed
-                line = this.getObject().getLiteral();
-                line.match( predicateLabel, separator, rest)
-                if ( ! line.startsWith(predicatLabel)) {
-                    log.debug("line no longer contains label");
-                    return;
-                }
-
-                label.setUri(triples.subject);
-                label._updateFromRdf(triple);
-
-            });
+        addCheckboxToChildLines: function() {
+            this.getChildContainer().element.children('li').prepend('<input type="checkbox">');
         },
-
 
     });
 

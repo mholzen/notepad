@@ -44,6 +44,12 @@
             // We don't have the latest version of JsHamcrest
         });
 
+        test("mock function", function() {
+            var f = mockFunction();
+            f();
+            verify(f, once())();
+        });
+
         var aMockFunction = mock(anotherFunction);
         skippedTest("debugger and framework combination", function() {
             // This error simply produces "died on test #1"

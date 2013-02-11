@@ -17,7 +17,7 @@
                             '{{/uri}}' +
                             '{{^uri}}' +
                                 '{{#about}}' +
-                                    '<span class="uri">{{{about}}}</span>' +
+                                    '<span class="uri"><a href="{{{about}}}">{{{about}}}</a></span>' +
                                 '{{/about}}' +
                                 '{{^about}}' +
                                     '<div contenteditable="true" rel="rdfs:label"></div>' +
@@ -94,6 +94,9 @@
             this.getUriElement().attr(this.options.uriAttr, uri);
             return this;
         },
+        _unsetUri: function() {
+            this.getUriElement().removeAttr(this.options.uriAttr);
+        },
         newUri: function() {
             this._setUri($.notepad.getNewUri());
         },
@@ -130,6 +133,7 @@
             this._updateFromRdf(triples);
         },
         setLiteral: function(literal) {
+            this._unsetUri();
             var triples = new Triples();
             triples.add( toTriple(":", "rdfs:label", literal ) );
             this._updateFromRdf(triples);
@@ -213,6 +217,13 @@
             var triples = new Triples();
             triples.push(triple);
             this._updateFromRdf(triples);
+        },
+        setText: function(text) {
+            if (this.isUri()) {
+                this.set(toTriple(this.getUri(), "rdfs:label", text));
+            } else {
+                this.setLiteral(text);
+            }
         },
 
         getPredicate: function() {
@@ -390,12 +401,6 @@
             this.element.removeClass("notepad-label");
             this.getLabelElement().autocomplete('destroy');
         },
-        searchByLabelLiteral: function(literal, callback) {
-            var query = new Query($.notepad.templates.labels);
-            query.appendPattern('?subject rdfs:label "{{{rdfs:label}}}"');
-            query.execute(this.getEndpoint(), {'rdfs:label': literal}, callback);
-        },
-
 
     });
 

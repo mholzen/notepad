@@ -41,9 +41,7 @@ test("when I do nothing", function() {
 });
 test("when I append an empty line, ", function() {
     this.container.appendLine();
-    equal(this.container.triples().length, 0, "then first new line should not count towards facts");
-    this.container.appendLine();
-    equal(this.container.triples().length, 0, "then second new line should not count towards facts");
+    assertThat(this.container.triples(), equalTo([]), "then first new line should not count towards facts");
 });
 test("when I add a triple where the container is the subject, then the container contains it", function() {
     var triple = new Triple(":s", ":p", ":o");
@@ -207,7 +205,7 @@ test("when I add triple to a container2, then it retrieves the labels", function
     this.container.addTriple(triple);
     assertThat(this.container.triples(), hasItem(equalToObject(triple)), "the container contains the triple");
     verify(this.endpoint,times(2)).execute(containsString("#a"));       // TODO: should be times(1)
-    verify(this.endpoint).execute(containsString("#p"));
+    verify(this.endpoint,times(2)).execute(containsString("#p"));
 });
 
 

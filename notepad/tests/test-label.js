@@ -102,7 +102,7 @@ test("when I create a new label", function() {
 module("given a new label", {
     setup: function() {
         this.element = $('<div>');
-        $("#qunit-fixture").append(this.element);
+        $("#fixture").append(this.element);
         this.label = this.element.label({autocomplete: true}).data('notepadLabel');
         this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
         this.element.endpoint({endpoint: this.endpoint});
@@ -117,10 +117,8 @@ asyncTest("when I type new text and select the choice", function() {
     this.label.getLabelElement().text('lab').keydown();     // Can't seem to trigger events with a keyCode.  This is how autocomplete() tests keyboard events
 
     setTimeout(function() {
-        //test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.DOWN } );
-        test.label.getLabelElement().trigger( "keydown", { keyCode: $.ui.keyCode.DOWN } );
-        //test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.ENTER } );
-        test.label.getLabelElement().trigger( "keydown", { keyCode: $.ui.keyCode.ENTER } );
+        test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.DOWN } );
+        test.label.getLabelElement().simulate( "keydown", { keyCode: $.ui.keyCode.ENTER } );
 
     }, 300);
 

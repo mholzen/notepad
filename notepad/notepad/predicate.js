@@ -1,5 +1,61 @@
 (function($, undefined) {
 
+    FORWARD = 'forward';
+    BACKWARD = 'backward';
+
+    getAttrName = $.fn.getAttrName = function(direction) {
+        return ( direction === undefined || direction === FORWARD ? "rel" : "rev" );
+    }
+
+    var labelTemplates = {
+        forward: 
+            '{{#rdfs:label}}' +
+                '<div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div>' +
+            '{{/rdfs:label}}' +
+            '{{^rdfs:label}}' +
+                '{{#notepad:inverseLabel}}' +
+                    // Forward context, no forward label but an inverse one: compute its inverse (defaults to 'related to')
+                    '<span class="tooltip">' +
+                        '<div class="item" contenteditable="true" rel="rdfs:label">related to</div>' +
+                        '<span class="content">Reverse of: <span class="predicate-label" rel="notepad:inverseLabel">{{xsd:string}}</span></span>' +
+                    '</span>' +
+                    // '<div class="tooltip" alt="inverse of &quot;{{xsd:string}}&quot;" contenteditable="true" rel="rdfs:label">related to</div>' +
+                    //'is <div contenteditable="true" rel="notepad:inverseLabel">{{xsd:string}}</div> of' +
+                '{{/notepad:inverseLabel}}' +
+                '{{^notepad:inverseLabel}}' +
+                    // Forward context, no inverse label, no forward label: default value for a forward relationship')
+                    '<span class="tooltip">' +
+                        '<div class="item" contenteditable="true" rel="rdfs:label">related to</div>' +
+                        '<span class="content">No known labels</span>' +
+                    '</span>' +                
+                '{{/notepad:inverseLabel}}' +
+            '{{/rdfs:label}}' +
+            '',
+        backward: 
+            '{{#notepad:inverseLabel}}' +
+                '<div contenteditable="true" rel="notepad:inverseLabel">{{xsd:string}}</div>' +
+            '{{/notepad:inverseLabel}}' +
+            '{{^notepad:inverseLabel}}' +
+                '{{#rdfs:label}}' +
+                    // Inverse context, no inverse label but a forward one: compute the inverse (defaults to 'related to')
+                    '<span class="tooltip">' +
+                        '<div class="item" contenteditable="true" rel="notepad:inverseLabel">related to</div>' +
+                        '<span class="content">Reverse of: <span class="predicate-label" rel="rdfs:label">{{xsd:string}}</span></span>' +
+                    '</span>' +
+                    // '<div class="tooltip" alt="inverse of &quot;{{xsd:string}}&quot;" contenteditable="true" rel="notepad:inverseLabel">related to</div>' +
+                    //'is <div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div> of' +
+                '{{/rdfs:label}}' +
+                '{{^rdfs:label}}' +
+                    // Inverse context, no inverse label, no forward label: default value for a inverse relationship')
+                    '<span class="tooltip">' +
+                        '<div class="item" contenteditable="true" rel="notepad:inverseLabel">related to</div>' +
+                        '<span class="content">No known labels</span>' +
+                    '</span>' +                
+                '{{/rdfs:label}}' +
+            '{{/notepad:inverseLabel}}' +
+            ''
+    };
+
     $.widget("notepad.predicate", {
 
         // Given a DOM element
@@ -24,7 +80,8 @@
 
 
         options: {
-            objectFactory: $.fn.label, 
+            label: "urilabel",
+            labelNamespace: "notepadUrilabel",
             allowBlankNodes: true,
         },
         getSubjectElement: function() {
@@ -42,62 +99,119 @@
             return "rel";
         },
         isForward: function() {
-            if (this.element.attr('rel')) {
-                return true;
+            return this.getDirection() === FORWARD;
+        },
+        getDirection: function() {
+             if (this.element.attr('rel')) {
+                return FORWARD;
             } else if (this.element.attr('rev')) {
-                return false;
+                return BACKWARD;
             }
             return undefined;
         },
-        toggleDirection: function(forwardOrBackward) {
-            if (forwardOrBackward === undefined) {
-                forwardOrBackward = ! this.isForward();
-            }
-            if (forwardOrBackward) { // setting it forward
+        setDirection: function(direction) {
+            if (direction === FORWARD) {
                 var uri = this.element.attr('rev');
                 this.element.attr('rel', uri).removeAttr('rev');
-            } else { // setting it backward
+            } else if (direction === BACKWARD) {
                 var uri = this.element.attr('rel');
                 this.element.attr('rev', uri).removeAttr('rel');
+
+                // Should ensure that all objects are URIs
+                _.each(this.getObjects(), function(object) {
+                    if (object.isLiteral()) {
+                        object.ensureUri();         // Convert an literal to a URI
+                    }
+                });
+            } else {
+                throw new Error('unknow direction', direction);
             }
-            this.getLabel().option('uriAttr', this.getAttribute());
+            this.getLabel().option('template', labelTemplates[direction]);
+        },
+        toggleDirection: function() {
+            if (this.isForward()) {
+                this.setDirection(BACKWARD);
+            } else {
+                this.setDirection(FORWARD);
+            }
         },
         getOperation: function() {
             return this.element.hasClass('delete') ? "delete" : "update";
         },
         _setUri: function(uri) {
             this.element.attr(this.getAttribute(), uri);
+            this._trigger('urichange');
         },
         setUri: function(uri) {
             this._setUri(uri);
-            this.getLabel().load();
+            this.getLabel().setUri(uri);
+        },
+        setUriDirection: function(uri, direction) {
+            this._setUri(uri);
+            this.setDirection(direction);
+            this.getLabel().setUri(uri);
         },
         getUri: function() {
-            return this.element.attr(this.getAttribute())
+            return this.element.attr(this.getAttribute());
         },
-        newUri: function(predicate) {
-            predicate = predicate || "new predicate";
-            this._setUri($.notepad.getNewUri());
-            this.getLabel().setLiteral(predicate);
-        },
-        newUriFromTriples: function(triples) {
-            this._setUri($.notepad.getNewUri());
-            this.getLabel()._updateFromRdf(triples);
+        newUri: function(term) {
+            var uri = $.notepad.getNewUri();
+            this._setUri(uri);
+            this.setDirection(FORWARD);
+            this.getLabel().newUri(uri, term);
         },
         _createLabel: function() {
             var element = $('<div class="notepad-predicate-label">').prependTo(this.element);
-            this.options.objectFactory.call($(element), {uriElement: this.element, uriAttr: this.getAttribute()});
-            return element.data('notepadLabel');
+            var predicate = this;
+            $(element)[this.options.label] ({
+                template: labelTemplates[this.getDirection()],
+
+                // Taken care of via autocompleteSelect: only way for the label to change the predicate URI
+                // urichange: function() {
+                //     var label = $(this).data(predicate.options.labelNamespace);
+                //     predicate.setUri(label.getUri());
+                // },
+                autocompleteSource: function(request,callback) {
+                    var urilabel = this.element.closest(':notepad-urilabel').data('notepadUrilabel');
+                    var query = new Query($.notepad.templates.find_predicate_label_by_label);
+
+                    query.execute(urilabel.getEndpoint(), {'rdfs:label': request.term.trim()}, function(triples) {
+                        console.log(triples.toPrettyString());
+                        callback(triples.map(function(triple) {
+                            return {label: triple.object, value: triple};
+                        }));
+                    });
+                },
+                autocompleteSelect: function(event, ui) {
+                    var triple = ui.item.value;
+                    var urilabel = $(event.target).closest(':notepad-urilabel').data('notepadUrilabel');
+
+                    // This code execute as a of setting the urilabel triple
+                    // which implies that it's not just the URI that affects the predicate, it's also its label
+                    var direction = triple.predicate == 'rdfs:label' ? FORWARD : BACKWARD;
+                    predicate.setUriDirection(triple.subject, direction);
+                    urilabel.set(triple);
+                    predicate.getObjects()[0].focus();
+
+                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
+                },
+            });
+            var label = $(element).data(this.options.labelNamespace);
+            label.setUri(predicate.getUri());
+            // this.element.on('predicateurichange', function() {
+            //     label.setUri(predicate.getUri());  // may or may not trigger label.load()
+            // });
+            return element.data(this.options.labelNamespace);
         },
         getLabel: function() {
-            var label = this.element.children('.notepad-label.notepad-predicate-label').data('notepadLabel');
+            var label = this.element.children('.notepad-predicate-label').data(this.options.labelNamespace);
             if (!label) {
                 label = this._createLabel();
             }
             return label;
         },
         getObjects: function(object) {
-            var objects = this.element.children('.notepad-label, [about]').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
+            var objects = this.element.children('.notepad-object3').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
             if (object) {
                 if (object.isUri() || (this.options.allowBlankNodes && object.isBlank())) {
                     objects = objects.filter(function() {
@@ -106,10 +220,10 @@
                             // Include objects with an "undefined" uri
                             return true;
                         }
-                        if (label && label.getUri() == object.getUri()) {
+                        if (label && label.getUri() == object) {
                             return true;
                         }
-                        return $(this).attr('about') == object.getUri();
+                        return $(this).attr('about') == object;
                     });
                 } else if (object.isLiteral()) {
                     objects = objects.filter(function() {
@@ -118,7 +232,7 @@
                             // Include objects with an "undefined" literal
                             return true;
                         }
-                        if (label && label.getLiteral() == object.getLiteral()) {
+                        if (label && label.getLiteral() == object) {
                             return true;
                         }
                         return ($(this).text() == object);
@@ -158,13 +272,14 @@
             var resourceForObject;
             if (triple.subject == this.getSubjectUri()) {
                 resourceForObject = triple.object;
-                this.toggleDirection(true);
+                this.setDirection(FORWARD);
             } else if (triple.object.isUri() && triple.object == this.getSubjectUri()) {
-                this.toggleDirection(false);
+                this.setDirection(BACKWARD);
                 resourceForObject = triple.subject;
             } else {
                 return;
             }
+            this.getLabel().uriChanged();
             var object = this.getObjectLocation(resourceForObject);
             object.setObject(resourceForObject);
         },
@@ -192,6 +307,7 @@
 
         },
         _destroy : function() {
+            //this.element.off('predicateurichange');
             this.element.removeClass("notepad-predicate").removeAttr('contenteditable');
         }
     });

@@ -1,53 +1,48 @@
 INVERSE PREDICATE LABELS
 ========================
 
-Starting RDF
+* Q: What is the representation of a predicate used in an inverse context?
 
-	vh:marc   vh:works-on   vh:instruct  .
+  A: Its "inverse label", possibly computed given a forward label.
 
-	vh:works-on  rdfs:label  		"works on" .
-	marc 		"works on"			"instruct"
+  A: A separate box, where the triple is displayed forward.  All inverse triples could be grouped in this box.
 
-	vh:works-on  rdfs:inverseLabel  "has team member" .
-	instruct	"has team member"  	Marc
+  A: The predicate label is displayed in inverse grey out box.
 
 
-Selecting a predicate URI from a label
---------------------------------------
 
-Autocomplete selections should look like:
+* Q: What is the inverse label of a predicate with a forward label "XYZ" ?
 
-	label.select( predicateUri rdfs:label label )
-	or
-	label.select( predicateUri rdfs:inverseLabel inverselabel )
-
-Which results in the following HTML:
-
-	<div about=":s">
-		<div class="label" about=":predicateUri">
-			<div rel="rdfs:label">label</div>
-			or
-			<div rel="rdfs:inverseLabel">inverselabel</div>
-		</div>
-		<div class="predicate" rel=":predicateUri">
-
-How do we make the label impact the rel/rev direction of the predicate?
-
-	label.on("urichange", function() {
-		predicate.updateFromLabel( label.triples() );
-			// x rdfs:label "foo"
-				-> forward
-			// y rdfs:inverseLabel "bar"
-				-> inverse
-	}
+  A: If no explicit inverse labels exist, then "related to".  Hovering over the label should show any relevant information, such
+     as a forward label.
 
 
-Displaying a predicate label
-----------------------------
+* Q: What is the default label of a predicate without any labels?
 
-	<div about=":s">
-		<div class="label" about=":predicateUri">
-			<div rel="rdfs:label">label</div>
-		</div>
+  A: "related to"?
 
-		<div rel=":predicateUri">
+
+
+* Q: What is the inverse label of a predicate without any labels?
+
+  A: "related to"?
+
+
+* Q: What is the label of rdfs:member?
+
+  A: "member".  However, if the predicate matches the default predicate for a container, then the predicate is not shown.
+
+
+* Q: What is the inverse label of rdfs:member?
+
+  A: "is on the list"
+
+  A: "is in"
+
+  A: "on the list"
+
+  A: "in"
+
+  A: "member of"
+  
+  A: "is a member of"

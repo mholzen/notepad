@@ -1,6 +1,6 @@
 QUnit.file = "test-endpoint.js";
 
-testEndpointUri = 'http://instruct.vonholzen.org:3030/test';
+var testEndpointUri = 'http://instruct.vonholzen.org:3030/test';
 
 asyncTest("ask", 1, function() {
     var endpoint = new FusekiEndpoint(testEndpointUri);
@@ -21,7 +21,7 @@ asyncTest("canAnswer", function() {
 test("create", function() {
     var element = $("<div>").endpoint();
     var endpoint = element.data('notepadEndpoint');
-    assertThat(endpoint.options.uri, containsString('localhost'));
+    assertThat(endpoint.options.endpoint, containsString('localhost'));
 });
 
 module("given an element", {
@@ -34,7 +34,7 @@ module("given an element", {
 });
 
 test("create with URI", function() {
-    var element = $("#endpoint").endpoint({uri: testEndpointUri});
+    var element = $("#endpoint").endpoint({endpoint: testEndpointUri});
     var endpoint = element.data('notepadEndpoint');
     assertThat(endpoint.getEndpoint().uri, testEndpointUri);
     assertThat(endpoint.element.children('[property="notepad:endpoint"]').length, 0);
@@ -54,7 +54,7 @@ asyncTest("setUriToFirstResponding", function() {
     var endpoint = element.data('notepadEndpoint');
     endpoint.setUriToFirstResponding(['http://example.com', testEndpointUri],
         function() {
-            assertThat(endpoint.options.uri, testEndpointUri);
+            assertThat(endpoint.options.endpoint, testEndpointUri);
             start(); 
         }).error(function() {
             // BUG:
@@ -72,7 +72,7 @@ asyncTest("setUriToFirstResponding all failing", function() {
             assertThat(false, "unexpected success");
             start(); 
         }).error(function() {
-            assertThat(endpoint.options.uri, 'http://localhost:3030/dev');
+            assertThat(endpoint.options.endpoint, 'http://localhost:3030/dev');
             start();
         });
 });

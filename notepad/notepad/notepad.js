@@ -6,30 +6,40 @@
 
     $.widget("notepad.notepad", {
         options: {
-            endpoint: DEFAULT_ENDPOINT
         },
         _setOption: function(key, value) {
             switch(key) {
                 case 'endpoint':
-                this.element.endpoint({endpoint: value, display: true});
+                this.element.data('notepadEndpoint').option('endpoint', value);
                 break;
             }
             this._super(key, value);
         },
 
+        newUri: function() {
+            this._setUri($.notepad.getNewUri());
+            var line = this.getContainer().appendLine();  // Start with one empty line
+            line.focus();
+        },
         getUri: function() {
             return this.element.attr('about');
         },
         _setUri: function(uri) {
+            if (!(uri instanceof Resource)) {
+                uri = new Resource(uri);
+            }
             this.element.attr('about',uri);
 
             // The following code is necessary for the rdfa() gleaner to work properly.
             // Ideally, it would use the same 'about' attribute in the top level notepad element
             // but it requires the URI to be prefixed with '#' rather than ':'
             this.element.children('.title').attr('about', $.notepad.uri() + '#' + uri.toString().slice(1));
-            this.element.find('[property="notepad:uri"]').text(uri.toURL());
+            this.element.find('[property="notepad:uri"]').append($('<a>').attr('href',uri.toURL()).text("permalink"));
         },
         setUri: function(uri) {
+            if (!uri) {
+                return this.newUri();
+            }
             this._setUri(uri);
             this.getContainer().load();
         },
@@ -52,14 +62,23 @@
 
         // Set up the notepad
         _create: function() {
-            var self = this;
+            var notepad = this;
 
             this.element.addClass("notepad");
-            this.option('endpoint', this.options.endpoint);
 
-            this._setUri($.notepad.getNewUri());
+            this.element.endpoint({display: true});  // Create the endpoint widget
 
-            this.getContainer().appendLine();  // Start with one empty line
+            if (this.options.endpoint instanceof Array
+                && this.options.endpoint.length > 0
+                && !(this.options.endpoint[0] instanceof Triple)
+                ) {
+                this.discoverEndpoint(this.options.endpoint, function() {
+                    notepad.setUri(notepad.element.attr('about'));
+                });
+            } else {
+                this.option('endpoint', this.options.endpoint);
+                this.setUri(this.element.attr('about'));            // if no [about] attr, setUri(undefined) calls newUri().
+            }
             
             this.element.on("keydown.notepad", function(event) {
                 if($(event.target).data('uiAutocomplete') && $(event.target).data('uiAutocomplete').menu.active) {
@@ -71,19 +90,19 @@
                 switch (event.keyCode) {
                 case keyCode.ENTER:
                 case keyCode.NUMPAD_ENTER:
-                    return self._return(event);
+                    return notepad._return(event);
                     break;
                 case keyCode.UP:
-                    return self._up(event);
+                    return notepad._up(event);
                     break;
                 case keyCode.DOWN:
-                    return self._down(event);
+                    return notepad._down(event);
                     break;
                 case keyCode.TAB:
                     if (!event.shiftKey) {
-                        self._indent(event);
+                        notepad._indent(event);
                     } else {
-                        self._unindent(event);
+                        notepad._unindent(event);
                     }
                     return false;
                     break;
@@ -114,7 +133,7 @@
             }
 
             // Get the list of lines
-            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements();
+            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements().filter(':visible');
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -134,7 +153,7 @@
             }
 
             // Get the list of lines
-            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements();
+            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements().filter(':visible');
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -162,8 +181,9 @@
                 var newLine = line.insertLineAfter();
 
                 var text = line.getLineLiteral();
-                line.setLineLiteral( text.substring(0,caret) );
-                newLine.setLineLiteral( text.substring(caret) );
+                line.getObject().setText( text.substring(0,caret) );
+                newLine.getObject().setText( text.substring(caret) );
+                newLine.showChildren();
                 newLine.focus();
             }
             
@@ -186,9 +206,9 @@
         _unindent : function(event) {
             var li = $(event.target).closest(":notepad-line");
 
-            if ($(event.target).hasClass('notepad-object') &&
-                li.find('.notepad-predicate').css('display') != 'none') {
-                li.find('.notepad-predicate').focus();
+            if ($(event.target).hasClass('notepad-object3') &&
+                li.find('.notepad-predicate-label').css('display') != 'none') {
+                li.find('.notepad-predicate-label').focus();
                 return false;
             }
             var line = li.data('notepadLine');
@@ -308,6 +328,9 @@
             return this._loaded;
         },
         unloaded: function(triples) {
+            if (!this._loaded) {
+                return;
+            }
             this._loaded = this._loaded.minus(triples);
         },
         canSave: function(triple) {
@@ -320,43 +343,42 @@
         removed: function() {
             return this.loaded().minus( this.triples() ).filter(this.canSave);
         },
+
+        discoverEndpoint: function(uris, callback) {
+
+            var endpointWidget = this.element.data('notepadEndpoint');
+
+            var uriList = "<ol>" + uris.map(function(uri) {return "<li>"+uri+"</li>"; }).join('') + "</ol>";
+            var activityDescription = {
+                'a': 'prov:Activity',
+                'rdfs:label': "was set to the first responding server, given the list:" + uriList,
+                'prov:affects': {
+                    a: 'sp:TriplePattern',
+                    'sp:subject': this.getUri(),
+                    'sp:predicate': 'notepad:endpoint',
+                    'sp:object': 'spin:_uri'                      // could be ommitted if absent implies a variable
+                },
+                'prov:used': uris,
+                // could add 'prov:agent' or 'prov:plan': this function URI
+
+            };
+            // so that the notepad can display tooltips over the field and value
+            // could be: describeActivity(endpointWidget, uris));
+
+
+            this.element.find("[property='notepad:endpoint']").tooltip({
+                content: function() {
+                    return activityDescription['rdfs:label'];
+                },
+                items: "[rel='rdfs:label']",
+                position: { my: "left top", at: "left bottom+10" }
+             });    
+            // could be: displayAffectingActivities(endpointWidget, endpointProvenance);
+            // could be: this.displayAffectingActivities(); this.add(activityDescription);
+
+            endpointWidget.setUriToFirstResponding(uris, callback);
+        },
+
     });
     
-
-    $.notepad.discoverEndpoint = function(notepad) {
-
-        var host = $.uri.base().authority;
-        var endpointUri = "http://" + host + ":3030/dev";
-        var uris = [endpointUri, 'http://instruct.vonholzen.org:3030/dev'];
-
-        var endpointWidget = notepad.element.data('notepadEndpoint');
-
-        var activityDescription = {
-            'a': 'prov:Activity',
-            'rdfs:label': "was set to the first responding server, of the list: [" + uris +"]",
-            'prov:affects': {
-                a: 'sp:TriplePattern',
-                'sp:subject': notepad.uri,
-                'sp:predicate': 'notepad:endpoint',
-                'sp:object': 'spin:_uri'                      // could be ommitted if absent implies a variable
-            },
-            'prov:used': uris,
-            // could add 'prov:agent' or 'prov:plan': this function URI
-
-        };
-        // so that the notepad can display tooltips over the field and value
-        // could be: describeActivity(endpointWidget, uris));
-
-
-        notepad.element.find("[property='notepad:endpoint']").tooltip({content: function() {
-            return activityDescription['rdfs:label'];
-        }, items: "[rel='rdfs:label']",
-        position: { my: "left top", at: "left bottom+10" }
-         });    
-        // could be: displayAffectingActivities(endpointWidget, endpointProvenance);
-        // could be: notepad.displayAffectingActivities(); notepad.add(activityDescription);
-
-        endpointWidget.setUriToFirstResponding(uris);
-    }
-
 }(jQuery));

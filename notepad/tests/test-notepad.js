@@ -12,7 +12,7 @@ test("when I create a new notepad with options", function() {
 
     this.div.notepad( {endpoint: endpoint} );
 
-    equal(this.div.data('notepadNotepad').getEndpoint(), endpoint, "the notepad should provide the endpoint");
+    assertThat(this.div.data('notepadNotepad').getEndpoint(), endpoint, "the notepad should provide the endpoint");
 });
 
 
@@ -249,11 +249,16 @@ skippedTest("when I delete the predicate label, it should delete the line triple
 })
 function indentSecondLine(div) {
     var target = div.find("li:last .notepad-object3");
-    target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.TAB }) );
+
+    // e = jQuery.Event("keydown");
+    // e.which = $.ui.keyCode.TAB;
+    // target.trigger(e);
+
+    target.trigger($.Event("keydown", { keyCode: $.ui.keyCode.TAB }));
 }
 test("when I indent the second line,", function() {
     indentSecondLine(this.div);
-    assertThat($.contains(this.div.find("li:first"), this.div.find("li:last")), truth(), "second line should be under the first");
+    assertThat($.contains(this.div.find("li:first")[0], this.div.find("li:last")[0]), truth(), "second line should be under the first");
 });
 test("when I set unrelated RDF,", function() {
     var triplesPre = this.notepad.triples();

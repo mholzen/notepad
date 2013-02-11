@@ -4,20 +4,18 @@
 
         // This widget manages the "notepad:endpoint" predicate under its DOM element
 
-        // The 'uri' option sets the URI.  The endpoint defaults to constructing a FusekiEndpoint from the URI.
-        // The 'endpoint' option can also be used to provide an endpoint object directly.
-        // The 'display' control whether to display the endpoint label or not.
-
         options: {
-            endpoint:   undefined,
-            uri:        'http://localhost:3030/dev',
+            // The 'endpoint' is either a FusekiEndpoint object or a URI used to construct a FusekiEndpoint.
+            endpoint:   'http://localhost:3030/dev',
+
+            // The 'display' control whether to display the endpoint label or not.
             display:    false
         },
+
+
         _setOption: function(key, value) {
             this._super(key, value);
             switch(key) {
-                case 'uri':
-                    this.options.endpoint = undefined;
                 case 'endpoint':
                 case 'display':
                     this.updateElement();
@@ -45,7 +43,7 @@
         },
         updateElement: function() {
             if (this.options.display) {
-                this.getElement().attr('content', this.options.uri); 
+                this.getElement().attr('content', this.getEndpoint().uri);
                 this.getElement().find('[rel="rdfs:label"]').remove();
                 this.getElement().append('<div rel="rdfs:label">'+this.getEndpoint()+'</div>');
             } else {
@@ -53,7 +51,10 @@
             }
         },
         getEndpoint: function() {
-            return this.options.endpoint || new FusekiEndpoint(this.options.uri);
+            if (typeof this.options.endpoint === "string") {
+                return new FusekiEndpoint(this.options.endpoint);       // Interpret as the URI to the endpoint
+            }
+            return this.options.endpoint;            
         },
         setUriToFirstResponding: function(uris, callback) {
             var endpoint = this;
@@ -62,13 +63,13 @@
 
             var sparqlEndpoint = new FusekiEndpoint(uri);
             return sparqlEndpoint.canAnswer(function() {
-                endpoint.option('uri', uri);
+                endpoint.option('endpoint', uri);
                 if (callback) {
                     callback();
                 }
             }).error(function() {
                 if (uris.length === 0) {
-                    endpoint.option('uri', undefined);
+                    endpoint.option('endpoint', undefined);
                     return;
                 }
                 return endpoint.setUriToFirstResponding(uris, callback);
@@ -86,14 +87,14 @@
                .fail(function() {
                     console.log('setUri.fail with ',uris);
                     if (uris.length === 0) {
-                        endpoint.option('uri', undefined);
+                        endpoint.option('endpoint', undefined);
                         return;
                     }
                     return endpoint.setUriToFirstResponding(uris);
                 })
                 .done(function() {
                     console.log('setUri.done ',uri);
-                    endpoint.option('uri', uri);
+                    endpoint.option('endpoint', uri);
                 });
         },
     });

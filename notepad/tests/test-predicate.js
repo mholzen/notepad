@@ -1,15 +1,4 @@
 QUnit.file = "notepad-predicate.js: "
-module("given an empty element", {
-    setup: function() {
-        this.element = $("<div>");
-    }
-});
-test("when I create a new predicate", function() {
-    this.element.predicate();
-
-    var predicate = this.element.data('notepadPredicate');
-    assertThat(predicate, truth(), "the element has a predicate widget");
-});
 
 module("given a element within a subject", {
     setup: function() {
@@ -19,21 +8,23 @@ module("given a element within a subject", {
         this.element.appendTo(this.subjectElement);
     }
 });
-test("when I create a new predicate with an initial triple", function() {
+test("when I create a new predicate with a forward initial triple", function() {
     this.element.predicate({initialTriple: new Triple(":s", ":p", ":o")});
 
     var predicate = this.element.data('notepadPredicate');
     assertThat(predicate.isForward(), truth(), "defaults to forward");
     assertThat(predicate.triples(), hasItem(equalToObject(new Triple(":s", ":p", ":o"))));
+    assertThat(predicate.getObjects(new Resource(":o")), truth());
 });
-test("when I create a new predicate with an initial triple", function() {
+test("when I create a new predicate with a backward initial triple", function() {
     this.element.predicate({initialTriple: new Triple(":o", ":p", ":s")});
 
     var predicate = this.element.data('notepadPredicate');
     assertThat(predicate.isForward(), not(truth()));
     assertThat(predicate.triples(), hasItem(equalToObject(new Triple(":o", ":p", ":s"))));
+    assertThat(predicate.getObjects(new Resource(":o")), truth());
 });
-test("when I create a new predicate with an initial triple", function() {
+test("when I create a new predicate with a literal triple", function() {
     this.element.predicate({initialTriple: new Triple(":s", ":p", "123")});
 
     var predicate = this.element.data('notepadPredicate');
@@ -52,7 +43,7 @@ module("given an element within a subject with an 'rel' attribute", {
 test("when I create a new predicate", function() {
     var predicate = this.element.predicate().data('notepadPredicate');
     assertThat(predicate.getUri(), ':p', "its predicate should be :p");
-    verify(this.endpoint,times(2)).execute();       // We tried to fetch the label
+    verify(this.endpoint,times(1)).execute();       // We tried to fetch the label
     assertThat(predicate.getLabel(), truth(), "it has a label");
     assertThat(predicate.getSubjectUri(), truth(), "it has a subject");
 });
@@ -131,24 +122,25 @@ test("when I toggle the predicate", function() {
     assertThat(this.predicate.getLabel().getUri(), ':p');
 });
 
-skippedTest("when I toggle the predicate", function() {
-    expect(4);
-    equal(this.line.predicate.css('display'),'none', "this predicate should not be displayed initially");
-    ok(this.line.predicateToggle, "the toggle should be available");
-    
-    var line = this.line;
-    testAsyncStepsWithPause(200,
-        function() {
-            line.predicateToggle.trigger(jQuery.Event("click"));
-            return function() {
-                notEqual(line.predicate.css('display'),'none', "this predicate should be displayed after a click");    
-            };
-        },
-        function() {
-            line.predicateToggle.trigger(jQuery.Event("click"));
-            return function() {
-                equal(line.predicate.css('display'),'none', "this predicate should not be displayed after two clicks");    
-            }
-        });
-});
+asyncTest("predicate label", function() {
+    var element = $('<div about=":s" rel=":p">').endpoint({endpoint: toTriples(toTriple(":p", "rdfs:label", "forward label"))});
 
+    element.predicate();
+
+    var predicate = element.data('notepadPredicate');
+
+    setTimeout(function() {
+        var forwardLabel = predicate.getLabel().element.text();
+        assertThat(forwardLabel, containsString("forward label"));
+
+        predicate.setDirection('backward');
+
+        setTimeout(function() {
+            var backwardLabel = predicate.getLabel().element.text();
+            assertThat(backwardLabel, not('forward label'));
+            start();
+        }, 400);
+
+    }, 400);
+
+});
