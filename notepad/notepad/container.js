@@ -227,7 +227,8 @@
                     line = container.appendLine(undefined, triple);
                 }
                 
-                line.setContainerPredicateUri(triple.predicate, lineSelector.direction, triple);
+                // line.setTriple(triple);  or line.add(triple);
+                line.setContainerPredicateUri(triple.predicate, lineSelector.direction);
 
                 if (triple.object.isLiteral()) {
                     line.setLineLiteral(triple.object);
