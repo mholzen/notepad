@@ -351,6 +351,14 @@
                 });
             });
         },
+        toggleSortable: function() {
+            var sortable = this.element.data('uiSortable');
+            if (!sortable) {
+                this.element.sortable();
+                return;
+            }
+            sortable.option('disabled', ! sortable.option('disabled'));
+        }
     });
 
 }(jQuery));
