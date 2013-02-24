@@ -173,6 +173,12 @@
 
             });
         },
+        unload: function() {
+            if (this.getNotepad()) {
+                this.getNotepad().unloaded(this.triples());
+            }
+            this.element.children('li').remove();
+        },
         _updateFromRdf: function(triples) {
             // Update the immediate descendant children
             var container = this;

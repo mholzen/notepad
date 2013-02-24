@@ -143,6 +143,19 @@ WHERE { \n\
 	# optional { ?predicate owl:inverseOf [ rdfs:label ?inverseLabel ] } . \n\
 } \n\
 ";
+$.notepad.templates.find_subject_label_by_label = "CONSTRUCT { \n\
+	?subject ?labelPredicate ?label ; \n\
+			 notepad:reason ?reason . \n\
+} \n\
+WHERE { \n\
+    ?subject ?labelPredicate ?label \n\
+    FILTER ( \n\
+    	isLiteral(?label) && \n\
+    	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent) && \n\
+    	regex(?label, \"{{{term}}}\", \"i\") \n\
+    ) \n\
+    BIND (substr(?label, 0, 100) as ?reason) \n\
+}";
 $.notepad.templates.find_uri_literal_matching_pattern = "CONSTRUCT { \n\
 	?subject a rdf:subject . \n\
 	?subject rdfs:label ?label . \n\

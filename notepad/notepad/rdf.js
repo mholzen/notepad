@@ -54,7 +54,7 @@
         return value.substr(0,value.indexOf(':'));
     }
     function knownScheme(value) {
-        return ["http", "https", "file", "urn"].indexOf(scheme(value)) != -1;
+        return ["http", "https", "file", "urn", "mailto"].indexOf(scheme(value)) != -1;
     }
 
     // Resource and Triple abstract the interface between Notepad and an RDF library
@@ -171,6 +171,12 @@
         equals: function(resource) {
             return this.toString() === resource.toString();
         },
+        datatype: function() {
+            if (!this.isLiteral()) {
+                return undefined;
+            }
+            return this.resource.datatype || 'xsd:string';  // Not sure if this default is correct
+        }
     };
 
     $.notepad.getNewUri = function() {
@@ -254,7 +260,7 @@
     Triples = (function() {
         var methods = {
             add: { value: function(value) {
-                if (value === undefined) { return; }
+                if (value === undefined) { return this; }
                 if (value instanceof Array) {
                     $.merge(this, value);
                 } else if (value instanceof $.rdf.databank) {
@@ -269,10 +275,11 @@
                     var json = value;
                     var databank = $.rdf.databank();
                     databank.load(json);
-                    return this.add(databank);
+                    this.add(databank);
                 } else {
                     this.push(value);
                 }
+                return this;
             } },
             update: { value: function() {
                 return this.filter(function(triple) { return triple.operation == "update"; });
@@ -393,12 +400,17 @@
                     this.execute(sparql, callback);
                 })
             } },
-
             subjects: { value: function() {
-                return _.map(this, function(triple) { return triple.subject; });
+                return _.keys(this.subjectIndex());
+            } },
+            subjectIndex: { value: function() {
+                return _.reduce(this, function(memo, triple) { memo[triple.subject] = triple; return memo; }, {});
             } },
             objects: { value: function() {
                 return _.map(this, function(triple) { return triple.object; });
+            } },
+            objectIndex: { value: function() {
+                return _.reduce(this, function(memo, triple) { memo[triple.object] = triple; return memo; }, {});
             } },
             toPrettyString: { value: function() {
                 return this.join("\n");
@@ -417,11 +429,30 @@
             toSparqlString: { value: function() {
                 return _.map(this, function(triple) { return triple.toSparqlString(); }).join("\n");
             } },
+            dump: { value: function() {
+                return this.toDatabank().dump();
+            } },
             minus: { value: function(triples) {
                 var result = new Triples();
                 result.add( this.toDatabank().except(triples.toDatabank()) );
                 return result;
-            } }
+            } },
+            predicateValues: { value: function(predicate, label) {
+                return _.map(this.triples(undefined, predicate, undefined), function(triple) {
+                    return {label: triple.object, value: triple.subject};
+                });
+            } },
+            split: { value: function() {
+                return _.values(this.toDatabank().subjectIndex);
+
+                this.map(function(triple) {})
+            } },
+            toString: { value: function() {
+                return this.triples(undefined, "notepad:reason").objects().join(",");
+            } },
+            literals: { value: function() {
+                return this.filter(function(triple) { return triple.object.isLiteral(); });
+            } },
         };
 
         return function() {

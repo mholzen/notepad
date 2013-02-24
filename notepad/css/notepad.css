@@ -192,10 +192,12 @@ body {
 .notepad-object {
     display: inline-block;
     width: 600px;
+    vertical-align: top;
 }
 
 .notepad-object3 {
     display: inline;
+    vertical-align: top;
 }
 
 .notepad-object3:not([about]) {
@@ -239,10 +241,9 @@ body {
     display: inline-block;
 }
 
-div.notepad-object {
+.notepad-object {
     line-height: 28px;
     font-size: 18px;
-    /*vertical-align: text-bottom;*/
     display: inline-block;
 }
 
@@ -452,4 +453,28 @@ div.notepad-object {
 
 .tooltip .content {
     display: none;      /* Start by hiding the content */
+}
+
+/*
+* HTML email
+*/
+[rel="nmo:htmlMessageContent"] > .notepad-object3  {
+    border: solid 1px gray;
+    border-radius: 2px;
+    padding: 10px;
+    
+    overflow: scroll;
+    max-height: 400px;
+}
+
+[rel="nmo:plainTextMessageContent"] > .notepad-object3  {
+    border: solid 1px gray;
+    border-radius: 2px;
+    padding: 10px;
+    white-space: pre;
+    font-family: Courier;
+    font-size: small;
+
+    overflow: scroll;
+    max-height: 400px;
 }

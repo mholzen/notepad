@@ -1,0 +1,51 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX ex: <http://example.com/#>
+PREFIX nmo: <http://www.semanticdesktop.org/ontologies/nmo/#>
+PREFIX notepad: <http://www.vonholzen.org/instruct/notepad/#>
+PREFIX sp: <http://spinrdf.org/sp#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/#>
+PREFIX : <http://localhost/~holzen/develop/instruct/notepad/notepad/tests/notepad.html#>
+# Marc	 
+# first 
+# marc 
+ 
+# subject label word1 
+# predicate label word2 
+# object label word3 
+ 
+# subject label word1 
+# predicate1 label word2 
+# predicate2 label word3 
+ 
+# predicate1 label word1 
+# predicate2 label word2 
+# predicate3 label word3 
+ 
+CONSTRUCT { 
+	?subject ?predicate ?object  . 
+    ?subject   ?labelPredicate ?word1  .
+    ?predicate ?labelPredicate ?word2  .
+    ?object    ?labelPredicate ?word3  .
+    : rdfs:label ?reason .
+} 
+WHERE { 
+	{ 
+	    ?subject   ?predicate ?object .
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, "Marc von Holzen", "i"))  .
+	    ?predicate rdfs:label ?word2 	FILTER ( regex(?word2, "first", "i")) .
+	    BIND	   (?word1 + "..." + ?word2 as ?reason) .
+	}
+	UNION
+	{ 
+	    ?subject   ?predicate ?object   FILTER ( regex(?object, "marc", "i")) .
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, "Marc von Holzen", "i"))  .
+	    ?predicate rdfs:label ?word2 	FILTER ( regex(?word2, "first", "i")) .
+	    BIND	   (?word1 + "..." + ?word2 + "..." + ?object  as ?reason ).
+	}
+
+#	} 
+} 
+LIMIT 30

@@ -171,21 +171,37 @@
             if (li.length === 0) {
                 return false;
             }
-            var caret = target.caret();
-            
             var line = li.data('notepadLine');
-            if (caret == 0) {
-                line.insertLineBefore();
-                // Stay focused on the current line, that moved down
-            } else {
-                var newLine = line.insertLineAfter();
 
-                var text = line.getLineLiteral();
-                line.getObject().setText( text.substring(0,caret) );
-                newLine.getObject().setText( text.substring(caret) );
-                newLine.showChildren();
-                newLine.focus();
+            var caret = target.caret();
+            if (caret == 0) {       // caret is at the beginning of the line
+                line.insertLineBefore();
+                // Stay focused on the current line, which was pushed down by the new line above it
+                return false;
             }
+
+            var newLine = line.insertLineAfter();
+            
+            // find closest literal
+            var literalElement = target.closest(":notepad-literal");
+            if (literalElement.length === 0) {
+                return false;
+            }
+            var literalWidget = literalElement.data('notepadLiteral');
+            if (literalWidget.getLiteral().datatype() !== 'xsd:string') {
+                return false;
+            }
+
+            var literal = literalWidget.getLiteral().toString();
+
+            var beforeCaret = literal.slice(0,caret),
+            afterCaret = literal.slice(caret);
+
+            literalWidget.setLiteralWithoutRange(beforeCaret);
+            newLine.getObject().literal().setLiteralWithoutRange(afterCaret);
+
+            newLine.showChildren();
+            setTimeout(function() { newLine.focus() }, 100);
             
             return false;
         },

@@ -43,7 +43,7 @@ var makeSubArray = (function() {
                 length = constrainedValue;
             }
         };
-        methods.toString = {
+        methods.toString = methods.toString || {
             value: Array.prototype.join
         };
         return Object.create(Array.prototype, methods);

@@ -1,0 +1,20 @@
+PREFIX ex: <http://example.com/#>
+INSERT DATA {
+	GRAPH ex:guid1 {
+		ex:c1 ex:member ex:o1 .
+	} 
+	GRAPH ex:guid2 {
+		ex:c1 ex:member ex:o2 .
+	} 
+	GRAPH ex:guid3 {
+		ex:c1 ex:member ex:o3 .
+	} 
+	GRAPH ex:guid4 {
+		ex:c1 ex:member ex:o4 .
+	} 
+	GRAPH ex:c1-meta {
+		ex:guid1 rdfs:before ex:guid2 .
+		ex:guid2 rdfs:before ex:guid3 .
+		ex:guid3 rdfs:before ex:guid4 .
+	}
+}

@@ -1,0 +1,11 @@
+SELECT *
+FROM ex:c1-meta
+FROM NAMED ex:guid1 
+FROM NAMED ex:guid2
+FROM NAMED ex:guid3
+FROM NAMED ex:guid4
+{
+	?s rdfs:before ?o
+	graph ?s { ?s1 ?p1 ?o1 }
+	graph ?o { ?s2 ?p2 ?o2 }
+}

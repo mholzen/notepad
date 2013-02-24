@@ -83,6 +83,7 @@
             label: "urilabel",
             labelNamespace: "notepadUrilabel",
             allowBlankNodes: true,
+            objectNamespace: "notepadObject"
         },
         getSubjectElement: function() {
             return this.element.closest('[about]');
@@ -120,7 +121,7 @@
                 // Should ensure that all objects are URIs
                 _.each(this.getObjects(), function(object) {
                     if (object.isLiteral()) {
-                        object.ensureUri();         // Convert an literal to a URI
+                        object.uri();
                     }
                 });
             } else {
@@ -212,11 +213,12 @@
         },
         getObjects: function(object) {
             var objects = this.element.children('.notepad-object3').filter(function() { return !$(this).hasClass('notepad-predicate-label');});
+            var predicate = this;
             if (object) {
                 if (object.isUri() || (this.options.allowBlankNodes && object.isBlank())) {
                     objects = objects.filter(function() {
-                        var label = $(this).data('notepadLabel');
-                        if (label && label.getUri() == undefined) {
+                        var label = $(this).data(predicate.options.objectNamespace);
+                        if (label && label.getObject() == undefined) {
                             // Include objects with an "undefined" uri
                             return true;
                         }
@@ -227,8 +229,8 @@
                     });
                 } else if (object.isLiteral()) {
                     objects = objects.filter(function() {
-                        var label = $(this).data('notepadLabel');
-                        if (label && label.getLiteral() == undefined) {
+                        var label = $(this).data(predicate.options.objectNamespace);
+                        if (label && label.getObject() == undefined) {
                             // Include objects with an "undefined" literal
                             return true;
                         }
@@ -243,7 +245,8 @@
                     throw new Error("cannot add an unknown object type");
                 }
             }
-            return objects.map(function(i,e) { return $(e).data('notepadLabel'); });
+            var predicate = this;
+            return objects.map(function(i,e) { return $(e).data(predicate.options.objectNamespace); });
         },
         getObjectLocation: function(object) {
             var objects = this.getObjects(object);
@@ -259,7 +262,7 @@
             return object;
         },
         insertObject: function() {
-            return $('<div class="notepad-object3">').appendTo(this.element).label().data('notepadLabel');
+            return $('<div class="notepad-object3">').appendTo(this.element).object().data(this.options.objectNamespace);
         },
         ensureOneObject: function() {
             if (this.getObjects().length > 0) { return; }
@@ -305,6 +308,13 @@
                 this.setUri(uri);
             }
 
+        },
+        detach: function() {
+            if (this.getNotepad()) {
+                this.getNotepad().unloaded(this.getLabel().triples());
+            }
+            this.getLabel().element.remove();
+            this.getObjects().detach();
         },
         _destroy : function() {
             //this.element.off('predicateurichange');

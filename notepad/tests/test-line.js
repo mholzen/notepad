@@ -38,3 +38,7 @@ test("when I access the child container", function() {
 
     assertThat(childContainer.triples(), hasItem(equalToObject(triple)));
 });
+
+test("set literals", function() {
+
+});

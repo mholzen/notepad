@@ -55,7 +55,8 @@
     $.notepad.clusterQuery = new Query($.notepad.templates.clusters, {graphPatterns: $.notepad.describeQuery.where()});
 
     $.notepad.describeObject = function(element) {
-        var uri = element.data('notepadObject') ? element.data('notepadObject').getUri() : element.attr('about');
+        var uri = element.attr('about');
+        //var uri = element.data('notepadObject') ? element.data('notepadObject').getUri() : element.attr('about');
         var resource = new Resource(uri);
         var about = resource.toSparqlString();
         return new Query($.notepad.templates.describe, {about: about});
@@ -93,6 +94,13 @@
             var clusterTriples = $.notepad.clusterFromTriples(container.triples());
             callback(clusterTriples);
         }
+    }
+
+    if ($.notepad.templates) {
+        $.notepad.queries = $.notepad.queries || {};
+        _.each($.notepad.templates, function(query,name) {
+            $.notepad.queries[name] = new Query(query);
+        });
     }
 
 }(jQuery));

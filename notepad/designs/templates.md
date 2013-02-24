@@ -8,12 +8,32 @@ Object is a URI
 	{ p: {uri: } }
 
 
-Object is a literal
--------------------
+Object is a plain literal
+-------------------------
 	s p "literal" . 
 	=>
 	{ p: { "xsd:string" : "literal" } }
 
+Object is a typed literal
+-------------------------
+	s p "27"^^xsd:integer . 
+	=>
+	{ p: { "xsd:integer" : "27" } }
+
+
+Object is a plain literal, augmented with rdfs:range
+----------------------------------------------------
+
+	<s> <p> "2/3/13" .
+	<p> rdfs:range "xsd:date" .
+
+	{ p: { "xsd:string" : "2/3/13", "xsd:date": Date object? } }
+
+
+	<s> <p> "<h1>foo</h1>" .
+	<p> rdfs:range "xsd:XMLLiteral" .
+
+	{ p: { "xsd:string" : "<h1>foo</h1>", "xsd:XMLLiteral": DOM object? } }
 
 Single triple
 -------------

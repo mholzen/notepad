@@ -87,14 +87,15 @@
 
         // Line Uri        
         getUri: function() {
-            return this.getObject().getUri();
+            return this.getObject().uri().getUri();
         },
         _setUri: function(uri) {
             this.element.attr('about',uri);
             return this;
         },      
         setUri: function(uri) {
-            this.getObject().setUri(uri);
+            this.getObject().uri().setUri(uri);
+            this.getChildContainer().unload();
         },
         load: function() {
             // TODO: refactor with container.load
@@ -148,7 +149,7 @@
             }
             return undefined;
         },
-        isPredicateShown: function() {
+        isPredicateVisible: function() {
             return this.getPredicate().getLabel().element.is(":visible");
         },
         showPredicate: function() {
@@ -166,7 +167,7 @@
             }
         },
         getObject: function() {
-            return this.getPredicate().element.find('.notepad-object3').data('notepadLabel');
+            return this.getPredicate().getObjects()[0];
         },
 
         setObjectResource: function(resource) {
@@ -213,7 +214,10 @@
             throw new Error("not yet implemented");
         },
         getLineLiteral: function() {
-            return this.getObject().getLiteral();
+            if (!this.getObject().isLiteral()) {
+                return undefined;
+            }
+            return this.getObject().literal().getLiteral();
         },
         setLineLiteral: function(text) {
             this.getObject().setLiteral(text);
@@ -233,7 +237,7 @@
             var objectElement = $(this.getObject().element[0]);
             var container = this.getChildList().container().data('notepadContainer');
             var line = this;
-            objectElement.on("labelurichange", function(event) {
+            objectElement.on("urilabelurichange", function(event) {
                 if (event.target != objectElement[0]) {
                     log.debug("ignoring event for another target");
                     return;
@@ -267,6 +271,7 @@
         },
         appendChildLine: function(li) {
             var newLine = this.getChildContainer().appendLine(li);
+            this.options.describeDepth = 1;     // adding a new child line should not expand child lines recursively
             this.showChildren();
             return newLine;
         },
@@ -397,7 +402,7 @@
             }
             var enclosingLabel = this.getContainer().element.closest(":notepad-label");
             if (enclosingLabel.length > 0) {
-                enclosingLabel.data('notepad-label').ensureUri();
+                enclosingLabel.data('notepadLabel').ensureUri();
             }
         },
         _getDefaultDescribeDepth: function() {
@@ -457,6 +462,12 @@
                 this.getChildContainer().refresh();
             }
         },
+
+        detach: function() {
+            this.getObject().detach();
+            this.element.remove();
+        },
+
         _destroy : function() {
             console.log('destroying line');
             if (this.getNotepad()) {

@@ -1,0 +1,36 @@
+CONSTRUCT { 
+    ?subject rdfs:label ?reason .
+	?subject ?predicate ?object  . 
+#    ?subject   ?labelPredicate ?word1  .
+#    ?predicate ?labelPredicate ?word2  .
+#    ?object    ?labelPredicate ?word3  .
+} 
+WHERE { 
+	{ 
+	    ?subject   ?predicate ?object   FILTER ( regex(?object, "{{{word2}}}", "i")) .
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, "{{{word1}}}", "i"))  .
+	    BIND	   (?word1 + "..." + ?word2 as ?reason) .
+	}
+	UNION
+	{ 
+	    ?subject   ?predicate ?object .
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, "{{{word1}}}", "i"))  .
+	    ?object    rdfs:label ?word2 	FILTER ( regex(?word2, "{{{word2}}}", "i")) .
+	    BIND	   (?word1 + "..." + ?word2 as ?reason) .
+	}
+	UNION
+	{ 
+	    ?subject   ?predicate ?object .
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, "{{{word1}}}", "i"))  .
+	    ?predicate rdfs:label ?word2 	FILTER ( regex(?word2, "{{{word2}}}", "i")) .
+	    BIND	   (?word1 + "..." + ?word2 as ?reason) .
+	}
+	UNION
+	{
+	    ?subject   ?predicate ?object   FILTER ( regex(?object, "{{{word3}}}", "i")) .
+	    ?subject   rdfs:label ?word1 	FILTER ( regex(?word1, "{{{word1}}}", "i"))  .
+	    ?predicate rdfs:label ?word2 	FILTER ( regex(?word2, "{{{word2}}}", "i")) .
+	    BIND	   (?word1 + "..." + ?word2 + "..." + ?object  as ?reason ).
+	}
+} 
+LIMIT 30

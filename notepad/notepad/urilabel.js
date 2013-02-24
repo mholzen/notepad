@@ -8,14 +8,17 @@
         options: { 
             template: '' +
                         '{{#rdfs:label}}' +
-                            '<div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div>' +
+                            '<div contenteditable="true" class="notepad-literal" rel="rdfs:label">{{xsd:string}}</div>' +
                         '{{/rdfs:label}}' +
                         '',
                                 
             urichange:          $.noop,
+            loadOnSetUri:       true,
+
+            // should: use literal, to: use autocomplete2 on literal
             autocomplete:       true,
             allowBlankNodes:    true,
-            dynamicTemplate:    false,
+            dynamicTemplate:    true,
             autocompleteSource: function(request,callback) {
                 var urilabel = this.element.closest(':notepad-urilabel').data('notepadUrilabel');
                 urilabel.getEndpoint().getSubjectsLabelsByLabel(request.term.trim(),callback);
@@ -58,7 +61,7 @@
         getUriSparql: function() {
             return new Resource(this.getUri()).toSparqlString();
         },
-        setUri: function(uri) {
+        setUri: function(uri, triples) {
             if (uri === undefined) {
                 throw new Error("cannot set uri to undefined");
             }
@@ -66,7 +69,11 @@
                 return;
             }
             this._setUri(uri);
-            this.uriChanged();
+            if (!this.options.loadOnSetUri && triples) {
+                this.update(triples)
+            } else {
+                this.uriChanged();    
+            }
             this._trigger("urichange"); // adds widget prefix.
         },
         _setUri: function(uri) {
@@ -77,11 +84,17 @@
             this.element.attr('about', uri);
             return this;
         },
-        set: function(triple) {
-            this._setUri(triple.subject);
-            this.update(toTriples(triple));
-            this._trigger("urichange");
+
+        setLiteral: function(literal) {
+            var triple = toTriple(this.getUri(), "rdfs:label", literal);        // could be generalized to any predicate
+            this.update(triple);
         },
+
+        // set: function(triple) {
+        //     this._setUri(triple.subject);
+        //     this.update(toTriples(triple));
+        //     this._trigger("urichange");
+        // },
 
         newUri: function(uri, label) {
             uri = uri || $.notepad.getNewUri();
@@ -168,6 +181,8 @@
             // Apply any widget constructors
             this.getTemplateElement().find(".notepad-urilabel").urilabel({dynamicTemplate: true});
 
+            this.getTemplateElement().find(".notepad-literal").literal();
+
             // this.getTemplateElement().tooltip({items: ".tooltip", content: function() {
             //     var element = $( this );
             //     return element.attr('alt');
@@ -180,6 +195,12 @@
 
             // This could be done via widget constructors as wel
             this._setupAutocomplete();
+        },
+
+        triples: function() {
+            var triples = new Triples();
+            triples.add(this.triple());
+            return triples;
         },
 
         triples: function() {

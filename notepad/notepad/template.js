@@ -1,5 +1,9 @@
 (function($, undefined) {
 
+    javascriptConstructor = {
+        'XMLLiteral': $,
+    };
+
     $.notepad = $.notepad || {};
 
     Template = function(template) {
@@ -15,8 +19,23 @@
             _.each(triples, function(triple) {
                 var value = {};
                 if (triple.object.isLiteral()) {
+                    // should: verify this actually works (ie. that we have .type)
+                    var type = triple.object.datatype() || 'xsd:string';
+                    value[type] = triple.object;
+
+                    // Range
+                    var range = triples.objects(triple.predicate, 'rdfs:range');
+                    var constructor = javascriptConstructor[range] || function(s) { return s.toString(); };
+
+                    value[range] = constructor(triple.object);
+
+                    // should: generalize based on rdfs:range
+                    if (triple.predicate == 'nmo:htmlMessageContent') {
+                        type = 'rdf:XMLLiteral';
+                    }
+
                     value["xsd:string"] = triple.object.toString();
-                    // TODO: generalize by triple.object.type;
+                    context[type] = triple.object;
                 }
                 if (triple.object.isUri()) {
                     value["uri"] = triple.object.toString();

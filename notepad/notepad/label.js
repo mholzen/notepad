@@ -9,7 +9,12 @@
         options: { 
             defaultTemplate: '' +
                         '{{#rdfs:label}}' +
-                            '<div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div>' +
+                            '{{#rdf:XMLLiteral}}' +
+                                '<div contenteditable="true">{{{rdf:XMLLiteral}}}</div>' +
+                            '{{/rdf:XMLLiteral}}' +
+                            '{{^rdf:XMLLiteral}}' +
+                                '<div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div>' +
+                            '{{/rdf:XMLLiteral}}' +
                         '{{/rdfs:label}}' +
                         '{{^rdfs:label}}' +
                             '{{#uri}}' +
@@ -132,12 +137,34 @@
             triples.add(this.getLiteralAsTriple());
             this._updateFromRdf(triples);
         },
-        setLiteral: function(literal) {
+        setLiteralOld: function(literal) {
             this._unsetUri();
             var triples = new Triples();
             triples.add( toTriple(":", "rdfs:label", literal ) );
             this._updateFromRdf(triples);
         },
+        setLiteral: function(literal) {
+            var literals = new Triples();
+            literals.add(toTriple(':', 'xsd:string', literal));     // probably should generalize to literal.type
+            literals.add(toTriple(":", 'rdfs:label', literal));     // Not sure this makes sense anymore
+            this._updateFromRdf(literals);
+
+            // Set Literal using predicate ranges
+            var predicateUri = this.getPredicateUri() || 'rdfs:label';
+            var label = this;
+            this.getEndpoint().describe(predicateUri, function(triples) {
+                var ranges = triples.triples(undefined, 'rdfs:range', undefined);
+                if (ranges.length == 0) {
+                    ranges.add(toTriple(':', 'rdfs:range', 'xsd:string'));
+                }
+                var literals = new Triples();
+                _.each(ranges, function(t) {
+                    literals.add(toTriple(':', t.object, literal));
+                });
+                label._updateFromRdf(literals);
+            });
+        },
+
         setObject: function(resource) {
             if (resource.isLiteral()) {
                 return this.setLiteral(resource);
@@ -246,7 +273,9 @@
             }
             return undefined;
         },
-
+        _getLabelLiteral: function() {
+            return this.getLabelElement().text();
+        },
         triple: function() {
             if (this.options.uriElement) {
                 // if this label is describing a predicate, then it should not return the triple (the object, who knows whether it is defined, should return it instead)
@@ -275,9 +304,6 @@
             }
             return undefined;
         },
-        _getLabelLiteral: function() {
-            return this.getLabelElement().text();
-        },
         labelTriple: function() {
             var uri = this.getUri();
             var label = this._getLabelLiteral();
@@ -291,15 +317,6 @@
             // });
             
             return new Triple(uri, "rdfs:label", label);
-        },
-        childTriples: function() {
-            var container = this.element.find(":notepad-container:eq(0)").data('notepadContainer');
-                // Must use find instead of children because toggleChildren moves the <ul> element inside a div
-
-            if (!container) {
-                return [];
-            }
-            return container.triples();
         },
         labelTriples: function() {
             // Triples fetched by the label
@@ -326,6 +343,15 @@
                 triples.add(new Triple(uri, $(e).attr('rel'), object) );
             });
             return triples;
+        },
+        childTriples: function() {
+            var container = this.element.find(":notepad-container:eq(0)").data('notepadContainer');
+                // Must use find instead of children because toggleChildren moves the <ul> element inside a div
+
+            if (!container) {
+                return [];
+            }
+            return container.triples();
         },
         triples: function() {
             var triples = new Triples();
@@ -396,6 +422,13 @@
             // });
 
             this._setupAutocomplete();
+        },
+        detach: function() {
+            if (this.getNotepad()) {
+                this.getNotepad().unloaded(this.labelTriples());
+                this.getNotepad().unloaded(this.childTriples());
+            }
+            this.element.remove();
         },
         _destroy : function() {
             this.element.removeClass("notepad-label");
