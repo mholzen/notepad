@@ -58,7 +58,6 @@ test("when I add a triple where the container is the subject, then the container
     assertThat(line.getPredicate().getUri(), ":p", "then the line's predicate should be :p");
     ok(!triplesPre.contains(triple), "the initial triples do not contain it");
     assertThat(this.container.triples(), hasItem(equalToObject(triple)), "the triples contains it");
-    ok(!this.container.reverseTriples().contains(triple), "the reverse triples does not contain it");
 });
 test("when I add a triple where the container is the object, then the container contains it", function() {
     var triple = new Triple(":s1", ":p", ":s");
@@ -73,7 +72,6 @@ test("when I add a triple where the container is the object, then the container 
     assertThat(line.getObject().getResource(), equalTo(':s1'), "the object should be ther object of the triple");
 
     ok(this.container.triples().contains(triple), "the triples contains it");
-    ok(this.container.reverseTriples().contains(triple), "the reverse triples contains it");
 });
 test("when I add a triple with a literal, then the container contains it", function() {
     var triple = new Triple(":s", ":p", 'a literal');
@@ -98,7 +96,6 @@ test("when I add a triple where the container is the predicate, then nothing hap
     this.container.add(triple);
 
     ok(!this.container.triples().contains(triple), "the triples does not contains it");
-    ok(!this.container.reverseTriples().contains(triple), "the reverse triples does not contains it");
 });
 test("when I add a triple where the container is the object and subject, then the container contains it", function() {
     var triple = new Triple(":s", ":p", ":s");
@@ -106,7 +103,6 @@ test("when I add a triple where the container is the object and subject, then th
     this.container.add(triple);
 
     ok(this.container.triples().contains(triple), "the triples contains it");
-    ok(this.container.reverseTriples().contains(triple), "the reverse triples does not contains it");
 });
 test("when I add an unrelated triple to a container, then the container should do nothing", function() {
     expect(1);

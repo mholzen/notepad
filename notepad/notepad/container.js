@@ -136,10 +136,6 @@
 
             return triples;
         },
-        reverseTriples: function() {
-            var container = this;
-            return this.triples().filter(function(triple) { return triple.object.toString() == container.getUri(); });
-        },
         triplesInDomPath: function() {
             var label = this.element.closest(":notepad-label");
             if (label.length === 0) {
