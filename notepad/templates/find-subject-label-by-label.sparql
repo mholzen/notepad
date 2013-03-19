@@ -1,13 +1,24 @@
 CONSTRUCT {
 	?subject ?labelPredicate ?label ;
 			 notepad:reason ?reason .
+	?subject rdfs:member ?children .
+	?children rdfs:label ?sublabels .
 }
 WHERE {
     ?subject ?labelPredicate ?label
     FILTER (
     	isLiteral(?label) &&
     	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent) &&
+    	?labelPredicate IN (rdfs:label) &&
     	regex(?label, "{{{term}}}", "i")
     )
     BIND (substr(?label, 0, 100) as ?reason)
+
+    OPTIONAL {
+    	?subject  ?p1 ?children FILTER sameTerm(?p1, rdfs:member) .
+    	# Why doesn't the following work instead?
+    	# ?subject rdfs:member ?children
+    	?children ?p2 ?sublabels FILTER sameTerm(?p2, rdfs:label) .
+    }
 }
+LIMIT 100
