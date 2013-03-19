@@ -1,0 +1,37 @@
+	query ( term )
+
+	browse ( [ result, ... ] )
+
+	autocomplete.select ( result )  
+
+	( uri, graph ) = result
+ 
+	object.setUri ( uri , graph )
+
+		childContainer.unload().load()
+
+		template = urilabel.discoverTemplate()
+
+		graph += urilabel.discoverData(template)
+
+		urilabel.update ( graph )
+
+			"<street>{{{street}}}</street>"
+
+
+
+
+<marc> <first> "Marc" .
+<marc> <address> "2221 nw 64th st, seattle" .
+<marc> <address> [ <street> "2221 nw 64th st . <city> "seattle" ] .
+
+<email> <subject> "hello" .
+<email> <message> "hi" .
+<email> <sent> "yesterday" .
+
+<email> notepad:template "<subject><message><sent>"
+
+anything -> rdfs:label
+email -> subject, message, sent
+address -> street, city, zip
+event -> 

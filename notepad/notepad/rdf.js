@@ -406,8 +406,11 @@
             subjectIndex: { value: function() {
                 return _.reduce(this, function(memo, triple) { memo[triple.subject] = triple; return memo; }, {});
             } },
-            objects: { value: function() {
-                return _.map(this, function(triple) { return triple.object; });
+            objects: { value: function(subject, predicate) {
+                return this.triples(subject, predicate, undefined).map(function(triple) { return triple.object; });
+            } },
+            objectUris: { value: function(subject, predicate) {
+                return this.objects().filter(function(object) { return object.isUri(); });
             } },
             objectIndex: { value: function() {
                 return _.reduce(this, function(memo, triple) { memo[triple.object] = triple; return memo; }, {});
@@ -442,16 +445,30 @@
                     return {label: triple.object, value: triple.subject};
                 });
             } },
-            split: { value: function() {
-                return _.values(this.toDatabank().subjectIndex);
-
-                this.map(function(triple) {})
-            } },
-            toString: { value: function() {
-                return this.triples(undefined, "notepad:reason").objects().join(",");
+            toString: { value: function(predicate) {
+                predicate = predicate || "rdfs:label";
+                return this.triples(undefined, predicate).objects().join(",");
             } },
             literals: { value: function() {
                 return this.filter(function(triple) { return triple.object.isLiteral(); });
+            } },
+            connectedTo: { value: function(subject, predicate) {
+                var connected = new Triples();
+                var visited = {};
+                var toTraverse = new Array(0);
+                toTraverse.push(subject);
+                
+                while (toTraverse.length > 0) {
+                    var pivot = toTraverse.pop();
+                    this.triples(pivot, predicate).forEach(function(triple) {
+                        connected.add(triple);
+                        visited[pivot] = true;
+                        if ( ! visited[triple.object] ) {
+                            toTraverse.push(triple.object);
+                        }
+                    });
+                }
+                return connected;
             } },
         };
 

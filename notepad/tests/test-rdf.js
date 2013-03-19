@@ -114,7 +114,31 @@ test("triples", function() {
     equal(triples.update().length, 0, "in a new list of triples, they should all be to deleted");
     equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
 });
+test("objectUris", function() {
+    var triples = new Triples();
 
+    triples.add(toTriple(':s1', ':p', ':o'));
+    triples.add(toTriple(':s2', ':p', 'literal'));
+    assertThat(triples.objectUris(), [':o']);
+    assertThat(triples.objects(), [':o', 'literal']);
+});
+
+test("connectedTo", function() {
+    var triples = new Triples();
+
+    triples.add(toTriple(':s1', ':p', ':o1'));
+    triples.add(toTriple(':s1', ':p', 'literal'));
+    triples.add(toTriple(':s2', ':p', ':o2'));
+    triples.add(toTriple(':s3', ':p', ':o2'));
+    triples.add(toTriple(':s4', ':p', ':o4'));
+    triples.add(toTriple(':o4', ':p', ':o5'));
+    assertThat(triples.connectedTo(':s').length, 0);
+    assertThat(triples.connectedTo(':s1').length, 2);
+    assertThat(triples.connectedTo(':s2').length, 1);
+    assertThat(triples.connectedTo(':s3').length, 1);
+    assertThat(triples.connectedTo(':s4').length, 2);
+
+});
 test("triples from JSON", function() {
     var json = { 
         "http://ex.com/1" : { 

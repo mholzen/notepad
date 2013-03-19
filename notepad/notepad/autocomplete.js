@@ -2,16 +2,13 @@
 
     function triplesToBrowseResults(callback) {
         return function(triples) {
-            // get a map of graphs by subjects
-            var results = _.reduce(triples, function(memo, triple) {
-                memo[triple.subject] = (memo[triple.subject] || new Triples()).add(triple);
-                return memo;
-            }, {});
 
-            // get an array of objects, labeled with 'notepad:reason'
-            // results: [{label: graph.notepad:reason, value: graph}, ...]
-            results = _.map(results, function(graph) {
-                return {label: graph.toString(), value: graph};
+            // should only get URIs with a notepad:reason triple
+            var matches = triples.triples(undefined, 'notepad:reason');
+
+            // something special here about value/label
+            var results = _.map(matches, function(match) {
+                return {label: match.object.toString(), value: triples.connectedTo(match.subject) };
             });
 
             // Sort by label length
@@ -55,7 +52,7 @@
         _renderItem: function( ul, item ) {
             return $( "<li>" )
                 .append( $("<a>").append(item.label) )
-                .append( $("<div>").append(item.value.pp()))
+                .append( $("<pre>").text(item.value.toTurtle()))
                 .appendTo( ul );
         },
 
@@ -64,6 +61,7 @@
             this._super();
         },
         _destroy : function() {
+            this._super();
         },
 
     });
