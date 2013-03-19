@@ -360,6 +360,16 @@
             return this.loaded().minus( this.triples() ).filter(this.canSave);
         },
 
+        save: function() {
+            var removed = notepad.removed();
+            var added = notepad.added();
+            var command = removed.deleteSparql() + added.insertSparql();
+            return notepad.getEndpoint().execute(command).success(function() {
+                notepad.loaded(added);
+                notepad.unloaded(removed);
+            });
+        },
+
         discoverEndpoint: function(uris, callback) {
 
             var endpointWidget = this.element.data('notepadEndpoint');
