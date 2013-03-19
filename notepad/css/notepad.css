@@ -480,3 +480,13 @@ body {
     overflow: scroll;
     max-height: 400px;
 }
+
+
+/*
+ * Autocomplete match description
+ */
+.match-description {
+    white-space: pre;
+    color: #777;
+    font-size: small;
+}
