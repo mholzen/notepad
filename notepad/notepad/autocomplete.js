@@ -6,9 +6,9 @@
             // should only get URIs with a notepad:reason triple
             var matches = triples.triples(undefined, 'notepad:reason');
 
-            // something special here about value/label
+            // value.toString() will be displayed when selecting the menu item
             var results = _.map(matches, function(match) {
-                return {label: match.object.toString(), value: triples.connectedTo(match.subject) };
+                return {label: match.object.toString(), value: triples.connectedTo(match.subject), subject: match.subject };
             });
 
             // Sort by label length
@@ -31,13 +31,12 @@
             },
 
             select: function(event, ui) {
-                var triples = ui.item.value;
-                var uris = triples.subjects();
-                if (uris.length != 1) {
-                    throw new Error("cannot determine a single subject from a graph", uri);
+                if (event.originalEvent) {
+                    // Consume keyboard events that generateed this 'select' event
+                    event.originalEvent.stopPropagation();
                 }
                 var widget = $(event.target).closest(':notepad-object').data('notepadObject');
-                widget.uri().setUri(uris[0], triples);
+                widget.uri().setUri(ui.item.subject, ui.item.description);
                 event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
             },
 
@@ -52,7 +51,7 @@
         _renderItem: function( ul, item ) {
             return $( "<li>" )
                 .append( $("<a>").append(item.label) )
-                .append( $("<pre>").text(item.value.toTurtle()))
+                .append( $("<pre class='match-description'>").text(item.value.toTurtle()))
                 .appendTo( ul );
         },
 
