@@ -11,3 +11,4 @@ WHERE {
     )
     BIND (substr(?label, 0, 100) as ?reason)
 }
+LIMIT 30
