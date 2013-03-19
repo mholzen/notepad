@@ -74,6 +74,11 @@
             },
 
             select: function(event, ui) {
+                if (event.originalEvent) {
+                    // Consume keyboard events that generateed this 'select' event
+                    event.originalEvent.stopPropagation();
+                }
+
                 var triples = ui.item.value;
                 var uris = triples.subjects();
                 if (uris.length != 1) {
