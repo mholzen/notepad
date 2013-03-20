@@ -35,11 +35,11 @@
             return $('<div about="notepad:endpoint">').appendTo(this.element);
         },
         getElement: function() {
-            var elements = this.element.find('[property="notepad:endpoint"]');
+            var elements = this.element.find('[rel="notepad:endpoint"]');
             if (elements.length > 0) {
                 return elements;
             }
-            return $('<div property="notepad:endpoint">').appendTo(this.element);
+            return $('<div rel="notepad:endpoint">').appendTo(this.element);
         },
         updateElement: function() {
             if (this.options.display) {
