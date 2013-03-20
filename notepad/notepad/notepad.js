@@ -219,7 +219,7 @@
             line.focus();
             return propagateEvent;
         },
-        _unindent : function(event) {
+        _unindent: function(event) {
             var li = $(event.target).closest(":notepad-line");
 
             if ($(event.target).hasClass('notepad-object3') &&
@@ -405,6 +405,12 @@
             endpointWidget.setUriToFirstResponding(uris, callback);
         },
 
+        disableEdit: function() {
+            this.element.find('[contenteditable="true"]').attr('contenteditable', 'false');
+        },
+        enableEdit: function() {
+            this.element.find('[contenteditable="false"]').attr('contenteditable', 'true');
+        },
     });
     
 }(jQuery));
