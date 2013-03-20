@@ -206,9 +206,6 @@
             this.setObjectResource(triple.object);
         },
 
-        _setLinePredicateUri: function() {
-            throw new Error("not yet implemented");
-        },
         getLineLiteral: function() {
             if (!this.getObject().isLiteral()) {
                 return undefined;
