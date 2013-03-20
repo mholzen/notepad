@@ -169,7 +169,7 @@
                 }
             }
             if (this.isLiteral()) {
-                return this.resource.toString().slice(1,-1).replace(/\\"/g, '"'); // Remove encapsulating double quotes ""
+                return this.resource.value;     // the string value is maintained in .value
             }
         },
         toURL: function() {
@@ -484,7 +484,7 @@
 
     toTriples = function(value) {
         var triples = new Triples();
-        triples.add(value);
+        triples.add(value);    
         return triples;
     }
     $.notepad.toTriples = toTriples;
