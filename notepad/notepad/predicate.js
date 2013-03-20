@@ -85,11 +85,8 @@
             allowBlankNodes: true,
             objectNamespace: "notepadObject"
         },
-        getSubjectElement: function() {
-            return this.element.closest('[about]');
-        },
         getSubjectUri: function() {
-            return this.getSubjectElement().attr('about');
+            return this.element.closestSubjectUri();
         },
         getAttribute: function() {
             if (this.element.attr('rel')) {
