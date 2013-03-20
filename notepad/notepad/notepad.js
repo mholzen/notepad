@@ -34,13 +34,23 @@
             // Ideally, it would use the same 'about' attribute in the top level notepad element
             // but it requires the URI to be prefixed with '#' rather than ':'
             this.element.children('.title').attr('about', $.notepad.uri() + '#' + uri.toString().slice(1));
-            this.element.find('[property="notepad:uri"]').append($('<a>').attr('href',uri.toURL()).text("permalink"));
+            this.element.find('[rel="notepad:uri"]').append($('<a>').attr('href',uri.toURL()).text("permalink"));
         },
         setUri: function(uri) {
             if (!uri) {
                 return this.newUri();
             }
             this._setUri(uri);
+            this.load();
+        },
+        query: function() {
+            this.element.query();
+            return this.element.data('notepadQuery');
+        },
+        load: function() {
+            this.query().option('query').context.about = toResource(this.getUri());
+            this.query().load();
+            
             this.getContainer().load();
         },
         open: function(uri) {
@@ -48,6 +58,9 @@
             this.getContainer().element.remove();
             var line = this.getContainer().appendLine();            // getContainer() will recreate the deleted element
             line.setUri(uri);
+        },
+        update: function(triple) {
+            return this.query().update(triple)
         },
         getContainer: function() {
             var element = this.element.children('ul');
@@ -113,9 +126,9 @@
 
             // notepad:created rdfs:subPropertyOf dc:created
 
-            this.element.find('[property="notepad:created"]').attr('content',Date.now());
+            this.element.find('[rel="notepad:created"]').attr('content',Date.now());
             setInterval(function() {
-                $("[property='notepad:created']").each(function(i,e) {
+                $("[rel='notepad:created']").each(function(i,e) {
                     $(e).text(moment(parseInt($(e).attr('content'))).fromNow());
                 });
             }, 1000);
@@ -314,14 +327,18 @@
         triples: function(){
             var triples = new Triples();
 
-            var rdf = this.element.children('div').rdf();
-            rdfaTriples = $.notepad.toTriples(rdf.databank);  // This shouldn't need its own code
-            triples.add(rdfaTriples);
+            //var titleTriples = this.element.children('div').triples();
+            //triples.add(titleTriples);
 
-            triples.push(new Triple(this.getUri(), "rdf:type", "notepad:Session")); // ALT: use RDFAs typeof attribute instead
+            triples.add(toTriple(this.getUri(), "rdf:type", "notepad:Session"));
 
-            $.merge(triples,this.getContainer().triples());
+            triples.add(this.getContainer().triples());
 
+            return triples;
+        },
+        triplesByObjects: function() {
+            var triples = this.element.triples();
+            triples.add(toTriple(this.getUri(), "rdf:type", "notepad:Session"));
             return triples;
         },
         deletedTriples: function() {
@@ -392,7 +409,7 @@
             // could be: describeActivity(endpointWidget, uris));
 
 
-            this.element.find("[property='notepad:endpoint']").tooltip({
+            this.element.find("[rel='notepad:endpoint']").tooltip({
                 content: function() {
                     return activityDescription['rdfs:label'];
                 },
