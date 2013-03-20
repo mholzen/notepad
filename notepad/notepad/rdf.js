@@ -278,7 +278,7 @@
             add: { value: function(value) {
                 if (value === undefined) { return this; }
                 if (value instanceof Array) {
-                    $.merge(this, value);
+                    $.merge(this, value.filter(function(v) { return (v!==undefined); }));
                 } else if (value instanceof $.rdf.databank) {
                     var triples = this;
                     value.triples().each(function(i,rdftriple) {
