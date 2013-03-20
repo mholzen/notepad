@@ -20,7 +20,8 @@ $(document).ready(function() {
     $.widget("notepad.aWidget", {
 
         options: {
-          'anOption': 'a default value'
+          'anOption': 'a default value',
+          initCounter: 0,
         },
 
         _setOption: function(key, value) {
@@ -28,7 +29,12 @@ $(document).ready(function() {
         },
         _create: function() {
             console.log(this.options.anOption);
+            this.options.initCounter ++;
         }
+    });
+    test("init", function() {
+        var element = $('<p>').aWidget().aWidget();
+        assertThat(element.data('notepadAWidget').option('initCounter'), 1);
     });
 
     test("when I set options", function() {
