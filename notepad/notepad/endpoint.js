@@ -43,9 +43,15 @@
         },
         updateElement: function() {
             if (this.options.display) {
-                this.getElement().attr('content', this.getEndpoint().uri);
-                this.getElement().find('[rel="rdfs:label"]').remove();
-                this.getElement().append('<div rel="rdfs:label">'+this.getEndpoint()+'</div>');
+                var endpoint = this.getEndpoint();
+                if (endpoint) {
+                    this.getElement().attr('content', this.getEndpoint().uri);
+                    this.getElement().find('[rel="rdfs:label"]').remove();
+                    this.getElement().append('<div rel="rdfs:label">'+this.getEndpoint()+'</div>');
+                } else {
+                    this.getElement().removeAttr('content');
+                    this.getElement().find('[rel="rdfs:label"]').remove();
+                }
             } else {
                 this.getElement().remove();
             }
@@ -122,12 +128,12 @@
             // next endpoint
             var parentElement = this.container.element.parent();
             if (parentElement.length === 0) {
-                log.warn('cannot find parent element to container');
+                console.warn('cannot find parent element to container');
                 return;
             }
             var parentEndpoint = parentElement.findEndpoint();
             if (parentEndpoint === undefined) {
-                log.warn('cannot find parent endpoint');
+                console.warn('cannot find parent endpoint');
                 return;
             }
 
