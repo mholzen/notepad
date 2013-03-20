@@ -293,14 +293,13 @@
             if (! (object = this.getResource())) {
                 return undefined;
             }
-            var operation = this.getPredicate().getOperation();
 
             if (this.getPredicate().isForward()) {
-                return new Triple(subject, predicate, object, operation);
+                return new Triple(subject, predicate, object);
             }
             // Backward
             if (this.isUri()) {
-                return new Triple(object, predicate, subject, operation);
+                return new Triple(object, predicate, subject);
             }
             return undefined;
         },
