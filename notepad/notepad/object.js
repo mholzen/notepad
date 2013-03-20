@@ -157,7 +157,12 @@
         },
 
         getPredicate: function() {
-            return this.element.closest(":notepad-predicate").data('notepadPredicate');
+            var element = this.element.closestPredicate();
+            var predicate = element.data('notepadPredicate');
+            if (predicate) {
+                return predicate;
+            }
+            return element.predicate({label: null}).data('notepadPredicate');
         },
         getPredicateUri: function() {
             var predicate = this.getPredicate();
