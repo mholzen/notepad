@@ -1,21 +1,22 @@
 CONSTRUCT {
 	?about ?predicateForward ?neighbourForward .
 	?neighbourBackward ?predicateBackward ?about .
+#	?neighbourForward rdfs:label ?label1 .
+#	?neighbourBackward rdfs:label ?label2 .
 }
 WHERE {
 
 	LET ( ?about := {{{about}}} )
 
-	{ ?about ?predicateForward ?neighbourForward
+	{ ?about ?predicateForward ?neighbourForward .
+#		OPTIONAL { ?neighbourForward rdfs:label ?label1 }
 		BIND (?neighbourForward as ?neighbour)
 	}
 	UNION
-	{ ?neighbourBackward ?predicateBackward ?about
+	{ ?neighbourBackward ?predicateBackward ?about .
+#		OPTIONAL { ?neighbourBackward rdfs:label ?label2 }
 		BIND (?neighbourBackward as ?neighbour)
 		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session }
 	}
-
-	# Ignore 
-
 
 }
