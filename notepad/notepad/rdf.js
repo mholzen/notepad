@@ -124,6 +124,22 @@
 
         return this;
     };
+    var memResource = {};
+    toResource = function(value) {
+        var resource;
+        if (memResource[value]) {
+            return memResource[value];
+        }
+        resource = new Resource(value);
+        if (memResource[resource]) {
+            return memResource[resource];
+        } else {
+            memResource[resource] = resource;
+            return resource;
+        }
+    };
+    $.notepad.toResource = toResource;
+
     Resource.prototype = {
         isBlank: function() {
             return (this.resource.type == 'bnode');
@@ -209,9 +225,9 @@
             subject = tripleOrSubject;
         }
 
-        this.subject = new Resource(subject);
-        this.predicate = new Resource(predicate);
-        this.object = new Resource(object);
+        this.subject = toResource(subject);
+        this.predicate = toResource(predicate);
+        this.object = toResource(object);
         this.operation = operation || "update";
         if ( this.subject === undefined ) {
             throw new Error("triple with no subject");

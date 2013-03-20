@@ -10,6 +10,7 @@ test("resources", function() {
     //equal(new Resource("a"), new Resource("a"), "two identical resources must be equal");
 
     ok(new Resource("rdfs:member") == "rdfs:member");
+    ok(toResource("rdfs:member") == toResource("rdfs:member"), "instances should be static final");
     ok(new Resource("_:blank").isBlank(), "a blank node should return an rdf resource blank node");
     ok(new Resource("http://example.com").isUri(), "a node with http:// should be of type uri");
     equal(new Resource("Text").toRdfResource().type,'literal', "a node with text should be of type literal");
