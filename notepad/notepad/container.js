@@ -179,7 +179,7 @@
             // Update the immediate descendant children
             var container = this;
 
-            console.debug("updating container with ", triples.length, " triples.");
+            console.groupCollapsed("updating container with ", triples.length, " triples");
 
             triples.sort();
 
@@ -245,8 +245,8 @@
             });
 
             this._updateLabelsFromRdf(triples);
-
-            console.debug('triggering contentchanged on ', this.getUri());
+            console.groupEnd();
+            console.info('triggering contentchanged on ', this.getUri());
             this.element.trigger('contentchanged');
         },
         _updateLabelsFromRdf: function(triples) {
