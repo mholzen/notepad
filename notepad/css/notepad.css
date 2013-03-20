@@ -211,7 +211,7 @@ ul {
 
 .notepad-object3:not([about]) {
     display: inline-block;
-    width: 600px;
+    min-width: 400px;
     padding-right: 3px;
 }
 
