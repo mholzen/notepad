@@ -350,10 +350,10 @@ ul {
     width: auto;
 }
 
-.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 [rel="rdfs:label"]:before {
+.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 .value:before {
     content: "(";
 }
-.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 [rel="rdfs:label"]:after {
+.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 .value:after {
     content: ")";
 }
 
@@ -421,12 +421,12 @@ ul {
     margin-bottom: .5em;
 }
 
-.notepad .title [property] {
+.notepad .title [rel] {
     font-size: .4em;
     margin-bottom: .5em;
 }
 
-.notepad .title [property="rdfs:label"] {
+.notepad .title [rel="rdfs:label"] {
     font-size: 1em;
     font-weight: bold;
 }
