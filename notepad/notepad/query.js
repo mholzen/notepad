@@ -135,4 +135,58 @@
         });
     }
 
+
+    $.widget("notepad.query", {
+
+        options: {
+            query: $.notepad.queries.describe
+        },
+        _setOption: function(key, value) {
+            this._super(key, value);
+            switch (key) {
+                case 'query':
+                break;
+            }
+        },
+        _create: function() {
+        },        
+        _destroy: function() {
+        },
+        query: function() {
+            return this.options.query;
+        },
+        load: function(callback) {
+            var endpoint = this.element.findEndpoint();
+            if (!endpoint) {
+                return;
+            }
+            var callback = callback || this.updateAll.bind(this);
+            return this.query().execute(endpoint, undefined, callback);
+        },
+
+        // Consider: seems weird that Query has a method update
+        update: function(triple) {
+
+            // // find objects
+            // var objects = this.element.findObjects(triple);
+            // objects.each(function() {
+            //     $(this).object();       // should have no effect if we already have an object here
+            //     $(this).data('notepadObject').update(triple);
+            // });
+
+            // Predicates handle a new triple to be added
+            var predicates = this.element.findPredicates(triple.subject, triple.predicate);
+            predicates.each(function() {
+                $(this).predicate({label: null});        // consider: make label=null the default
+                $(this).data('notepadPredicate').update(triple);
+            });
+
+            // var containers = this.element.findContainers(triple) /* container */ ;
+            // containers.update(triple)
+        },
+        updateAll: function(triples) {
+            return _.each(triples, this.update.bind(this));
+        }
+    });
+
 }(jQuery));

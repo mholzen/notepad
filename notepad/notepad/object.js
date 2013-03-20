@@ -1,5 +1,95 @@
 (function($, undefined) {
 
+    function predicateSelector(predicate) {
+        return predicate ?
+            '[rel="'+predicate+'"],[rev="'+predicate+'"]' :
+            '[rel],[rev]';
+    }
+
+    $.fn.closestSubjectLocation = function(uri) {
+        var selector = uri ? '[about='+uri+']' : '[about]';
+        return this.closest(selector);
+    }
+
+    $.fn.closestSubjectUri = function(uri) {
+        var location = this.closestSubjectLocation(uri);
+        if ( !location.length ) {
+            return;
+        }
+        return toResource(location.attr('about'));
+    }
+
+    $.fn.closestPredicate = function(predicate) {
+        return this.closest(predicateSelector(predicate));
+    }
+
+    $.fn.findSubjects = function(subject) {
+        var selector = subject ? '[about="'+subject+'"]' : '[about]';
+        var children = this.find(selector);
+        var self = this.filter(selector);
+        return self.add(children);
+    }
+
+    $.fn.findPredicates = function(subject, predicate) {
+        var subjects = this.findSubjects(subject);
+        if ( this.closestSubjectLocation(subject).length ) {
+            subjects = subjects.add(this);
+        }
+
+        var predicates = subjects.find(predicateSelector(predicate));
+        predicates = predicates.add(this.filter(predicate));      // adding self if it matches
+
+        if ( !subject ) {
+            return predicates;
+        }
+        // Filter out any predicates that relate to another subject
+        return predicates.filter(function(index, element) {
+            return $(element).closestSubjectUri() === toResource(subject);       // consider: better impl?
+        });
+    }
+
+    $.fn.findObjectLocations = function(triple) {
+        var subject = triple ? triple.subject : undefined;
+        var predicate = triple ? triple.predicate : undefined;
+
+        // Not sure if the predicate is the location for an object widget
+        // or whether I should find a .value or [content] element
+        var predicates = this.findPredicates(subject, predicate);
+
+        var objectSelector = '.value, [content], [about], :notepad-object';
+        // var selector = ':notepad-object';
+        // var selector = ':notepad-object, [content], [about]';
+
+
+
+        // recursive?
+
+
+        var selector = ':not('+objectSelector+') > ' + objectSelector + ',' + objectSelector;
+
+        var objects = predicates.find(selector);
+        var texts = predicates.filter(function(i,element) {
+            // consider: use [content] in addition to text()
+            return $(element).text().length > 0;
+        });
+
+        objects = objects.add(texts);
+        return objects;
+    }
+
+    $.fn.findObjects = function(triple) {
+        var elements = this.findObjectLocations(triple);
+        var objects = elements.map(function(i,element) {
+            return $(element).object().data('notepadObject');
+        }).toArray();
+        return objects;
+    }
+
+    $.fn.triples = function() {
+        return toTriples(_.map(this.findObjects(), function(o) { return o.triple(); }));
+    },
+
+
     $.widget("notepad.object", {
 
         // manages a literal or a uri
