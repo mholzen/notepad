@@ -2,22 +2,54 @@
 
     $.notepad = $.notepad || {};
 
-    Query = function(sparql, context) {
+    Query = function(sparql, context, name) {
         this.sparqlTemplate = sparql;           // default to describe?
         this.context = context || {};
+        this._name = name;
     };
     Query.prototype = {
-        toSparql: function(context) {
+
+        sparqlContext: function(context) {
             var ctx = this.context;
             $.extend(ctx, context);
-            return Mustache.render(Mustache.render(Mustache.render(this.sparqlTemplate, ctx), ctx), ctx);  // TODO: HAHAHAHA
+            // Replace resources with their sparqlStrings
+            _.map(ctx, function(value, name) {
+                if (value instanceof Resource) {
+                    ctx[name] = value.toSparqlString();
+                }
+            });
+            return ctx;
+        },
+        template: function(context) {
+            return this.sparqlTemplate.replace(/\u00A0/g, ' '); // ignore non-breaking space (nbsp)
+        },
+        toSparql: function(context) {
+            var ctx = this.sparqlContext(context);
+            return Mustache.render(Mustache.render(Mustache.render(this.template(), ctx), ctx), ctx);  // TODO: HAHAHAHA
         },
         where: function() {
             return this.sparqlTemplate.match(/WHERE\s*{\s*([\s\S]*)\s*}/i)[1];
         },
+        name: function() {
+            return this._name || this.toSparql().replace(/\s+/mg,' ').substring(0,50);
+        },
         execute: function(endpoint, context, callback) {
             var sparql = this.toSparql(context);
-            endpoint.execute(sparql, callback);
+
+            console.groupCollapsed('query', 'executing', this.name(), 'with', this.context);
+            console.log('query', this);
+            console.groupEnd();
+
+            return endpoint.execute(sparql, function(triples) {
+
+                console.groupCollapsed('query', 'received ', triples.length, ' triples');
+                if (triples.length > 0) {
+                    console.log(triples.toTurtle());
+                }
+                console.groupEnd();
+                
+                callback(triples);
+            });
         },
         appendPattern: function(pattern) {
             var insertPosition = this.sparqlTemplate.lastIndexOf('}');
@@ -44,7 +76,7 @@
         var sparql = 'CONSTRUCT {?s ?p ?o} WHERE { ?s ?p ?o FILTER( sameTerm(?s, {{{about}}}) \
             && ( ?p in (' + predicates.join(",") + ') ) ) }';
         sparql = sparql + '\n # query:cache';
-        return new Query(sparql);
+        return new Query(sparql, {}, 'querying predicates: '+predicates.join(','));
     }
     $.notepad.queryFromPredicates = queryFromPredicates;
 
@@ -99,7 +131,7 @@
     if ($.notepad.templates) {
         $.notepad.queries = $.notepad.queries || {};
         _.each($.notepad.templates, function(query,name) {
-            $.notepad.queries[name] = new Query(query);
+            $.notepad.queries[name] = new Query(query, {}, name);
         });
     }
 
