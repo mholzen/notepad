@@ -206,10 +206,6 @@
             this.setObjectResource(triple.object);
         },
 
-        // Object representation
-        getLinePredicateUri: function() {
-            return "rdfs:label";
-        },
         _setLinePredicateUri: function() {
             throw new Error("not yet implemented");
         },
