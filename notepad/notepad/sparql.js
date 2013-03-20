@@ -64,7 +64,6 @@ FusekiEndpoint.prototype = {
         var finalCallback;
         if (callback) {
             finalCallback = function(response, status, xhr) {
-                console.debug("received results");
                 var type = xhr.getResponseHeader("Content-Type");
                 if (type.contains('application/rdf+json')) {
                     var databank = $.rdf.databank();
@@ -101,8 +100,6 @@ FusekiEndpoint.prototype = {
         });
     },
     execute: function(sparql, callback) {
-        console.info('execute:', sparql.replace(/\s+/mg,' ').substring(0,120));
-
         var isRead = sparql.match(/^\s*(construct|describe|ask|select)/i);
         var sparql = this.prefixes() + sparql;
         if (isRead) {
