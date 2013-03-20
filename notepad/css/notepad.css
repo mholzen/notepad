@@ -33,10 +33,17 @@ body {
     padding-left: 0;
 }
 
+ul {
+    padding-left: 30px;
+}
+
 /*
  * ICONS
  */
-
+#icons {
+    margin: auto;
+    width: 700px;
+}
 #icons a {
     padding-left: 50px;
     padding-right: 50px;
@@ -294,7 +301,7 @@ body {
 }
 .debug td {
     border: solid 1pt black;
-    white-space: pre;
+    white-space: pre-wrap;
     font-family: courier;
     font-size: xx-small;
 }
@@ -352,6 +359,7 @@ body {
 
 .notepad-filters .notepad-fact {
     background: #eef;
+    border-radius: 5px;
 }
 
 [rel="sp:predicate"] {
@@ -463,8 +471,9 @@ body {
 [rel="nmo:htmlMessageContent"] > .notepad-object3  {
     border: solid 1px gray;
     border-radius: 2px;
+    box-shadow: 0px 0px 6px 0px #aaa inset;
     padding: 10px;
-    
+   
     overflow: scroll;
     max-height: 400px;
 }
@@ -472,10 +481,13 @@ body {
 [rel="nmo:plainTextMessageContent"] > .notepad-object3  {
     border: solid 1px gray;
     border-radius: 2px;
+    box-shadow: 0px 0px 6px 0px #aaa inset;
     padding: 10px;
+
     white-space: pre;
     font-family: Courier;
     font-size: small;
+    line-height: normal;
 
     overflow: scroll;
     max-height: 400px;
