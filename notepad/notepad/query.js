@@ -36,7 +36,7 @@
         execute: function(endpoint, context, callback) {
             var sparql = this.toSparql(context);
 
-            console.groupCollapsed('query', 'executing', this.name(), 'with', this.context);
+            console.groupCollapsed('query:', 'executing:', this.name(), 'with', this.context);
             console.log('query', this);
             console.groupEnd();
 

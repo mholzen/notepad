@@ -144,7 +144,6 @@
             return label.data('notepadLabel').triplesInDomPath();
         },
 
-
         refresh: function() {
             if (this.getUri() === undefined) {
                 return;
@@ -152,21 +151,18 @@
             return this.load();
         },
         load: function() {
+            var endpoint = this.element.findEndpoint();
+            if (!endpoint) {
+                return;
+            }
+
             var container = this;
             var query = this.getQuery();
-
-            console.debug("describe(", $.notepad.toUri(query.context.about), ") into ", this.element[0], query);
-
-            query.execute(this.element.findEndpoint(), {}, function(triples) {
-
-                console.debug("received ", triples.length, " triples from describe(", $.notepad.toUri(query.context.about), ")" );
-
+            query.execute(endpoint, {}, function(triples) {
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
                     container.option('describeElements', false);
                 }
-
                 container._updateFromRdf(triples);
-
             });
         },
         unload: function() {
@@ -324,11 +320,10 @@
             var container = this;
 
             this.element.on('contentchanged', function(event) {
-                console.debug('container lines:', container.getLines().length);
                 event.stopPropagation();
                 if (container.getLines().length < MAX_TRIPLES_BEFORE_FILTERING) {
-                    console.debug("too few lines so doing nothing with filters");
-                    return;
+                    console.info("too few lines so doing nothing with filters");
+                    return false;
                 }
 
                 // Remove unselected filters
@@ -364,19 +359,3 @@
     });
 
 }(jQuery));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

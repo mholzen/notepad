@@ -108,56 +108,6 @@
         },
 
 
-        // getUri: function() {
-        //     return this.element.attr('about');
-        // },
-
-        // // URI or Literal
-        // isLiteral: function() {
-        //     return (this.getUri() === undefined && this.getLiteral() !== undefined && this.getLiteral().length > 0);
-        // },
-        // getUriSparql: function() {
-        //     return new Resource(this.getUri()).toSparqlString();
-        // },
-        // getUriElement: function() {
-        //     if (this.options.uriElement) { return this.options.uriElement; }
-        //     return this.element;
-        // },
-        // setUri: function(uri) {
-        //     if (uri === undefined) {
-        //         throw new Error("cannot set uri to undefined");
-        //     }
-        //     if (uri == this.getUri()) {
-        //         return;
-        //     }
-        //     this._setUri(uri);
-        //     this.uriChanged();
-
-        //     // Trigger the event only after the label has displayed itself
-        //     // so that: dependent DOM elements can avoid redisplaying a triple that is already displayed here
-
-        //     // this._trigger("urichange"); // will trigger 'labelurichange'
-
-        //     // Does this get captured by parent elements of this one, when this is triggered by a child.
-        //     // It should *not* propagate to parents
-
-        //     this.element.trigger("labelurichange"); // does not add widget prefix.
-        // },
-        // _setUri: function(uri) {
-        //     this.getUriElement().attr(this.options.uriAttr, uri);
-        //     return this;
-        // },
-        // _unsetUri: function() {
-        //     this.getUriElement().removeAttr(this.options.uriAttr);
-        // },
-        // newUri: function() {
-        //     this._setUri($.notepad.getNewUri());
-        // },
-        // ensureUri: function() {
-        //     if (this.getUri() !== undefined) { return this.getUri(); }
-        //     this._setUri($.notepad.getNewUri());
-        // },
-
         // Set up the widget
         _create: function() {
 
