@@ -144,9 +144,6 @@
             return triples;
         },
 
-        literals: function() {
-            return this.triples().literals();
-        },
         focus: function() {
             this.element.find('[contenteditable="true"]:eq(0)').focus();
         },

@@ -423,8 +423,8 @@
             subjectIndex: { value: function() {
                 return _.reduce(this, function(memo, triple) { memo[triple.subject] = triple; return memo; }, {});
             } },
-            objects: { value: function() {
-                return _.map(this, function(triple) { return triple.object; });
+            objects: { value: function(subject, predicate) {
+                return this.triples(subject, predicate).map(function(triple) { return triple.object; });
             } },
             objectIndex: { value: function() {
                 return _.reduce(this, function(memo, triple) { memo[triple.object] = triple; return memo; }, {});
@@ -467,8 +467,14 @@
             toString: { value: function() {
                 return this.triples(undefined, "notepad:reason").objects().join(",");
             } },
-            literals: { value: function() {
-                return this.filter(function(triple) { return triple.object.isLiteral(); });
+            literals: { value: function(subject, predicate) {
+                return this
+                    .triples(subject, predicate)
+                    .filter(function(triple) { return triple.object.isLiteral(); })
+                    .objects();
+            } },
+            literal: { value: function(subject, predicate) {
+                return this.literals(subject, predicate).join();
             } },
         };
 

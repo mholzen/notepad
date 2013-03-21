@@ -116,6 +116,17 @@ test("triples", function() {
     equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
 });
 
+test('triples.literal', function() {
+    var triples = toTriples(toTriple(':s', ':p1', '1'));
+    assertThat(triples.literal(), '1');
+
+    triples.add(toTriple(':s2', ':p2', '2'));
+    assertThat(triples.literal(), '1,2');
+    assertThat(triples.literal(':s'), '1');
+    assertThat(triples.literal(undefined, ':p1'), '1');
+});
+
+
 test("triples from JSON", function() {
     var json = { 
         "http://ex.com/1" : { 
