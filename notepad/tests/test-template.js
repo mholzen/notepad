@@ -1,17 +1,3 @@
-test("context", function() {
-
-    var dateLiteral = $.rdf.literal('"2013-01-01"^^xsd:date' , { namespaces: $.notepad.namespaces } );
-    var dateResource = new Resource(dateLiteral);
-    var triple = new Triple(":s", ":p", dateResource);
-
-    var template = new Template();
-    var context = template.context(toTriples(triple));
-
-    equal(context, []);
-
-
-});
-
 test("basic", function() {
     var templateString = '' +
     '{{#:p1}}' +
