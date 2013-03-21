@@ -1,5 +1,15 @@
 (function($, undefined) {
 
+    function predicateSelector(predicate) {
+        return predicate ?
+            '[rel="'+predicate+'"],[rev="'+predicate+'"]' :
+            '[rel],[rev]';
+    }
+
+    $.fn.closestPredicate = function(predicate) {
+        return this.closest(predicateSelector(predicate));
+    }
+
     $.widget("notepad.object", {
 
         // manages a literal or a uri
@@ -37,25 +47,38 @@
             }
             return this.element.data('notepadLiteral');
         },
+        setLiteral: function(literal) {
+            return this.literal().setLiteral(literal);
+        },
         uri: function() {
-            if (!this.element.data('notepadUrilabel')) {
-                if (this.element.data('notepadLiteral')) {
-                    this.element.data('notepadLiteral').destroy()
-                }
-                this.element.urilabel();
-            }
+            if (!this.isUri()) {
+                this.element.urilabel({templateReceived: function(triples) {
+                    // update menu
+                    $("#menu .templates").attr('about', $.notepad.getNewUri());
+                    $("#menu .templates").container().data('notepadContainer').addSubjects(urilabel.templates());
+                }});
+            }            
             return this.element.data('notepadUrilabel');
         },
-
-        setObject: function(resource) {
-            if (resource.isLiteral()) {
-                this.literal().setLiteral(resource);
+        setUri: function(uri) {
+            return this.uri().setUri(uri);
+        },
+        setObject: function(object) {
+            if (typeof object === "string") {
+                object = toResource(object);
+            }
+            if (object.isLiteral()) {
+                this.literal().setLiteral(object);
                 return this;
-            } else if (resource.isUri()) {
-                this.uri().setUri(resource);
+            } else if ( object.isUri() || object.isBlank() ) {
+                this.uri().setUri(object);
                 return this;
             }
             throw new Error("cannot set an object that is neither a literal or a URI");
+        },
+        update: function(triple) {
+            // could verify the triple is related
+            this.setObject(triple.object);
         },
         getObject: function() {
             if (this.isUri()) {
@@ -65,9 +88,13 @@
                 return this.literal().getLiteral();
             }
         },
-
         getPredicate: function() {
-            return this.element.closest(":notepad-predicate").data('notepadPredicate');
+            var element = this.element.closestPredicate();
+            var predicate = element.data('notepadPredicate');
+            if (predicate) {
+                return predicate;
+            }
+            return element.predicate({label: null}).data('notepadPredicate');
         },
         getPredicateUri: function() {
             var predicate = this.getPredicate();
@@ -79,27 +106,44 @@
         },
         triple: function(object) {
             var subject, predicate;
-
             if (! (predicate = this.getPredicateUri())) {
                 return undefined;
             }
             if (! (subject = this.getSubjectUri())) {
                 throw new Error("cannot find a subject URI but can find a predicate URI (ie. inconsistent state)");
             }
-            // if (!this.getPredicate().isForward()) {
-            //     throw new Error("cannot get a backward triple with a literal as subject");
-            // }
             var object = object || this.getObject();
             if (!object) {
                 return undefined;
             }
-            return new Triple(subject, predicate, object);
+            if (this.getPredicate().isForward()) {
+                return new Triple(subject, predicate, object);    
+            } else {
+                if (object.isLiteral()) {
+                    throw new Error("cannot get a backward triple with a literal as subject");    
+                }
+                return new Triple(object, predicate, subject);
+            }
         },
         triples: function() {
             var triples = new Triples();
             triples.add(this.triple());
+            if (this.isUri()) {
+                triples.add(this.uri().triples());
+            }
             return triples;
         },
+
+        triplesInDomPath: function() {
+            var triples = new Triples();
+            triples.add(this.triple());
+            var parentNode = this.element.parent().closest(":notepad-container");
+            if (parentNode.length) {
+                triples.add(parentNode.data('notepad-container').triplesInDomPath());
+            }
+            return triples;
+        },
+
         literals: function() {
             return this.triples().literals();
         },
@@ -110,9 +154,9 @@
 
         // Set up the widget
         _create: function() {
-
             var about = this.element.attr('about');
-            if (about) {
+            var isPredicate = this.element.attr('rel') || this.element.attr('rev');
+            if (about && !isPredicate) {
                 this.element.urilabel();
             } else {
                 this.element.literal();

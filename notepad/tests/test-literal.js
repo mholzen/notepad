@@ -1,3 +1,30 @@
+test("init", function() {
+    var element;
+
+    element = $("<div>123</div>");
+    element.literal();
+    assertThat(element.data('notepadLiteral').getLiteral(), "123");
+
+    element = $('<div><div class="value">123</div></div>');
+
+    element.literal();
+    assertThat(element.data('notepadLiteral').getLiteral(), "123");
+});
+skippedTest("findObjectLocation", function() {
+    var dom = $('<div about=":marc"><div rel=":first">Marc</div></div>');
+
+    var objectLocations = dom.findObjectLocations(':marc', ':first');
+    assertThat(objectLocations.text(), 'Marc');
+
+    var objects = objectLocations.object();
+    objects.data('notepadObject').setObject(toResource("Marc"));
+    assertThat(dom.text(), "Marc");
+
+    var objectLocations = dom.findObjectLocations(':marc', ':first');
+    assertThat(objectLocations.length, 1);
+
+});
+
 module("mock findEndpoint", {
     setup: function() {
         $.fn.findEndpoint = mockFunction("findEndpoint", $.fn.findEndpoint);
@@ -28,31 +55,16 @@ test("create with triple", function() {
 	var literal = l.data('notepadLiteral');
     assertThat(literal.triples(), []);
 
-    literal.setLiteralWithoutRange("literal");
+    literal._setLiteral("literal");
     assertThat(literal.getLiteral(), "literal");
 
 	assertThat(literal.triples(), [':s :p "literal" .']);
 
     var dateLiteral = $.rdf.literal('"2013-01-01"^^xsd:date' , { namespaces: $.notepad.namespaces } );
     var dateResource = new Resource(dateLiteral);
-    literal.setLiteral(dateResource);
+    literal._setLiteral(dateResource);
 
-    assertThat(literal.triples(), [':s :p "literal" .']);
+    assertThat(literal.triples(), [':s :p "2013-01-01" .']);
+    start();
 
-});
-
-test("create object with triple", function() {
-
-	var s = $('<div about=":s">');
-	var p = $('<div rel=":p">').appendTo(s).predicate();
-	var o = $('<div>').appendTo(p).object();
-
-	var object = o.data('notepadObject');
-    assertThat(object.triples(), []);
-
-    object.setObject(new Resource("literal"));
-	assertThat(object.triples(), [':s :p "literal" .']);
-
-    object.setObject(new Resource(':o'));
-	assertThat(object.triples(), [':s :p :o .']);
 });

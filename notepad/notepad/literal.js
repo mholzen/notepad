@@ -1,23 +1,75 @@
 (function($, undefined) {
 
+    $.widget("notepad.xsdstring", {
+        setLiteral: function(literal) {
+            this.element.text(literal.toString());
+        },
+        text: function() {
+            //return this.element.find('*').map(function(i,e) { return e.text(); }).toArray().join("\n");
+            return this.element.text();
+        },
+        getLiteral: function() {
+            var string = this.text();
+            if (string.length === 0) {
+                return;
+            }
+            return toResource(string);
+        },
+        _create: function() {
+            this.element.autocomplete2();
+            this.element.attr('contenteditable', 'true');
+        },
+        _destroy: function() {
+            this.element.removeAttr('contenteditable');
+            this.element.data('notepadAutocomplete2').destroy();
+            this.element.text("");
+        }
+    });
+    $.widget("notepad.rdfxmlliteral", {
+        setLiteral: function(literal) {
+            this.element.html(literal.toString());
+        },
+        getLiteral: function() {
+            var resource = new Resource(this.element.html());
+            resource.resource.datatype = 'rdf:XMLLiteral';
+            return resource;
+        },
+        _create: function() {
+        },
+    });
+    $.widget("notepad.xsddate", {
+        setLiteral: function(literal) {
+            var date = new Date(literal)
+            this.element.attr('content', date.valueOf());
+            this.element.text(moment(date.valueOf()).fromNow());
+        },
+        getLiteral: function() {
+            var date = this.element.attr('content');
+            if (date.length === 0) {
+                return;
+            }
+            return new Resource(date+'^^xsd:date');
+        },
+        _create: function() {
+            this.element.datepicker();
+        },
+    });
+
     var types = {
         'xsd:string': {
-            widget: $.notepad.autocomplete2,
-            setLiteral: function(literal) { this.element.text(escape(literal)); },
-            getLiteral: function() { return this.element.text(); },
+            widget: $.fn.xsdstring,
+            name: 'notepadXsdstring'
         },
-        'xsd:date': {
-            widget: $.fn.datepicker,
-            setLiteral: function(literal) { this.element.text(literal); },      // could use get/setDate
-            getLiteral: function() { return this.element.text(); },
+        'rdf:XMLLiteral': {
+            widget: $.fn.rdfxmlliteral,
+            name: 'notepadRdfxmlliteral'
         },
-        'XMLLiteral': {
-            setLiteral: function(literal) { this.element.html(literal); },
-            getLiteral: function() { return this.element.html(); },
+        'xsd:dateTime': {
+            widget: $.fn.xsddate,
+            name: 'notepadXsddate'
         },
-    };
 
-    // when I set a literal to a literal of a different type, what should happen?
+    }
 
     $.widget("notepad.literal", $.notepad.object, {
 
@@ -31,100 +83,77 @@
 
         // q: how does it interact with label and urilabel?
 
-
-        options: { 
-            template: 
-                '{{#xsd:date}}' +
-                    '<div class="uiDatepicker literal">{{xsd:date}}</div>' +
-                '{{/xsd:date}}' +
-                '{{#rdf:XMLLiteral}}' +
-                    '<div class="literal">{{{rdf:XMLLiteral}}}</div>' +
-                '{{/rdf:XMLLiteral}}' +
-                '{{^rdf:XMLLiteral}}' +
-                    '<div class="notepadAutocomplete literal" contenteditable="true">{{xsd:string}}</div>' +
-                '{{/rdf:XMLLiteral}}' +
-                '',
-
-            dynamicTemplate:    true,
+        // Set up the widget
+        _create: function() {
+            this._super();
+            if ( ! this.value().length ) {
+                this.element.wrapInner('<div class="value">');
+            }
+            this.option('type', 'xsd:string');
         },
+
+        value: function() {
+            return this.element.children('.value');
+        },
+
+        _destroy : function() {
+            this.literal()._destroy();
+            this.value().remove();
+        },
+
         _setOption: function(key, value) {
             this._super(key, value);
             switch (key) {
-                case 'template':
-                    this.template = value;
+                case 'type':
+                    var type = types[value.toString()] || types['xsd:string'];
+                    type.widget.apply(this.value());
+                    this.options.name = type.name;
                 break;
             }
         },
 
-        _createTemplateElement: function() {
-            return $('<div class="notepad-template">').appendTo(this.element);
+        literal: function() {
+            return this.value().data(this.options.name);
         },
-        getTemplateElement: function() {
-            var el = this.element.children(".notepad-template");
-            if (el.length > 0) {
-                return el;
-            }
-            return this._createTemplateElement();
-        },
+
         getLiteral: function() {
-            var text = this.getTemplateElement().find('.literal').text() || $(this.element).text();
-            return (text.length !== 0) ? new Resource(text) : undefined;
+            return this.literal().getLiteral();
         },
-        setLiteralWithoutRange: function(literal) {
-            var type = literal.datatype();
-            var widgetname = types[type].widgetname;
-            var widget = this.element.data(widgetname);
 
-            if (!widget) {
-                // remove 
+        _setLiteral: function(literal) {
+            if (typeof literal === "string") {
+                if (literal.length === 0) {
+                    return;
+                }
+                literal = new Resource(literal);
             }
-
-            if (widget) {
-                this.element.widget();
-            }
-            widget.setLiteral(literal);
+            this.option('type', literal.datatype());
+            this.literal().setLiteral(literal);
         },
 
         setLiteral: function(literal) {
             // Set Literal using predicate ranges
-            var label = this;
-            this.element.findEndpoint().describe(this.getPredicateUri(), function(triples) {
+            var self = this;
 
+            // var endpoint = this.element.findEndpoint();
+            // if (!endpoint) {
+            //     // this doesn't return a promise.  should it?
+            //     return self._setLiteral(literal);
+            // }
+
+            return $.notepad.queries.describe_predicate.execute(this.element.findEndpoint(), {predicate: this.getPredicateUri().toSparqlString()}, function(triples) {
                 // filter could be added to the query instead of filtered here
-                triples = triples.triples(undefined, 'rdfs:range', undefined);
+                var ranges = triples.objects(undefined, 'rdfs:range');
 
-                triples.add(label.triple(literal));
+                if (ranges.length === 0) {
+                    return self._setLiteral(literal);
+                }
 
-                label.update(triples);
+                literal = new Resource(literal);
+                literal.resource.datatype = ranges[0];
+                self._setLiteral(literal);
             });
 
-        },
-
-        update: function(triples) {
-            var template = new Template(this.options.template);
-            var html = template.render(triples);
-
-            this.getTemplateElement().empty();
-            this.getTemplateElement().append(html);
-
-            // Apply any widget constructors to this.getTemplateElement()
-            // autocomplete
-
-            // Should autocomplete get applied on
-            // a) every text literal?  or 
-            //      setting literal causes destroy() and create() of a new widget
-            // b) when focus is given to text literal?
-            this.getTemplateElement().find(".notepadAutocomplete").autocomplete2();
-
-            this.getTemplateElement().find(".uiDatepicker").datepicker();
-        },
-
-        // Set up the widget
-        _create: function() {
-            this._super();
-            this.setLiteral(this.getLiteral());
-        },
-        _destroy : function() {
         },
 
     });
