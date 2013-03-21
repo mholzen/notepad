@@ -93,6 +93,11 @@ ul {
     border-radius: 5px
 }
 
+.notepad-predicate-label [rel="rdfs:label"] [contenteditable="true"],
+.notepad-predicate-label [rel="notepad:inverseLabel"] [contenteditable="true"] {
+    display: inline;
+}
+
 /* Better merge the following with the above */
 .notepad-predicate-label .notepad-template .uri {
     font-style: italic;
@@ -334,13 +339,14 @@ ul {
  * FILTERS
  */
 
-.notepad-filters > .notepad-fact > .notepad-predicate > .notepad-predicate-label {
+.notepad-filters > .notepad-fact > .notepad-predicate-label {
     display: none;
 }
-.notepad-filters .notepad-predicate {
+.notepad-filters .notepad-predicate,
+.notepad-filters .value {
     display: inline;
 }
-.notepad-filters .notepad-predicate[rel="rdfs:label"] {
+.notepad-filters > .notepad-fact > .notepad-predicate[rel="rdfs:label"] {
     display: none;
 }
 .notepad-filters .notepad-predicate .notepad-object3 {
@@ -350,10 +356,10 @@ ul {
     width: auto;
 }
 
-.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 [rel="rdfs:label"]:before {
+.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 .value:before {
     content: "(";
 }
-.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 [rel="rdfs:label"]:after {
+.notepad-filters .notepad-predicate[rel="rdfs:count"] .notepad-object3 .value:after {
     content: ")";
 }
 
@@ -366,7 +372,7 @@ ul {
     margin-right: 5px;
     font-style: italic;
 }
-[rel="sp:predicate"] .notepad-label:after {
+[rel="sp:predicate"] .value:after {
     content: ": ";
 }
 

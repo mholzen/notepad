@@ -12,19 +12,15 @@
 
         setUri: function(uri) {
             this.element.attr('about', uri);
-            if (!this.getSubjectLabel()) {
-                this._insertSubjectLabel();
-                this.getSubjectLabel().load();
-            }
         },
         getUri: function() {
             return this.element.closest('[about]').attr('about');
         },
         getSubjectLabel: function() {
-            return this.element.children('.notepad-label').data('notepadLabel');
+            return this.element.find(':notepad-urilabel').data('notepadUrilabel');
         },
         _insertSubjectLabel: function() {
-            $('<div>').prependTo(this.element).label({uriElement: this.element});
+            $('<div class="subject">').prependTo(this.element).urilabel({uriElement: this.element});
         },
 
         getPredicates: function(predicateUri) {
@@ -59,14 +55,21 @@
             predicate.add(triple);
 
         },
+        update: function(triple) {
+            this.element.findPredicates(triple).each(function() {
+                this.update(triple);
+            });
+        },
 
         triples: function() {
             var triples = new Triples();
-            if (this.getSubjectLabel() && this.getSubjectLabel().triple()) {
-                triples.push(this.getSubjectLabel().triple());
+            var subjectLabel = this.getSubjectLabel();
+            if (subjectLabel) {
+                triples.add(subjectLabel.triples());
             }
+            
             _.each(this.getPredicates(), function(predicate) {
-                $.merge(triples, predicate.triples());
+                triples.add(predicate.triples());
             });
             return triples;
         },
