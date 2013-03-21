@@ -56,6 +56,7 @@
     function knownScheme(value) {
         return ["http", "https", "file", "urn", "mailto"].indexOf(scheme(value)) != -1;
     }
+    $.notepad.knownScheme = knownScheme;
 
     // Resource and Triple abstract the interface between Notepad and an RDF library
     _stringToRdfResource = function(value) {
