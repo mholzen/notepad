@@ -1,5 +1,132 @@
 QUnit.file = "notepad-predicate.js: "
 
+test("nested object locations", function() {
+    var element, object;
+    element = $('<div class="value"><div class="value"></div></div>');
+
+    assertThat(element.findObjectLocations().length, 1);        // or 2?
+});
+
+test("triples", function() {
+    var element, object;
+    element = $('<div about=":marc" rel=":first"/>');
+    assertThat(element.triples().length, 0);
+
+    element.predicate();
+    var predicate = element.data('notepadPredicate');
+    predicate.add(toTriple(":marc", ":first", "Marc"));
+
+    assertThat(element.triples().length, 1, "test: nested object locations");
+    assertThat(element.triples().length, 1, "should be idempotent");
+
+    predicate.update(toTriple(":marc", ":first", "Marco"));
+    assertThat(element.triples().length, 1);
+
+    predicate.add(toTriple(":marc", ":first", "Marc"));
+    assertThat(element.triples().length, 2);
+
+});
+
+test("object", function() {
+    var element, object;
+    element = $('<div about=":marc" rel=":first">Marc</div>');
+    element.object();
+    object = element.data('notepadObject');
+    assertThat(object.triple().object, "Marc");
+    assertThat(element.triples(), [':marc :first "Marc" .']);
+    // if an object is also a predicate, then it is a literal
+
+    element.predicate();
+    var predicate = element.data('notepadPredicate');
+    predicate.insertObject();
+    predicate.getObjects()[0].setObject('Marc');
+
+    assertThat(element.findObjectLocations().length, 2);
+    assertThat(element.triples(), 1);
+    assertThat(element.triples().length, 1);
+    console.log(element.findObjects());
+});
+
+test("display vs edit", function() {
+
+    var element = $('<div about=":marc" rel=":first"/>');
+    predicate = element.predicate().data('notepadPredicate');
+    predicate.update(toTriple(":marc", ":first", "Marc"));
+
+    element = $('<div about=":marc" rel=":first" contenteditable="true" class="notepad-autocomplete"/>');
+    predicate = element.predicate().data('notepadPredicate');
+    element.focus().text('Marc');
+    assertThat(predicate.triples()
+        [':marc :first :o1', ':o1 rdfs:label "Marc"']
+        );
+}); 
+
+test("update", function() {
+
+    var dom;
+
+    // :s :p ("1", "2", "3", "<a>4</a>"^^xsd:XMLLiteral, :o5)  
+
+    dom = $(
+    '<div about=":s" rel=":p">1' +              // content="1" should take precedence over the text element
+        '<div content="2"/>' +
+        '<div class="value">3</div>' +
+        '<div class="value"><a>4</a></div>' +
+        '<div about=":o5"/>' +
+    '</div>');
+
+    assertThat(dom.findPredicates().length, 1);
+
+    assertThat(dom.findPredicates(':s',':p').length, 1);
+
+    var dom1 = $('<div about=":s"><h1><div rel=":p">1</div></div></h1>');
+    assertThat(dom1.find('h1').findPredicates().length, 1, "finds a predicate");
+
+    // object locations
+
+    assertThat(dom.findObjectLocations().length, 5); // or 6
+
+
+    // objects
+
+    assertThat(dom.findObjects().length, 5);
+    assertThat(dom.findObjects().length, 5);
+
+    var predicate = dom.predicate().data('notepadPredicate');
+    // assertThat(predicate.getObjects().length, 5);  after refactoring getObjects to use findObjects
+
+    assertThat($.contains(dom[0], predicate.getLabel().element[0]), false, "the label should not be inside the predicate");
+
+    predicate.update(toTriple(":s", ':p' ,':o1'));
+
+    assertThat(predicate.triples().length, 1);
+    assertThat(predicate.triples()[0].object, ':o1');
+
+    // Revert to a literal
+    predicate.update(toTriple(":s", ':p' ,'1'));
+    assertThat(predicate.triples().length, 1);
+    assertThat(predicate.triples()[0].object, '1');
+
+    assertThat(dom.triples(), 5);
+});
+test("update object", function() {
+    var dom;
+    dom = $('<div about=":s" rel=":p"><a class="object" object-attr="href"></div>');
+    update(dom, ":s :p :o");
+    expect('<div about=":s" rel=":p"><a class="object" object-attr="href" href=":o"></a></div>');
+
+    dom = $('<div about=":s" rel=":p" class="object" object-attr="href"></div>');
+    update(dom, ":s :p :o");
+    expect( '<div about=":s" rel=":p" class="object" object-attr="href" href=":o"></div>');
+
+    dom = $('<div about=":s" rel=":p"><a class="object" object-attr="href" rel="rdfs:label"></div>');
+    update(dom, ":s :p :o", ":o rdfs:label 'foo'");
+    expect('<div about=":s" rel=":p"><a class="object" object-attr="href" href=":o">foo</a></div>');
+
+    dom = $('<div about=":s" rel=":p" content="literal">');
+
+});
+
 module("given a element within a subject", {
     setup: function() {
         this.element = $('<div/>');
@@ -8,7 +135,8 @@ module("given a element within a subject", {
         this.element.appendTo(this.subjectElement);
     }
 });
-test("when I create a new predicate with a forward initial triple", function() {
+
+test("initial triple", function() {
     this.element.predicate({initialTriple: new Triple(":s", ":p", ":o")});
 
     var predicate = this.element.data('notepadPredicate');
@@ -16,6 +144,11 @@ test("when I create a new predicate with a forward initial triple", function() {
     assertThat(predicate.triples(), hasItem(equalToObject(new Triple(":s", ":p", ":o"))));
     assertThat(predicate.getObjects(new Resource(":o")), truth());
 });
+
+test("getObjects", function() {
+});
+
+
 test("when I create a new predicate with a backward initial triple", function() {
     this.element.predicate({initialTriple: new Triple(":o", ":p", ":s")});
 
