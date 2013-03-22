@@ -89,6 +89,14 @@ WHERE { \n\
 	{{{graphPatterns}}} \n\
 } \n\
 ";
+$.notepad.templates.describe_predicate = "CONSTRUCT { \n\
+	{{{predicate}}} ?p ?o . \n\
+} \n\
+WHERE { \n\
+	{{{predicate}}} ?p ?o . \n\
+	# query:cache \n\
+} \n\
+";
 $.notepad.templates.describe_with_sessions = "CONSTRUCT { \n\
 	?about ?predicateForward ?neighbourForward . \n\
 	?neighbourBackward ?predicateBackward ?about . \n\
@@ -109,22 +117,23 @@ WHERE { \n\
 $.notepad.templates.describe = "CONSTRUCT { \n\
 	?about ?predicateForward ?neighbourForward . \n\
 	?neighbourBackward ?predicateBackward ?about . \n\
+#	?neighbourForward rdfs:label ?label1 . \n\
+#	?neighbourBackward rdfs:label ?label2 . \n\
 } \n\
 WHERE { \n\
  \n\
 	LET ( ?about := {{{about}}} ) \n\
  \n\
-	{ ?about ?predicateForward ?neighbourForward \n\
+	{ ?about ?predicateForward ?neighbourForward . \n\
+#		OPTIONAL { ?neighbourForward rdfs:label ?label1 } \n\
 		BIND (?neighbourForward as ?neighbour) \n\
 	} \n\
 	UNION \n\
-	{ ?neighbourBackward ?predicateBackward ?about \n\
+	{ ?neighbourBackward ?predicateBackward ?about . \n\
+#		OPTIONAL { ?neighbourBackward rdfs:label ?label2 } \n\
 		BIND (?neighbourBackward as ?neighbour) \n\
 		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } \n\
 	} \n\
- \n\
-	# Ignore  \n\
- \n\
  \n\
 } \n\
 ";
@@ -155,7 +164,8 @@ WHERE { \n\
     	regex(?label, \"{{{term}}}\", \"i\") \n\
     ) \n\
     BIND (substr(?label, 0, 100) as ?reason) \n\
-}";
+} \n\
+LIMIT 30";
 $.notepad.templates.find_uri_literal_matching_pattern = "CONSTRUCT { \n\
 	?subject a rdf:subject . \n\
 	?subject rdfs:label ?label . \n\
@@ -217,4 +227,37 @@ WHERE \n\
 	} \n\
 } \n\
 # query:cache \n\
+";
+$.notepad.templates.triples = "CONSTRUCT { \n\
+	{{{subject}}} \n\
+	{{^subject}} \n\
+  		?subject \n\
+	{{/subject}} \n\
+ \n\
+	{{{predicate}}} \n\
+	{{^predicate}} \n\
+  		?predicate \n\
+	{{/predicate}} \n\
+ \n\
+	{{{object}}} \n\
+	{{^object}} \n\
+  		?object \n\
+	{{/object}} \n\
+} \n\
+WHERE { \n\
+	{{{subject}}} \n\
+	{{^subject}} \n\
+  		?subject \n\
+	{{/subject}} \n\
+ \n\
+	{{{predicate}}} \n\
+	{{^predicate}} \n\
+  		?predicate \n\
+	{{/predicate}} \n\
+ \n\
+	{{{object}}} \n\
+	{{^object}} \n\
+  		?object \n\
+	{{/object}} \n\
+} \n\
 ";

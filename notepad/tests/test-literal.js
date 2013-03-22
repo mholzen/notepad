@@ -10,6 +10,17 @@ test("init", function() {
     element.literal();
     assertThat(element.data('notepadLiteral').getLiteral(), "123");
 });
+
+test("html", function() {
+    var element = $('<div rel=":p">').literal();
+    var literal = element.data('notepadLiteral');
+    literal.options.ranges = toTriples(toTriple(':p', 'rdfs:range', 'rdf:XMLLiteral'));
+
+    literal.setLiteral('<div>foo</div>');
+
+    assertThat(literal.element.html(), containsString('<div>foo</div>'));
+});
+
 skippedTest("findObjectLocation", function() {
     var dom = $('<div about=":marc"><div rel=":first">Marc</div></div>');
 

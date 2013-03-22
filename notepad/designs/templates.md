@@ -1,6 +1,41 @@
 TEMPLATES - Triples to context
 ==============================
 
+when applying a triple to a template
+one template behaviour is to replace, another could be to append
+
+REPLACE:
+	<div rel="rdfs:label">
+
+APPEND
+	<ul subprop="rdfs:member">
+		<li>
+	</ul>
+or
+	<ul>
+		<li rel="rdfs:member">
+	</ul>
+
+beyond that, the template needs "meta information" to know how process differently the triple (sort, filter, etc... for instance)
+
+Question: how does a template define how a new item should be added to a list?
+
+NOTEPAD TEMPLATE
+<div>
+	<h1 rel="rdfs:label"></h1>
+	<ul class="notepadContainer">
+
+
+
+
+RELATED TO:  Query
+
+this.options.query
+
+
+
+
+
 Object is a URI
 ---------------
 	s p uri .  

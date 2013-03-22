@@ -43,9 +43,9 @@
                 }
                 var matchLine;
                 if (selector.line.isUri()) {
-                    matchLine = ( $(this).find(':notepad-label[about="' + selector.line + '"]').length !== 0 );
+                    matchLine = ( $(this).find('.notepad-object3[about="' + selector.line + '"]').length !== 0 );
                 } else {
-                    matchLine = ( $(this).find('.notepad-object3 [rel="rdfs:label"]').text() == selector.line );
+                    matchLine = ( $(this).find('.notepad-object3 .value').text() == selector.line );
                 }
                 return matchLine;
             };
@@ -131,8 +131,11 @@
             this.getPredicate().setUriDirection(uri, direction);
             this.updatePredicateDisplay();
         },
-        newContainerPredicateUri: function(term) {
+        newPredicateUri: function(term) {
             this.getPredicate().newUri(term);
+        },
+        newPredicateUri: function() {
+            this.getPredicate().newUri();
             this.updatePredicateDisplay();
         },
         getContainerPredicateUri: function() {
@@ -159,7 +162,7 @@
             this.getPredicate().getLabel().element.hide();
         },
         updatePredicateDisplay: function() {
-            if (this.getPredicate().getUri() === this.getContainer().options.predicate
+            if (this.getPredicate().getUri() == this.getContainer().options.predicate
                 && this.getDirection() === FORWARD) {
                 this.hidePredicate();
             } else {
@@ -174,9 +177,26 @@
             this.getObject().setObject(resource);
         },
         getObjectResource: function() {
-            return this.getObject().getResource();
+            return this.getObject().getObject();
         },
 
+        // deprecates: setTriple
+        update: function(triple) {
+            var lineSelector = new $.fn.Selector(this.getContainerUri(), triple);
+            if ( lineSelector.direction === undefined ) {
+                console.debug("Triple does not relate to this container");
+                return;
+            }
+
+            this.setContainerPredicateUri(triple.predicate, lineSelector.direction);
+
+            if ( triple.object.isLiteral() ) {
+                return this.setLineLiteral(triple.object);
+            }
+            return this.setUri(lineSelector.line);
+        },
+
+        // deprecated-for: update
         setTriple: function(triple) {
             if (this.getUri() === undefined) {
                 if (this.getContainerUri() == triple.subject) {
@@ -206,6 +226,7 @@
             this.setObjectResource(triple.object);
         },
 
+        // warn: usage confusing wiht getLiteral()
         getLineLiteral: function() {
             if (!this.getObject().isLiteral()) {
                 return undefined;
@@ -213,29 +234,32 @@
             return this.getObject().literal().getLiteral();
         },
         setLineLiteral: function(text) {
-            this.getObject().setLiteral(text);
+            this.getObject().literal().setLiteral(text);
             this.showChildren();        // A literal has no children, so this effectively ensures we have a '-' and not a '+'
             return this;
         },
         // Children elements
         getChildList: function() {
+            //this.getObject().uri();
             var ul = this.getObject().element.find('ul:eq(0)');  // use find instead of children because jqueryui can move the element during transitions
             if (ul.length === 0) {
-                var parentElement = this.getObject().element;
-                ul = $('<ul>').appendTo(parentElement); // .sortable();
+                ul = $('<ul>').appendTo(this.getObject().element); // .sortable();
             }
             return ul;
         },
         _createChildContainer: function() {
             var objectElement = $(this.getObject().element[0]);
-            var container = this.getChildList().container().data('notepadContainer');
+            var container = this.getChildList().container({sourceElement: objectElement}).data('notepadContainer');
             var line = this;
             objectElement.on("urilabelurichange", function(event) {
-                if (event.target != objectElement[0]) {
-                    log.debug("ignoring event for another target");
-                    return;
-                }
                 event.stopPropagation();
+                if (event.target != objectElement[0]) {
+                    console.debug("ignoring event for another target");
+                    return false;
+                }
+                console.debug('received urichange', event);
+
+                container.unload();
 
                 if (line.options.describeDepth === 0) {
                     return;
@@ -247,7 +271,8 @@
                 return false; // prevent this event from being caught by any labels in the path to root
             });
 
-            this._createChildToggle();
+            //this._createChildToggle();
+            this.getChildToggle();
 
             return container;
         },
@@ -281,6 +306,9 @@
             return li.data('notepadLine');
         },
 
+        predicateTriples: function() {
+            return this.getPredicate().triples();
+        },
         childTriples: function() {
             if (this.getChildContainer() === undefined) {
                 throw new Error("somehow, we can't find a child container anymore");
@@ -290,16 +318,20 @@
         triples: function() {
             var triples = new Triples();
 
-            var predicateTriples = this.getPredicate().triples();
-            $.merge(triples, predicateTriples);
+            if ( this.getObject().isLiteral() ||
+                 ( this.getObject().isUri() && this.getObject().uri().triples().length !== 0 ) )  {
+                // only count predicate triples if we've defined something about the URI itself
+                triples.add(this.predicateTriples());
+            }
 
+            triples.add(this.childTriples());
             return triples;
         },
 
         focus: function() {
             return this.getObject().focus();
         },
-        indent : function() {
+        indent: function() {
             // when the line is top level, then don't move
             var newParentLine = this.element.prev('li');
             if (!newParentLine.length) {
@@ -309,7 +341,7 @@
             // Move current line to newParent
             return newParentLine.data('notepadLine').appendChildLine(this.element);
         },
-        unindent : function(event) {
+        unindent: function(event) {
             // Determine the new location
             var newPredecessor = this.element.parent('ul').closest('li');
 
@@ -323,6 +355,16 @@
         },
         getPredicate: function() {
             return this.element.children(":notepad-predicate").data('notepadPredicate');
+        },
+        getPredicateLabel: function() {
+            return this.getPredicate().getLabel();
+        },
+        getChildToggle: function() {
+            var toggle = this.element.children('.childrenToggle:eq(0)');
+            if (toggle.length !== 0) {
+                return toggle;
+            }
+            return this._createChildToggle();
         },
         _createChildToggle: function() {
             // Children collapse/expand
@@ -345,6 +387,7 @@
 
             // No need to show because the initial state is: not collapsed, children shown
             // thus avoiding an unnecessarey refresh and reload
+            return childrenToggle;
         },
         _createPredicate: function() {
             var line = this;
@@ -390,12 +433,13 @@
             });
         },
         _ensureSubjectUriExists: function() {
+
             if(!this.getContainer()) {
                 throw new Error("when creating a new line, should find a parent container");
             }
-            var enclosingLabel = this.getContainer().element.closest(":notepad-label");
+            var enclosingLabel = this.getContainer().element.closest(":notepad-urilabel");
             if (enclosingLabel.length > 0) {
-                enclosingLabel.data('notepadLabel').ensureUri();
+                enclosingLabel.data('notepadUrilabel').ensureUri();
             }
         },
         _getDefaultDescribeDepth: function() {
@@ -411,7 +455,7 @@
 
             // Verify the container
 
-            this._ensureSubjectUriExists();
+            // this._ensureSubjectUriExists();
 
             this.element.addClass("notepad-line");      // TODO: change all .notepad-* to :notepad-*
             
@@ -421,6 +465,9 @@
             
             this._createPredicate();                    // Creates the predicate and the first object
                                                         // Sets the URI, which fails to trigger the child container
+
+            this.getObject().uri();
+            
             this._createColumnObjects();
         },
 
@@ -448,9 +495,6 @@
                 this.getChildList().hide();
             } else {  // expand
                 toggleElement.removeClass('collapsed');
-                if (!this.getObject().isUri()) {
-                    return;
-                }
                 this.getChildList().show();
                 this.getChildContainer().refresh();
             }
@@ -473,6 +517,85 @@
         addCheckboxToChildLines: function() {
             this.getChildContainer().element.children('li').prepend('<input type="checkbox">');
         },
+        getLiteral: function() {
+            var object = this.getObject();
+            if (object.isLiteral()) {
+                return object.literal().getLiteral();
+            }
+            if (object.isUri()) {
+                return object.uri().getLabel();
+            }
+        },
+        discoverPredicate: function(event) {
+            var object = this.getObject();
+
+            if (object.isLiteral()) {
+                console.info("ignoring discoverPredicate because the object is a literal");
+                return;
+            }
+            var urilabel = object.uri();
+
+            var objectTriples = urilabel.triples();
+            if (objectTriples.length !== 1 && objectTriples[0].predicate != 'rdfs:label') {
+                log.info("ignoring discoverPredicate because cannot locate a single label triple in the line");
+                return;
+            }
+
+            var triple = objectTriples[0];
+            var literal = triple.object;
+
+            // Should ignore a colon in double, or single quotes
+            var parts = literal.toString().match(/\s*(.+?\S):\s*(.*)/);
+            if (!parts) {
+                log.info("can't extract parts");
+                return;
+            }
+            var predicateTerm = parts[1].trim();
+            var remainder = parts[2].trim();
+
+            if ($.notepad.knownScheme(predicateTerm)) {
+                console.info(predictTerm + "is a URI.  Ignoring.");
+                return;
+            }
+
+            var line = this;
+            var query = $.notepad.queries.find_predicate_label_by_label;
+            query.execute(this.element.findEndpoint(), {'rdfs:label': predicateTerm}, function(triples) {
+
+                line.showPredicate();
+
+                urilabel.setLabel(remainder);
+                var predicateLabel = line.getPredicateLabel();
+
+                if (triples.length == 0) {
+                    console.info("no matching results.");
+                    line.newPredicateUri();
+                    predicateLabel.setLabel(predicateTerm);
+                    urilabel.getLabelElement().focus();
+                    return;
+                }
+                if (triples.length === 1) {
+                    console.info("exactly one matching results.  Setting predicate.");
+
+                    var direction = triples[0].predicate == 'rdfs:label' ? FORWARD : BACKWARD;
+                    line.getPredicate().setUriDirection(triples[0].subject, direction);
+                    predicateLabel.setLabel(triples[0].object);
+                    
+                    urilabel.getLabelElement().focus();
+                    return;
+                }
+                if (triples.length > 1) {
+                    console.info("more than one result ("+triples.length+")... triggering search");
+
+                    line.newPredicateUri();
+                    predicateLabel.setLabel(predicateTerm);
+                    predicateLabel.getLabelElement().caretToEnd();
+                    predicateLabel.getLabelElement().focus();
+                    predicateLabel.getLabelElement().autocomplete("search", predicateTerm);
+                    return;
+                }
+            });
+        }
 
     });
 

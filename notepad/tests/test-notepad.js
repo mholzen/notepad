@@ -8,7 +8,7 @@ module("given a new div", {
     }
 });
 test("when I create a new notepad with options", function() {
-    var endpoint = new Triples(new Triple('rdfs:member', 'rdfs:label', 'label'), new Triple(':a', ':b', ':c'));
+    var endpoint = toTriples(toTriple('rdfs:member', 'rdfs:label', 'label'), toTriple(':a', ':b', ':c'));
 
     this.div.notepad( {endpoint: endpoint} );
 
@@ -32,7 +32,7 @@ test("when I create a notepad, it should have initial components", function(){
    var notepad = this.div.data('notepadNotepad');
    ok(notepad,"it should have a widget");
 
-   assertThat(notepad.triples(), hasItem(equalToObject(new Triple(notepad.getUri(), "rdf:type", "notepad:Session"))));
+   assertThat(notepad.triples(), hasItem(equalToObject(toTriple(notepad.getUri(), "rdf:type", "notepad:Session"))));
    
    // The following tests may be too highly coupled
    equal(notepad.getLines().length,1, "should have one line widget");
@@ -55,7 +55,7 @@ test("when I create a notepad, it should be destroyed cleanly", function() {
 module("given a new notepad", {
     setup: function() {
         $("#notepad").remove();
-        $("<div id='notepad'>").appendTo("#qunit-fixture");
+        $("<div id='notepad'><h1 rel='rdfs:label'></h1></div>").appendTo("#qunit-fixture");
         this.div = $("#notepad").notepad();
         this.notepad = this.div.data('notepadNotepad');
         this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
@@ -68,6 +68,7 @@ module("given a new notepad", {
         this.notepad.destroy();
     }
 });
+
 skippedTest("when i place the cursor at the beginning of the line", function() {
     var target = this.div.find("li:first .notepad-object");
     assertThat(target.caret(), not(equalTo(undefined)), "we need a way to know cursor position in a contenteditable div")
@@ -85,10 +86,7 @@ asyncTest("when set RDF with cycles, then it should not display a triple twice",
     // I don't understand this failure at this point.
     expect(6);
     var uri = this.notepad.getUri();
-    var triples = Triples(
-            new Triple(uri,'rdfs:member',':line1'),
-            new Triple(':line1','rdfs:member',':line1')
-    );
+    var triples = toTriples([toTriple(uri,'rdfs:member',':line1'),toTriple(':line1','rdfs:member',':line1')]);
 
     var test = this;
     testAsyncStepsWithPause(200,
@@ -116,8 +114,8 @@ skippedTest("when set RDF with a reverse relationship, then it should display it
     expect(4);
     var uri = this.notepad.getUri();
     var triples = Triples(
-            new Triple(uri,'rdfs:member',':line1'),
-            new Triple(':line2','rdfs:member',':line1')
+            toTriple(uri,'rdfs:member',':line1'),
+            toTriple(':line2','rdfs:member',':line1')
     );
 
     this.notepad.endpoint = new FusekiEndpoint('http://localhost:3030/test');
@@ -142,20 +140,20 @@ skippedTest("when set RDF with a reverse relationship, then it should display it
     );
 });
 function enterNewLine(div) {
-    var target = div.find("li .notepad-object3");
+    var target = div.find('li [contenteditable="true"]');
     target.text('Test a widget');
     target.change();
     target.caretToEnd();
     target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
 }
-test("when create a new line, then it should have two lines", function() {
+test("newline beginning", function() {
     enterNewLine(this.div);
-
     assertThat(this.div.find("li").length, 2, "should have 2 lines");
 
     var line = this.div.find("li:first").data('notepadLine');
-    equal(line.getLineLiteral(), "Test a widget", "line literal should be the typed text");
+    equal(line.getLiteral(), "Test a widget", "line literal should be the typed text");
 });
+
 test("when I add a second line with text", function() {
     this.container.appendLine();
     assertThat(this.container.getLines().length, equalTo(2), "the container should have 2 lines");
@@ -263,13 +261,13 @@ test("when I indent the second line,", function() {
 test("when I set unrelated RDF,", function() {
     var triplesPre = this.notepad.triples();
 
-    this.notepad.setRdf([new Triple(':aUri',':aPredicate',':anotherUri')]);
+    this.notepad.setRdf(toTriples(toTriple(':aUri',':aPredicate',':anotherUri')));
     deepEqual(this.notepad.triples(), triplesPre, "the triples should remain the same");
 });
 test("a new line should update labels from RDF", function() {
-    this.line._setUri('_:lineUri');
-    this.notepad.getContainer()._updateLabelsFromRdf( [ new Triple('_:lineUri','rdfs:label','line label') ] );
-    equal(this.line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
+    var uri = this.line.getUri();
+    this.notepad.getContainer()._updateLabelsFromRdf( toTriples(toTriple(uri,'rdfs:label','line label')) );
+    assertThat(this.line.getLiteral(),'line label','line label should be set by RDF retrieved');
 });
 skippedTest("a new line should display RDF when setting its URI", function() {
     expect(1);
@@ -295,12 +293,12 @@ test("a notepad should display RDF", function() {
         return ['_:line1','rdfs:label','line label'];
     });
 
-    this.notepad.setRdf( [ new Triple(uri,'rdf:Seq','_:line1') ] );
+    this.notepad.setRdf( [ toTriple(uri,'rdf:Seq','_:line1') ] );
     ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
     equal(this.div.find('li[about="_:line1"] .notepad-object').text(), '', "First line should be empty");
 });
 
-test("when I hit enter at the end of the first line, then it should add a newline before the second line", function() {
+test("newline end-of-line", function() {
 
     // Warning: for some reason, i cannot use this.firstObject.  It holds a detached element.
     var firstObject = this.notepad.element.find("li:first .notepad-object3 [contenteditable='true']");

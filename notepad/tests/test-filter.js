@@ -103,16 +103,14 @@ module("given a container with no uri", {
 
 module("given a container with an 'about' attribute", {
     setup: function() {
-        this.endpoint = mock(new FusekiEndpoint('http://ex.com'));
-        this.element = $('<ul about=":s">').container().endpoint({endpoint: this.endpoint});
+        this.element = $('<ul about=":s">').container();
         this.container = this.element.data('notepadContainer');
     }
 });
 test("when I add a triple to it", function() {
     var uri = this.container.element.attr('about');
 
-    var newTriple = new Triple(':s', ":describe", "a literal");
-    
+    var newTriple = toTriple(':s', ":describe", "a literal");
     var line = this.container.addTriple(newTriple);
     assertThat(line.triples(), hasItem(equalToObject(newTriple)));
     assertThat(this.container.triples(), hasItem(equalToObject(newTriple)), "the container should contain it");

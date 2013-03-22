@@ -84,8 +84,8 @@
                 if (uris.length != 1) {
                     throw new Error("cannot determine a single subject from a graph", uri);
                 }
-                var widget = $(event.target).closest(':notepad-object').data('notepadObject');
-                widget.uri().setUri(uris[0], triples);
+                var widget = $(event.target).closest(':notepad-urilabel').data('notepadUrilabel');
+                widget.setUri(uris[0], triples);
                 event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
             },
 

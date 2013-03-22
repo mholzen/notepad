@@ -1,0 +1,32 @@
+CONSTRUCT {
+	{{{subject}}}
+	{{^subject}}
+  		?subject
+	{{/subject}}
+
+	{{{predicate}}}
+	{{^predicate}}
+  		?predicate
+	{{/predicate}}
+
+	{{{object}}}
+	{{^object}}
+  		?object
+	{{/object}}
+}
+WHERE {
+	{{{subject}}}
+	{{^subject}}
+  		?subject
+	{{/subject}}
+
+	{{{predicate}}}
+	{{^predicate}}
+  		?predicate
+	{{/predicate}}
+
+	{{{object}}}
+	{{^object}}
+  		?object
+	{{/object}}
+}

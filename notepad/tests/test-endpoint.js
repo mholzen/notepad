@@ -37,7 +37,7 @@ test("create with URI", function() {
     var element = $("#endpoint").endpoint({endpoint: testEndpointUri});
     var endpoint = element.data('notepadEndpoint');
     assertThat(endpoint.getEndpoint().uri, testEndpointUri);
-    assertThat(endpoint.element.children('[property="notepad:endpoint"]').length, 0);
+    assertThat(endpoint.element.children('[rel="notepad:endpoint"]').length, 0);
     endpoint.option('display', true);
     assertThat(endpoint.element.text(), containsString(testEndpointUri));
 });
@@ -46,7 +46,7 @@ test("create with endpoint", function() {
     var endpoint = new ContainerChainEndpoint(this);
     var element = $("#endpoint").endpoint({endpoint: endpoint, display: false});
     var endpoint = element.data('notepadEndpoint');
-    assertThat(endpoint.element.children('[property="notepad:endpoint"]').length, 0);
+    assertThat(endpoint.element.children('[rel="notepad:endpoint"]').length, 0);
 });
 
 asyncTest("setUriToFirstResponding", function() {

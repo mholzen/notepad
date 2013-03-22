@@ -52,7 +52,7 @@ FusekiEndpoint.prototype = {
             if (command in cache) {
                 console.debug("returning cached results");
                 callback ( cache[command] );
-                return;
+                return $.Deferred().resolve();
             } else {
                 var previousCallback = callback;
                 callback = function(result) {
@@ -204,6 +204,14 @@ FusekiEndpoint.prototype = {
         sparql = 'INSERT DATA ' + sparql;
         this.execute(sparql,callback);
     },
+    deleteData: function(triples, callback) {
+        var sparql = '{' + triples.toSparqlString() + '}';
+        if ( this.graph != 'default') {
+            sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
+        }
+        sparql = 'DELETE DATA ' + sparql;
+        this.execute(sparql,callback);
+    },
     constructAll: function(callback) {
         var sparql = '{ ?s ?p ?o }';
         sparql = 'CONSTRUCT { ?s ?p ?o } WHERE ' + sparql;
@@ -216,7 +224,7 @@ FusekiEndpoint.prototype = {
 
     $.notepad.test = new FusekiEndpoint("http://localhost:3030/test");
     $.notepad.dev = new FusekiEndpoint("http://localhost:3030/dev");
-
+    $.notepad.prod = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
 
 
 })(jQuery);

@@ -1,0 +1,7 @@
+CONSTRUCT {
+	{{{predicate}}} ?p ?o .
+}
+WHERE {
+	{{{predicate}}} ?p ?o .
+	# query:cache
+}

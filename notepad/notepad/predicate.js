@@ -10,13 +10,13 @@
     var labelTemplates = {
         forward: 
             '{{#rdfs:label}}' +
-                '<div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div>' +
+                '<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>' +
             '{{/rdfs:label}}' +
             '{{^rdfs:label}}' +
                 '{{#notepad:inverseLabel}}' +
                     // Forward context, no forward label but an inverse one: compute its inverse (defaults to 'related to')
                     '<span class="tooltip">' +
-                        '<div class="item" contenteditable="true" rel="rdfs:label">related to</div>' +
+                        '<div class="item notepad-literal" rel="rdfs:label">related to</div>' +
                         '<span class="content">Reverse of: <span class="predicate-label" rel="notepad:inverseLabel">{{xsd:string}}</span></span>' +
                     '</span>' +
                     // '<div class="tooltip" alt="inverse of &quot;{{xsd:string}}&quot;" contenteditable="true" rel="rdfs:label">related to</div>' +
@@ -25,7 +25,7 @@
                 '{{^notepad:inverseLabel}}' +
                     // Forward context, no inverse label, no forward label: default value for a forward relationship')
                     '<span class="tooltip">' +
-                        '<div class="item" contenteditable="true" rel="rdfs:label">related to</div>' +
+                        '<div class="item notepad-literal" rel="rdfs:label">related to</div>' +
                         '<span class="content">No known labels</span>' +
                     '</span>' +                
                 '{{/notepad:inverseLabel}}' +
@@ -33,22 +33,20 @@
             '',
         backward: 
             '{{#notepad:inverseLabel}}' +
-                '<div contenteditable="true" rel="notepad:inverseLabel">{{xsd:string}}</div>' +
+                '<div class="notepad-literal notepad-predicate" rel="notepad:inverseLabel">{{xsd:string}}</div>' +
             '{{/notepad:inverseLabel}}' +
             '{{^notepad:inverseLabel}}' +
                 '{{#rdfs:label}}' +
                     // Inverse context, no inverse label but a forward one: compute the inverse (defaults to 'related to')
                     '<span class="tooltip">' +
-                        '<div class="item" contenteditable="true" rel="notepad:inverseLabel">related to</div>' +
+                        '<div class="item notepad-literal" rel="notepad:inverseLabel">related to</div>' +
                         '<span class="content">Reverse of: <span class="predicate-label" rel="rdfs:label">{{xsd:string}}</span></span>' +
                     '</span>' +
-                    // '<div class="tooltip" alt="inverse of &quot;{{xsd:string}}&quot;" contenteditable="true" rel="notepad:inverseLabel">related to</div>' +
-                    //'is <div contenteditable="true" rel="rdfs:label">{{xsd:string}}</div> of' +
                 '{{/rdfs:label}}' +
                 '{{^rdfs:label}}' +
                     // Inverse context, no inverse label, no forward label: default value for a inverse relationship')
                     '<span class="tooltip">' +
-                        '<div class="item" contenteditable="true" rel="notepad:inverseLabel">related to</div>' +
+                        '<div class="item notepad-literal" rel="notepad:inverseLabel">related to</div>' +
                         '<span class="content">No known labels</span>' +
                     '</span>' +                
                 '{{/rdfs:label}}' +
@@ -99,9 +97,6 @@
             }
             return "rel";
         },
-        isForward: function() {
-            return this.getDirection() === FORWARD;
-        },
         getDirection: function() {
              if (this.element.attr('rel')) {
                 return FORWARD;
@@ -110,6 +105,13 @@
             }
             return undefined;
         },
+        isForward: function() {
+            return this.getDirection() === FORWARD;
+        },
+        isBackward: function() {
+            return this.getDirection() === BACKWARD;
+        },
+
         setDirection: function(direction) {
             if (direction === FORWARD) {
                 var uri = this.element.attr('rev');
@@ -127,7 +129,9 @@
             } else {
                 throw new Error('unknow direction', direction);
             }
-            this.getLabel().option('template', labelTemplates[direction]);
+            if (this.getLabel()) {
+                this.getLabel().option('template', labelTemplates[direction]);    
+            }
         },
         toggleDirection: function() {
             if (this.isForward()) {
@@ -136,33 +140,49 @@
                 this.setDirection(FORWARD);
             }
         },
-        getOperation: function() {
-            return this.element.hasClass('delete') ? "delete" : "update";
-        },
         _setUri: function(uri) {
             this.element.attr(this.getAttribute(), uri);
             this._trigger('urichange');
         },
         setUri: function(uri) {
             this._setUri(uri);
-            this.getLabel().setUri(uri);
+            if (this.getLabel()) {
+                this.getLabel().setUri(uri);    
+            }
         },
+        newUri: function() {
+            this.setDirection(FORWARD);
+            var uri = $.notepad.getNewUri();
+            this._setUri(uri);
+            if (this.getLabel()) {
+                this.getLabel().newUri(uri);
+            }
+        },
+
         setUriDirection: function(uri, direction) {
             this._setUri(uri);
             this.setDirection(direction);
             this.getLabel().setUri(uri);
         },
         getUri: function() {
-            return this.element.attr(this.getAttribute());
+            var value = this.element.attr(this.getAttribute());
+            if (!value) {
+                return undefined;
+            }
+            return toResource(value);
         },
-        newUri: function(term) {
-            var uri = $.notepad.getNewUri();
-            this._setUri(uri);
-            this.setDirection(FORWARD);
-            this.getLabel().newUri(uri, term);
+        _labelElement: function() {
+            var element = this.element.siblings(".notepad-predicate-label");
+            if ( !element.length ) {
+                element = $('<div class="notepad-predicate-label">').insertBefore(this.element);
+            }
+            return element;
         },
         _createLabel: function() {
-            var element = $('<div class="notepad-predicate-label">').prependTo(this.element);
+            if (!this.options.label) {
+                return;
+            }
+            var element = this._labelElement();
             var predicate = this;
             $(element)[this.options.label] ({
                 template: labelTemplates[this.getDirection()],
@@ -177,7 +197,6 @@
                     var query = new Query($.notepad.templates.find_predicate_label_by_label);
 
                     query.execute(urilabel.getEndpoint(), {'rdfs:label': request.term.trim()}, function(triples) {
-                        console.log(triples.toPrettyString());
                         callback(triples.map(function(triple) {
                             return {label: triple.object, value: triple};
                         }));
@@ -204,8 +223,15 @@
             // });
             return element.data(this.options.labelNamespace);
         },
+        // consider moving the predicate label to line
+            // 1-recreate label in line
+                // direction change -> event
+            // 2-disable _createLabel
         getLabel: function() {
-            var label = this.element.children('.notepad-predicate-label').data(this.options.labelNamespace);
+            if ( !this.options.label ) {
+                return undefined;
+            }
+            var label = this._labelElement().data(this.options.labelNamespace);
             if (!label) {
                 label = this._createLabel();
             }
@@ -217,24 +243,24 @@
             if (object) {
                 if (object.isUri() || (this.options.allowBlankNodes && object.isBlank())) {
                     objects = objects.filter(function() {
-                        var label = $(this).data(predicate.options.objectNamespace);
-                        if (label && label.getObject() == undefined) {
+                        var obj = $(this).data(predicate.options.objectNamespace);
+                        if (obj && obj.getObject() == undefined) {
                             // Include objects with an "undefined" uri
                             return true;
                         }
-                        if (label && label.getUri() == object) {
+                        if (obj && obj.uri().getUri() == object) {
                             return true;
                         }
                         return $(this).attr('about') == object;
                     });
                 } else if (object.isLiteral()) {
                     objects = objects.filter(function() {
-                        var label = $(this).data(predicate.options.objectNamespace);
-                        if (label && label.getObject() == undefined) {
+                        var obj = $(this).data(predicate.options.objectNamespace);
+                        if (obj && obj.getObject() == undefined) {
                             // Include objects with an "undefined" literal
                             return true;
                         }
-                        if (label && label.getLiteral() == object) {
+                        if (obj && obj.literal().getLiteral() == object) {
                             return true;
                         }
                         return ($(this).text() == object);
@@ -269,7 +295,7 @@
             this.insertObject();
         },
         add: function(triple) {
-            if (this.getUri() != triple.predicate) {
+            if (!this.getUri().equals(triple.predicate)) {
                 return;
             }
             var resourceForObject;
@@ -282,9 +308,24 @@
             } else {
                 return;
             }
-            this.getLabel().uriChanged();
+            if (this.getLabel()) {
+                this.getLabel().uriChanged();    
+            }
+
             var object = this.getObjectLocation(resourceForObject);
             object.setObject(resourceForObject);
+        },
+        update: function(triple) {
+            this.element.empty();
+            // consider: remove 'content' attribute on this.element if present
+
+            // consider: refactor getObjects to use findObjects to replace this with getObjects
+            // this.element.findObjects().forEach( function(object) {
+            //     console.error("this removes the predicate location as well");
+            //     object.element.remove();
+            // });
+
+            return this.add(triple);
         },
         triples: function() {
             var triples = new Triples();
@@ -307,7 +348,6 @@
                 var uri = this.getUri() || "rdfs:member";
                 this.setUri(uri);
             }
-
         },
         detach: function() {
             if (this.getNotepad()) {

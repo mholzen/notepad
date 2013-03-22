@@ -6,6 +6,11 @@
     var MAX_TRIPLES_BEFORE_COLLAPSING = 10;
     var MAX_TRIPLES_BEFORE_FILTERING = 2;
 
+    $.fn.findContainer = function(triple) {
+        var selector = '[about="'+triple.subject+'"]';
+        return this.find('*').andSelf().filter(selector);        
+    }
+
     $.widget("notepad.container", {
 
         // See notepad.js for interface
@@ -44,7 +49,6 @@
             var query = this.options.query || $.notepad.describeObject(this.getSourceElement());
 
             if (this.filters()) {
-                //var filters = this.filters().element.find(":checked").triples();
                 var filters = this.filters().element.find(":checked").parent().each(function(i,element) {
                     query = query.appendTriplePattern($(element).data('notepadFact').triples());
                 });
@@ -83,7 +87,6 @@
                 line.line({initialTriple: triple});
             }
             line = line.data('notepadLine');
-            line._ensureSubjectUriExists();
             return line;
         },
 
@@ -96,7 +99,7 @@
             }
             // We are creating a new line, no matter what, because a container can have several times the same predicate with different objects or even the same predicate
             var line = this.appendLine();
-            line.setTriple(triple);
+            line.update(triple);
             return line;
         },
 
@@ -127,6 +130,16 @@
             }
             return line;
         },
+
+        addSubjects: function(triples) {
+            var uri = this.getUri();
+            var predicate = this.options.predicate;
+            var memberTriples = toTriples(triples.subjects().map(function(subject) {
+                return toTriple(uri, predicate, subject);
+            }));
+            triples.add(memberTriples);
+            this._updateFromRdf(triples);
+        },
         
         triples: function() {
             var triples = new Triples();
@@ -137,11 +150,11 @@
             return triples;
         },
         triplesInDomPath: function() {
-            var label = this.element.closest(":notepad-label");
-            if (label.length === 0) {
+            var object = this.getSourceElement().closest(":notepad-object");
+            if (object.length === 0) {
                 return new Triples();
             }
-            return label.data('notepadLabel').triplesInDomPath();
+            return object.data('notepadObject').triplesInDomPath();
         },
 
         refresh: function() {
@@ -171,6 +184,10 @@
             }
             this.element.children('li').remove();
         },
+        update: function(triples) {
+            return this._updateFromRdf(triples);
+        },
+        // deprecated-by: update
         _updateFromRdf: function(triples) {
             // Update the immediate descendant children
             var container = this;
@@ -222,10 +239,10 @@
                     line = $(childLines[0]).data('notepadLine');
                 } else {
                     console.debug("Adding new line");
-                    line = container.appendLine(undefined, triple);
+                    line = container.appendLine();
                 }
                 
-                // line.setTriple(triple);  or line.add(triple);
+                // refactor to: line.update(triple);
                 line.setContainerPredicateUri(triple.predicate, lineSelector.direction);
 
                 if (triple.object.isLiteral()) {
@@ -249,12 +266,13 @@
             // Update the representations of all children line
             var container = this;
             $.each(triples, function(index,triple){
-                if (triple.predicate != 'rdfs:label') {
+                if (triple.predicate.toString() !== 'rdfs:label') {
                     return;
                 }
+
                 // Find a line with the subject as URI
-                container.element.find('li[about="'+triple.subject+'"]').each(function(i,li) {
-                    $(li).data('notepadLine').setLineLiteral(triple.object);
+                container.element.find(':notepad-urilabel[about="'+triple.subject+'"]').each(function(i,urilabel) {
+                    $(urilabel).data('notepadUrilabel').update(triples);       // could optimize to only related triples?
                 })
             });
         },
@@ -313,6 +331,7 @@
             return this.element.children('.notepad-filters').data('notepadContainer2');
         },
         _createFilters: function() {
+            if (this.element.findEndpoint())
             if (this.filters()) {
                 return;
             }
@@ -321,6 +340,11 @@
 
             this.element.on('contentchanged', function(event) {
                 event.stopPropagation();
+                var endpoint = container.element.findEndpoint()
+                if (!endpoint) {
+                    return false;
+                }
+
                 if (container.getLines().length < MAX_TRIPLES_BEFORE_FILTERING) {
                     console.info("too few lines so doing nothing with filters");
                     return false;
@@ -331,7 +355,7 @@
 
                 var about = new Resource(container.getUri());
 
-                $.notepad.clusterQuery.execute(container.element.findEndpoint(), {about: about.toSparqlString()}, function(triples) {
+                $.notepad.clusterQuery.execute(endpoint, {about: about.toSparqlString()}, function(triples) {
                     filters.addAllTriples(triples);
 
                     // if (container.getNotepad()) {
@@ -340,12 +364,13 @@
 
                     // dev:techdebt
                     // This could be instead modified by setting a triple in the endpoint of the container that defines the label for ... as being the <input> element
-                    filters.element.find('.notepad-fact').prepend('<input type="checkbox">');
+                    filters.element.children('.notepad-fact').prepend('<input type="checkbox">');
                     filters.element.find('input').click(function() {
                         container.element.find(":notepad-line").remove();
                         container.load();
                     });
                 });
+                return false;
             });
         },
         toggleSortable: function() {

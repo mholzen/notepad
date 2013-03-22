@@ -27,6 +27,7 @@
     
         options: {
             elementClass: 'notepad-fact',
+            elementName: 'notepadFact',
             elementFactory: $.fn.fact,           // Requires fact.js to be loaded
             element: "<div>",                // Could dynamic based on context (ie. within select -> option)
             sort: true
@@ -60,7 +61,7 @@
             triples.concat(this.pendingTriples);
             var widget = this;
             _.each(this.elements(), function(element) {
-                var elementTriples = $(element).data(widget.options.elementClass).triples();
+                var elementTriples = $(element).data(widget.options.elementName).triples();
                 $.merge(triples, elementTriples);
             });
             return triples;
@@ -81,10 +82,9 @@
                 log.debug("Triple already expressed in the container");
                 return;
             }
-
             var element = $(this._findElement(hashCode(triple)));
             if (element.length !== 0) {
-                return element.data(this.options.elementClass).add(triple);
+                return element.data(this.options.elementName).add(triple);
             }
 
             // New element

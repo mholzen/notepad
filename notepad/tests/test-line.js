@@ -1,9 +1,32 @@
+test("discoverPredicate", function() {
+    $.notepad.queries.describe_predicate = mock(Query);
+    when($.notepad.queries.describe_predicate).execute(anything(), anything(), anything()).then(function() {
+        arguments[2](toTriples(toTriple("rdfs:member", "rdfs:range", "xsd:string")));
+    });
+    $.notepad.queries.find_predicate_label_by_label = mock(Query);
+    when($.notepad.queries.find_predicate_label_by_label).execute(anything(), anything(), anything()).then(function() {
+        arguments[2](toTriples(toTriple(":p", "rdfs:label", "predicate")));
+    });
+    
+    var container = $("<ul about=':s'>").appendTo("body").container();
+    var el = $("<li>").appendTo(container).line();
+    var line = el.data('notepadLine');
+
+    line.getObject().uri().setLabel("predicate: literal");
+
+    line.discoverPredicate();
+    assertThat(line.getPredicate().getUri(), ":p");
+    assertThat(line.getPredicateLabel().getLabel(), "predicate");
+    assertThat(line.getObject().uri().getLabel(), "literal");
+});
+
 QUnit.file = "test-line.js";
 module("given a new line", {
     setup: function() {
-        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        // this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
+        this.endpoint = new Triples();
     	this.dom = $('<div id="container" about=":s"><div id="line"/></div>');
-    	this.container = this.dom.container().endpoint({endpoint: this.endpoint}).data('notepadContainer');
+    	this.container = this.dom.container().data('notepadContainer');
         this.line = this.dom.find('#line').line().data('notepadLine');
     },
     teardown: function() {
@@ -34,11 +57,6 @@ test("when I access the child container", function() {
     line3.indent();
 
     var triple = new Triple(":abc", ":p", "123");
-    childContainer.addTriple(triple);
-
+    childContainer.update(toTriples(triple));
     assertThat(childContainer.triples(), hasItem(equalToObject(triple)));
-});
-
-test("set literals", function() {
-
 });

@@ -3,8 +3,7 @@ QUnit.file = "notepad-predicate.js: "
 module("given a element within a subject", {
     setup: function() {
         this.element = $('<div/>');
-        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-        this.subjectElement = $('<div about=":s">').endpoint({endpoint: this.endpoint});
+        this.subjectElement = $('<div about=":s">');
         this.element.appendTo(this.subjectElement);
     }
 });
@@ -35,15 +34,14 @@ test("when I create a new predicate with a literal triple", function() {
 module("given an element within a subject with an 'rel' attribute", {
     setup: function() {
         this.element = $('<div rel=":p">initial label</div>');
-        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-        this.subjectElement = $('<div about=":s">').endpoint({endpoint: this.endpoint});
+        this.subjectElement = $('<div about=":s">');
         this.element.appendTo(this.subjectElement);
     }
 });
 test("when I create a new predicate", function() {
     var predicate = this.element.predicate().data('notepadPredicate');
     assertThat(predicate.getUri(), ':p', "its predicate should be :p");
-    verify(this.endpoint,times(1)).execute();       // We tried to fetch the label
+    //verify(this.endpoint,times(1)).execute();       // We tried to fetch the label
     assertThat(predicate.getLabel(), truth(), "it has a label");
     assertThat(predicate.getSubjectUri(), truth(), "it has a subject");
 });
@@ -51,7 +49,6 @@ test("when I create a new predicate", function() {
 module("given a new predicate :p", {
     setup: function() {
         this.element = $('<div rel=":p"/>');
-        //this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
         this.predicate = this.element.predicate().data('notepadPredicate');
     }
 });
@@ -67,8 +64,7 @@ module("given a predicate within a subject", {
         this.initialText = "initial label";
         this.element = $('<div rel=":p">'+this.initialText+'</div>');
 
-        this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
-        this.subjectElement = $('<div about=":s">').endpoint({endpoint: this.endpoint});
+        this.subjectElement = $('<div about=":s">');
 
         this.element.appendTo(this.subjectElement);
         this.predicate = this.element.predicate().data('notepadPredicate');
@@ -122,8 +118,11 @@ test("when I toggle the predicate", function() {
     assertThat(this.predicate.getLabel().getUri(), ':p');
 });
 
-asyncTest("predicate label", function() {
-    var element = $('<div about=":s" rel=":p">').endpoint({endpoint: toTriples(toTriple(":p", "rdfs:label", "forward label"))});
+module("", { } );
+asyncTest("label", function() {
+    var container = $('<div>').endpoint({endpoint: toTriples(toTriple(":p", "rdfs:label", "forward label"))});
+
+    var element = $('<div about=":s" rel=":p">').appendTo(container);
 
     element.predicate();
 

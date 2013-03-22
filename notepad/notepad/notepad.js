@@ -50,7 +50,7 @@
             line.setUri(uri);
         },
         getContainer: function() {
-            var element = this.element.children('ul');
+            var element = this.element.children(':notepad-container');
             if (element.length === 0) {
                 element = $('<ul>').appendTo(this.element).container();
             }
@@ -81,16 +81,14 @@
             }
             
             this.element.on("keydown.notepad", function(event) {
-                if($(event.target).data('uiAutocomplete') && $(event.target).data('uiAutocomplete').menu.active) {
-                    // The autocomplete menu is active, let it handle keyboard events
-                    return;
-                }
-
                 var keyCode = $.ui.keyCode;
                 switch (event.keyCode) {
                 case keyCode.ENTER:
                 case keyCode.NUMPAD_ENTER:
-                    return notepad._return(event);
+                    return notepad.splitLines(event);
+                    break;
+                case keyCode.BACKSPACE:
+                    return notepad.joinLines(event);
                     break;
                 case keyCode.UP:
                     return notepad._up(event);
@@ -119,6 +117,19 @@
                     $(e).text(moment(parseInt($(e).attr('content'))).fromNow());
                 });
             }, 1000);
+
+            // this.element.on("mouseover", '[about]', function(event) {
+            //     if (event.metaKey) {
+            //         console.log('wrapping');
+            //         $(this).wrap('<a href="'+$(this).attr('about')+'">navigate to</a>');
+            //         event.stopPropagation();
+            //     }
+            // });
+            // this.element.on("mouseout", '[about]', function(event) {
+            //     if (event.metaKey) {
+            //         $(this).wrap('<a href="'+$(this).attr('about')+'">navigate to</a>');
+            //     }
+            // });
 
         },
         _destroy : function() {
@@ -165,7 +176,7 @@
             }
             return false;   // Prevent default behaviour
         },
-        _return: function(event) {
+        splitLines: function(event) {
             var target = $(event.target);
             var li = target.closest(":notepad-line");
             if (li.length === 0) {
@@ -197,15 +208,63 @@
             var beforeCaret = literal.slice(0,caret),
             afterCaret = literal.slice(caret);
 
-            literalWidget.setLiteralWithoutRange(beforeCaret);
-            newLine.getObject().literal().setLiteralWithoutRange(afterCaret);
-
+            literalWidget.setLiteral(beforeCaret);
             newLine.showChildren();
-            setTimeout(function() { newLine.focus() }, 100);
+
+            var promise = newLine.getObject().uri().setLabel(afterCaret);
+            // promise.then(function() {
+                newLine.focus()
+            // });
             
             return false;
         },
-        _indent : function(event) {
+        joinLines: function(event) {
+            var target = $(event.target);
+
+            // find closest literal
+            var literalElement = target.closest(":notepad-literal");
+            if (literalElement.length === 0) {
+                return false;
+            }
+            if (literalElement.caret() !== 0) {
+                // We are not at the beginning of the literal
+                return;
+            }
+
+            var li = target.closest(":notepad-line");
+            if (li.length === 0) {
+                return;
+            }
+            var line = li.data('notepadLine');
+
+            var prev = li.prev();
+            if (prev.length === 0) {
+                // We are at the beginning of the list.  Should join with the literal above us.
+                return;
+            }
+
+            
+            var literalWidget = literalElement.data('notepadLiteral');
+            var literal = literalWidget.getLiteral();
+
+            var previousLine = prev.data('notepadLine');
+
+            var previousLiteral = previousLine.getObject();
+            previousLiteral = previousLiteral + literal;
+
+            li.remove();
+
+            //.previousLine.getObject().focus();
+
+            previousLine.element.caretToEnd().focus();
+
+            return false;
+
+        },
+
+
+
+        _indent: function(event) {
             var li = $(event.target).closest(":notepad-line");
 
             // when on the predicate, then skip to the object
@@ -411,6 +470,14 @@
         enableEdit: function() {
             this.element.find('[contenteditable="false"]').attr('contenteditable', 'true');
         },
+        remove: function(line) {
+            if (line.modified()) {
+                alert('discard changes?');
+            }
+            // verify if line has modified
+            line.remove();
+        },
+
     });
     
 }(jQuery));

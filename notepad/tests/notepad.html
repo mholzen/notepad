@@ -47,8 +47,10 @@ var notepad;
 var container;
 var line;
 var childContainer;
+var childLines;
 var object;
-var label;
+var urilabel;
+var literal;
 var predicate;
 var predicateLabel;
 var toUri = $.notepad.toUri;
@@ -61,7 +63,7 @@ function pp(triples) {
 }
 
 var log = console;
-console.__proto__.debug = function() { };
+//console.__proto__.debug = function() { };
 function here() { console.log('here'); }
 
 function hashToResource(hash) {
@@ -89,22 +91,51 @@ $(function() {
 
     notepad = $("#notepad").notepad({endpoint: endpoint}).data('notepadNotepad');
 
-    $("#notepad").on('keydown', '[rel="rdfs:label"]', function(event) {
+    $("#notepad").on('keydown', '[contenteditable="true"]', function(event) {
         if (event.keyCode === 32 && event.ctrlKey) {
             var line = $(event.target).closest(":notepad-line").data('notepadLine');
             line.option('describeDepth', 1);
             line.childrenToggle();
             // Must prevent autocomplete from triggering
         }
+
+        if (event.keyCode === 83 && event.altKey) { // Alt/Cmd - S
+            var line = $(event.target).closest(":notepad-line").data('notepadLine');
+            line.option('describeDepth', 1);
+            line.childrenToggle();
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+            // Must prevent autocomplete from triggering
+        }
+
     });
     
+    $("#notepad").on('keyup', '.notepad-object3 [contenteditable="true"]', function(event) {
+        var target = $(event.target);
+        if (event.keyCode != 186 /* colon */ ) {
+            return;
+        }
+        var line = target.closest(":notepad-line");
+        if (!line) {
+            log.error("cannot find a line widget");
+            return;
+        }
+        line = line.data('notepadLine');
+        if (line.isPredicateVisible()) {
+            log.info("predicate is already shown.  Ignoring ':'");
+            return;
+        }
+        line.discoverPredicate(event);
+    });
+
     // TODO: this should move somewhere else.  Not sure where...
-    $("#notepad").on('keyup', '[rel="rdfs:label"]', function(event) {
+    $("#notepad-old").on('keyup', '[rel="rdfs:label"]', function(event) {
         var target = $(event.target);
         if (event.keyCode != 186) { // tech:debt            // also, why?  we could do this at every character pressed
             return;
         }
-        var label = target.closest(":notepad-label").data('notepadLabel');
+        var label = target.closest(":notepad-urilabel").data('notepadUrilabel');
         if (!label) {
             log.error("cannot find a label widget");
             return;
@@ -112,7 +143,7 @@ $(function() {
 
         var line = target.closest(":notepad-line").data('notepadLine');
         if (!line) {
-            log.error("cannot find a label widget");
+            log.error("cannot find a line widget");
             return;
         }
         if (line.isPredicateVisible()) {
@@ -125,7 +156,7 @@ $(function() {
             log.error("can't find object");
             return;
         }
-        var predicateLabel = label.getPredicate().getLabel();
+        var predicateLabel = line.getPredicate().getLabel();
 
         // Should ignore a colon in double, or single quotes
         var parts = label.getLiteral().match(/\s*(.+?)\S:\s*(.*)/);
@@ -153,7 +184,8 @@ $(function() {
 
             if (triples.length == 0) {
                 log.info("no matching results.");
-                line.newContainerPredicateUri(predicateTerm);
+                line.newPredicateUri();
+                predicateLabel.setLabel(predicateTerm);
                 label.getLabelElement().caretToEnd();
                 return;
             }
@@ -170,7 +202,8 @@ $(function() {
             if (triples.length > 1) {
                 log.info("more than one result ("+triples.length+")... triggering search");
 
-                line.newContainerPredicateUri(predicateTerm);
+                line.newPredicateUri();
+                predicateLabel.setLabel(predicateTerm);
                 predicateLabel.getLabelElement().caretToEnd();
                 predicateLabel.getLabelElement().focus();
                 predicateLabel.getLabelElement().autocomplete("search", predicateTerm);
@@ -234,7 +267,7 @@ $(function() {
         .css('display', 'block')
         .position({
             my: "left top",
-            at: "left bottom",
+            at: "left top",
             of: $("#menu-button")
         });        
     });
@@ -252,21 +285,30 @@ $(function() {
         container = $(event.target).closest(":notepad-container").data('notepadContainer');
 
         line = $(event.target).closest(":notepad-line").data('notepadLine');
-        predicate = line.getPredicate();
-        predicateLabel = predicate.getLabel();
+        predicate = line ? line.getPredicate() : undefined;
+        predicateLabel = predicate ? predicate.getLabel() : undefined;
 
-        object = line.getObject();
-        childContainer = line.getChildContainer();
+        object = line ? line.getObject() : undefined;
+        childContainer = line ? line.getChildContainer() : undefined;
+        childLines = childContainer ? childContainer.getLines() : undefined;
 
-        label = $(event.target).closest(":notepad-label").data('notepadLabel');
+        urilabel = $(event.target).closest(":notepad-urilabel").data('notepadUrilabel');
+
+        literal = $(event.target).closest(":notepad-literal").data('notepadLiteral');
     });
 
+    // consider:
+    // $('#notepad').on("focus", ':notepad-line', function(event) {
+    //     $("#menu-button").appendTo($(event.currentTarget).data('notepadLine').element);
+    // });
+
     $('#notepad').on("focus", '[contenteditable=true]', function(event) {
+
         // Does not work when zooming the entire page
         // Depends on https://bugs.webkit.org/show_bug.cgi?id=105979
         $("#menu-button").show().position({
             my: "left bottom",
-            at: "right+5 top-5",
+            at: "right+10 center",
             of: $(event.target)
         });
 
@@ -308,6 +350,10 @@ $(function() {
         $("#notepad-toggle").toggleClass('ui-icon-plus');
         $("#notepad-toggle").toggleClass('ui-icon-minus');
     });
+
+    setTimeout(function() {
+        $(".notepad-literal:first .value").focus();
+    }, 500);
 
 });
 </script>

@@ -1,16 +1,27 @@
 (function($, undefined) {
 
+    var defaultTemplates = new Triples();
+    defaultTemplates.add(toTriple('notepad:urilabel', 'notepad:template', '{{#rdfs:label}}<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>{{/rdfs:label}}'));
+    defaultTemplates.add(toTriple('notepad:urilabel', 'rdfs:label', 'Label'));
+    defaultTemplates.add(toTriple('notepad:uri', 'notepad:template', '<div class="uri">{{subject}}</div>' ));
+    defaultTemplates.add(toTriple('notepad:uri', 'rdfs:label', 'URI'));
+
     $.widget("notepad.urilabel", {
+
+        // differentiate between a) new URI with no label, suggesting one and b) edit a remote URL
 
         // Manages a URI and its representation
         // Can be used to represent a subject, a predicate or a URI object (not a literal object)
 
         options: { 
             template: '' +
-                        '{{#rdfs:label}}' +
-                            '<div contenteditable="true" class="notepad-literal" rel="rdfs:label">{{xsd:string}}</div>' +
-                        '{{/rdfs:label}}' +
-                        '',
+                '{{#rdfs:label}}' +
+                    '<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>' +
+                '{{/rdfs:label}}' +
+                '{{^rdfs:label}}' +
+                    '<div class="notepad-literal notepad-predicate" rel="rdfs:label"></div>' +
+                '{{/rdfs:label}}' +
+                '',
                                 
             urichange:          $.noop,
             loadOnSetUri:       true,
@@ -43,7 +54,7 @@
                 case 'template':
                     // What should be the behaviour here?
                     // If changing the template triggers a load(), then ... we issue a request with a possibly changing URI
-                    //this.uriChanged();
+                    this.uriChanged();
                 break;
             }
         },
@@ -56,16 +67,17 @@
         },
 
         getUri: function() {
-            return this.element.attr('about');
-        },
-        getUriSparql: function() {
-            return new Resource(this.getUri()).toSparqlString();
+            var attr = this.element.attr('about');
+            if (!attr) {
+                return undefined;
+            }
+            return toResource(attr);
         },
         setUri: function(uri, triples) {
             if (uri === undefined) {
                 throw new Error("cannot set uri to undefined");
             }
-            if (uri == this.getUri()) {
+            if (uri.toString() == this.getUri()) {
                 return;
             }
             this._setUri(uri);
@@ -85,26 +97,31 @@
             return this;
         },
 
-        setLiteral: function(literal) {
-            var triple = toTriple(this.getUri(), "rdfs:label", literal);        // could be generalized to any predicate
-            this.update(triple);
+        setLabel: function(literal) {
+            var triples = new Triples();
+            if (literal) {
+                triples.add(toTriple(this.getUri(), "rdfs:label", literal));
+            }
+            return this.update(triples);
+        },
+        getLabel: function() {
+            var triples = this.triples().triples(undefined, "rdfs:label");
+            if (triples.length) {
+                return triples[0].object;
+            }
         },
 
-        // set: function(triple) {
-        //     this._setUri(triple.subject);
-        //     this.update(toTriples(triple));
-        //     this._trigger("urichange");
-        // },
-
-        newUri: function(uri, label) {
-            uri = uri || $.notepad.getNewUri();
-            label = label || "related to";
-            this.set(toTriple(uri, "rdfs:label", label));
-            this._trigger("urichange");
+        newUri: function(uri) {
+            var uri = uri || $.notepad.getNewUri();
+            this._setUri(uri);
+        },
+        ensureUri: function() {
+            if (this.getUri() !== undefined) { return this.getUri(); }
+            this.newUri();
         },
 
         _createTemplateElement: function() {
-            return $('<div class="notepad-template">').appendTo(this.element);
+            return $('<div class="notepad-template">').prependTo(this.element);
         },
         getTemplateElement: function() {
             var el = this.element.children(".notepad-template");
@@ -117,28 +134,41 @@
             return this.getTemplateElement().find('[contenteditable="true"]');
         },
 
+        templateQuery: function() {
+            var query = $.notepad.queries.templates;
+            query.context = {uri: this.getUri()};  // consider merge
+            return query;
+        },
+        templates: function(callback) {
+            if (!callback) {
+                return defaultTemplates;
+            }
+            return this.templateQuery().execute(this.element.findEndpoint(), undefined, callback);
+        },
+
+        // refactor using above
         uriChanged: function(callback) {
             if (this.getEndpoint() === undefined) {
                 return;
             }
+            if (this.getUri().isBlank()) {
+                return;
+            }
             var label = this;
             if (this.options.dynamicTemplate) {
-                console.debug("query for label template");
-                var templateQuery = new Query($.notepad.templates.templates);
-                templateQuery.execute(this.getEndpoint(), {uri: this.getUriSparql()}, function(templateTriples) {
+                // consider: this.templates( this.templateReceived.bind(this) );
+                this.templates( function(templateTriples) {
                     label.templateReceived(templateTriples, callback);
                 });
             } else {
                 var template = new Template(this.options.template);
                 var dataQuery = $.notepad.queryFromPredicates(template.predicates());
-                console.debug("query for data");
-                dataQuery.execute(this.getEndpoint(), {about: this.getUriSparql()}, function(dataTriples) {
+                dataQuery.execute(this.getEndpoint(), {about: this.getUri()}, function(dataTriples) {
                     label.dataReceived(dataTriples, callback);
                 });
             }
         },
         templateReceived: function(templateTriples, callback) {
-            console.debug("template received");
             var templateStrings = templateTriples.triples(this.getUri(), "notepad:template", undefined).objects();
             var templateString;
             if (templateStrings.length === 0) {
@@ -147,17 +177,22 @@
                 templateString = templateStrings[0].toString();
             }
 
-            var label = this;
             this.options.template = templateString;     // for use in update
-            var template = new Template(templateString);
+            this.load();
+        },
+        load: function(callback) {
+            if (this.getEndpoint() === undefined) {
+                return;
+            }
+
+            var label = this;
+            var template = new Template(this.options.template);
             var dataQuery = $.notepad.queryFromPredicates(template.predicates());
-            console.debug("query for data");
-            dataQuery.execute(this.getEndpoint(), {about: this.getUriSparql()}, function(dataTriples) {
+            dataQuery.execute(this.getEndpoint(), {about: this.getUri()}, function(dataTriples) {
                 label.dataReceived(dataTriples, callback);
             });
         },
         dataReceived: function(triples, callback) {
-            console.debug("data received");
             this.update(triples);
 
             if (this.getNotepad()) {
@@ -181,26 +216,15 @@
             // Apply any widget constructors
             this.getTemplateElement().find(".notepad-urilabel").urilabel({dynamicTemplate: true});
 
+            this.getTemplateElement().find(".notepad-predicate").predicate({label: null});
+
             this.getTemplateElement().find(".notepad-literal").literal();
 
-            // this.getTemplateElement().tooltip({items: ".tooltip", content: function() {
-            //     var element = $( this );
-            //     return element.attr('alt');
-            // }});
-
             this.getTemplateElement().tooltip({items: ".tooltip > .item", content: function() {
-                console.log($(this).siblings('.content'));
                 return $(this).siblings('.content').html();
             }});
 
-            // This could be done via widget constructors as wel
-            this._setupAutocomplete();
-        },
-
-        triples: function() {
-            var triples = new Triples();
-            triples.add(this.triple());
-            return triples;
+            return this;
         },
 
         triples: function() {
@@ -209,51 +233,38 @@
             if (!uri) {
                 return [];
             }
-
             var triples = new Triples();
-            this.getTemplateElement().children(".notepad-label").each(function(i,e) {
-                triples.add($(e).data('notepad-label').labelTriples());
+            // this.getTemplateElement().children(":notepad-object").each(function(i,e) {
+            //     triples.add($(e).data('notepadObject').triples());
+            // });
+
+            this.getTemplateElement().find(":notepad-literal").each(function(i,e) {
+                var literal = $(e).data('notepadLiteral');
+                var triple = literal.triple();
+                triples.add(triple);
             });
 
-            this.getTemplateElement().find("[rel]").filter(':visible').each(function(i,e) {
-                var object;
-
-                if ($(e).attr('about')) {
-                    object = $(e).attr('about');
-                } else {
-                    object = $(e).text();
-                }
-                if (object.length === 0) {
-                    return;
-                }
-                triples.add(new Triple(uri, $(e).attr('rel'), object) );
-            });
             return triples;
-        },
-
-        _setupAutocomplete: function() {
-            if (!this.options.autocomplete) {
-                return;
-            }
-            var label = this;
-            this.getLabelElement().autocomplete({
-                source: label.options.autocompleteSource,
-                select: label.options.autocompleteSelect,
-            });
         },
 
         // Set up the widget
         _create: function() {
+            var literal;
+            if (this.element.data('notepadLiteral')) {
+                literal = this.element.data('notepadLiteral').getLiteral();
+                this.element.data('notepadLiteral').destroy()
+            }
+
             if (this.getUri()) {
                 this.uriChanged();
             } else {
-                this.update();
+                this.newUri();
+                this.setLabel(literal);
             }
-
-            this._setupAutocomplete();
         },
         _destroy : function() {
-            this.getLabelElement().autocomplete('destroy');
+            this.element.removeAttr('about');
+            this.element.empty();
         },
 
     });
