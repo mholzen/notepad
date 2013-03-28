@@ -224,30 +224,6 @@ $(function() {
         $(this).siblings(".update").text(added);
     });
     
-    // $("#save .save").click(function() {
-    //     var removed = notepad.removed();
-    //     var added = notepad.added();
-    //     var command = removed.deleteSparql() + added.insertSparql();
-
-    //     $("#status").text("Saving...");
-    //     notepad.getEndpoint().execute(command)
-    //         .success(function() {
-    //             $("#status").text('Saved.');
-    //         })
-    //         .error(function() { $("#status").text('error'); });
-    // });
-
-    $("#save .save").click(function() {
-        $("#status").text("Saving...");
-        notepad.save()
-            .success(function() {
-                $("#status").text('Saved.');
-            })
-            .error(function() {
-                $("#status").text('error');
-            });
-    });
-
     $(".debug .toggle").click(function() {
         $(this).siblings().toggleClass('hidden');
     });
@@ -352,7 +328,7 @@ $(function() {
     });
 
     setTimeout(function() {
-        $(".notepad-literal:first .value").focus();
+        notepad.focus();
     }, 500);
 
 });

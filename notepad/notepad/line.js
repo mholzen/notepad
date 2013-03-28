@@ -94,8 +94,8 @@
             return this;
         },      
         setUri: function(uri) {
-            this.getObject().uri().setUri(uri);
             this.getChildContainer().unload();
+            this.getObject().uri().setUri(uri);
         },
         load: function() {
             // TODO: refactor with container.load

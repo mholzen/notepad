@@ -98,14 +98,31 @@
                     break;
                 case keyCode.TAB:
                     if (!event.shiftKey) {
-                        notepad._indent(event);
+                        if (notepad._indent(event)) {
+                            return false; // don't propagate; keypress was handled
+                        }
                     } else {
-                        notepad._unindent(event);
+                        if (notepad._unindent(event)) {
+                            return false; // don't propagate; keypress was handled
+                        }
                     }
-                    return false;
                     break;
                 default:
                     break;
+                }
+            });
+
+            $('body').on('keydown', function(event) {
+                if ( $(event.target).attr('contenteditable') === 'true' ) {
+                    return;
+                }
+                if (event.keyCode === 82 /* R */ && ! event.metaKey /* avoid overriding Cmd-R reload*/ ) {
+                    notepad.reset();
+                    return false;
+                }
+                if (event.keyCode === 83 /* S */ && event.metaKey /* avoid overriding Cmd-S save */) {
+                    notepad.save();
+                    return false;
                 }
             });
 
@@ -262,10 +279,11 @@
 
         },
 
-
-
         _indent: function(event) {
             var li = $(event.target).closest(":notepad-line");
+            if ( li.length === 0 ) {
+                return false;
+            }
 
             // when on the predicate, then skip to the object
             if ($(event.target).hasClass('notepad-predicate')) {
@@ -274,12 +292,17 @@
             }
 
             var line = li.data('notepadLine');
-            var propagateEvent = line.indent();
+            if ( ! line.indent() ) {
+                return false;
+            }
             line.focus();
-            return propagateEvent;
+            return true;
         },
         _unindent: function(event) {
             var li = $(event.target).closest(":notepad-line");
+            if ( li.length === 0 ) {
+                return false;
+            }
 
             if ($(event.target).hasClass('notepad-object3') &&
                 li.find('.notepad-predicate-label').css('display') != 'none') {
@@ -287,9 +310,11 @@
                 return false;
             }
             var line = li.data('notepadLine');
-            var propagateEvent = line.unindent();
+            if ( ! line.unindent() ) {
+                return false;
+            }
             line.focus();
-            return propagateEvent;
+            return true;
         },
 
         // TODO: this really should be expressed in RDF
@@ -419,7 +444,7 @@
             return this.loaded().minus( this.triples() ).filter(this.canSave);
         },
 
-        save: function() {
+        _save: function() {
             var removed = notepad.removed();
             var added = notepad.added();
             var command = removed.deleteSparql() + added.insertSparql();
@@ -427,6 +452,15 @@
                 notepad.loaded(added);
                 notepad.unloaded(removed);
             });
+        },
+
+        save: function() {
+            $("#status").text("Saving...");
+            return this._save()
+                .success(function() {
+                    $("#status").text('Saved.');
+                });
+                // Dispaying an error is handled by the ajaxError handler
         },
 
         discoverEndpoint: function(uris, callback) {
@@ -476,6 +510,15 @@
             }
             // verify if line has modified
             line.remove();
+        },
+        focus: function() {
+            this.getContainer().element.find("[contenteditable='true']:visible:first").focus()
+        },
+        reset: function() {
+            // should: confirm if changes will be discarded
+            this.getContainer().reset();
+            this.focus();
+            return this;
         },
 
     });

@@ -380,6 +380,11 @@
                 return;
             }
             sortable.option('disabled', ! sortable.option('disabled'));
+        },
+        reset: function() {
+            this.unload();
+            this.appendLine();
+            return this;
         }
     });
 
