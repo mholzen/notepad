@@ -387,11 +387,12 @@ ul {
 #control {
     display: inline;
     margin: 10px;
+    position: relative;
 }
 #menu {
     width: 400px;
-    position: relative;
-    left: 150px;
+    position: absolute;
+    left: 5px;
     background: #ffe;
     font-size: medium;
 }
