@@ -44,6 +44,7 @@
             this.getContainer().load();
         },
         open: function(uri) {
+            $("#control").hide().appendTo('body');                  // move the control out of the line to remove
             this.unloaded(this.getContainer().triples());           // to avoid triples being marked as deleted
             this.getContainer().element.remove();
             var line = this.getContainer().appendLine();            // getContainer() will recreate the deleted element
@@ -135,19 +136,42 @@
                 });
             }, 1000);
 
-            // this.element.on("mouseover", '[about]', function(event) {
-            //     if (event.metaKey) {
-            //         console.log('wrapping');
-            //         $(this).wrap('<a href="'+$(this).attr('about')+'">navigate to</a>');
-            //         event.stopPropagation();
-            //     }
-            // });
-            // this.element.on("mouseout", '[about]', function(event) {
-            //     if (event.metaKey) {
-            //         $(this).wrap('<a href="'+$(this).attr('about')+'">navigate to</a>');
-            //     }
-            // });
+            this._createMenu();
 
+        },
+        _createMenu: function() {
+            $("#menu").menu().hide();
+
+            $("#menu").bind('menuselect', function(event, ui) {
+                var uri = $(ui.item[0]).children('a[property="ui:select"]').attr('content');
+                eval(uri);
+            });
+
+            $("#menu-button").button({
+                icons: { primary: "ui-icon-triangle-1-s" },
+                text: false
+            }).hover(function(event) {
+                $("#menu").show();
+            }).click(function(event) {
+                $("#menu").show();
+            });
+
+            $("#control").hide();
+
+            this.element.on('focus', '[contenteditable="true"]', function(event) {
+                var line = $(event.target).closest(':notepad-line');
+                if ( !line.length ) {
+                    return false;
+                }
+                $("#control").show().insertBefore(line.data('notepadLine').getChildList());
+            });
+
+            $("body").click(function(event) {
+                console.log('click', $(event.target));
+                if ($(event.target).parents("#menu-button").length === 0) {         // if we are not clicking on the menu button
+                    $("#menu").fadeOut("100");
+                }
+            });
         },
         _destroy : function() {
             this.element.removeClass("notepad").removeAttr('about').unbind();
@@ -504,13 +528,6 @@
         enableEdit: function() {
             this.element.find('[contenteditable="false"]').attr('contenteditable', 'true');
         },
-        remove: function(line) {
-            if (line.modified()) {
-                alert('discard changes?');
-            }
-            // verify if line has modified
-            line.remove();
-        },
         focus: function() {
             this.getContainer().element.find("[contenteditable='true']:visible:first").focus()
         },
@@ -519,6 +536,20 @@
             this.getContainer().reset();
             this.focus();
             return this;
+        },
+        remove: function(line) {
+            // if (line.modified()) {
+            //     alert('discard changes?');
+            // }
+            $("#control").appendTo('body');         // move the control out of the line to remove
+            line.remove();
+        },
+        delete: function(line) {
+            // if (line.modified()) {
+            //     alert('discard changes?');
+            // }
+            $("#control").appendTo('body');         // move the control out of the line to remove
+            line.delete();
         },
 
     });

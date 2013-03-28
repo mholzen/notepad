@@ -145,6 +145,11 @@ ul {
     display: inline;
 }
 
+.value {
+    display: inline-block;
+    min-width: 100px;
+}
+
 .notepad .delete {
     text-decoration: line-through;
 }
@@ -384,12 +389,22 @@ ul {
 /*
  * Menu
  */
+#control {
+    display: inline;
+    margin: 10px;
+    position: relative;
+}
 #menu {
     width: 400px;
+    position: absolute;
+    left: 5px;
+    background: #ffe;
+    font-size: medium;
 }
 
 #menu-button {
     width: 24px;
+    display: inline-block;
 }
 
 #status {

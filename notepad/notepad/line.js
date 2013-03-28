@@ -241,9 +241,9 @@
         // Children elements
         getChildList: function() {
             //this.getObject().uri();
-            var ul = this.getObject().element.find('ul:eq(0)');  // use find instead of children because jqueryui can move the element during transitions
+            var ul = this.getObject().element.find('ul.child:first');  // use find instead of children because jqueryui can move the element during transitions
             if (ul.length === 0) {
-                ul = $('<ul>').appendTo(this.getObject().element); // .sortable();
+                ul = $('<ul class="child">').appendTo(this.getObject().element); // .sortable();
             }
             return ul;
         },
@@ -499,14 +499,23 @@
                 this.getChildContainer().refresh();
             }
         },
-
         detach: function() {
             this.getObject().detach();
             this.element.remove();
         },
+        remove: function() {
+            // TODO:
+            // should unload all triples other than the line membership triple
+            // _destroy should not unload triples (to make delete possible)
+            this.element.remove();
+        },
+        delete: function() {
+            // TODO:
+            // should destroy all (probably not labels though), without unloading anything
+            this.element.remove();
+        },
 
         _destroy : function() {
-            console.log('destroying line');
             if (this.getNotepad()) {
                 this.getNotepad().unloaded(this.triples());
             }
