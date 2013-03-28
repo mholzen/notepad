@@ -54,6 +54,7 @@ test("when I delete all content, then", function() {
         ok(true, "the endpoint should clear");
         endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
             equal(subjects.length,0, "the endpoint should be empty after clear");
+            endpoint.start();
             start();
         });
     }).error( function(){
@@ -128,7 +129,7 @@ asyncTest("when I create a named graph", function() {
             });
         });
     });
-})
+});
 
 asyncTest("when I create a temp endpoint", function() {
     expect(1);

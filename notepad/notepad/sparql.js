@@ -4,9 +4,12 @@ $.notepad = $.notepad || {};
 
 cache = {};
 
-FusekiEndpoint = function(uri) {
+FusekiEndpoint = function(uri, graph) {
     this.uri = uri;
-    this.graph = 'default';
+    if (graph === 'new') {
+        graph = $.notepad.getNewUri();
+    }
+    this.graph = graph || 'default';
 }
 
 TempFusekiEndpoint = function(uri, triples, callback) {
@@ -110,6 +113,11 @@ FusekiEndpoint.prototype = {
     },
     clear: function(callback) {
         return this.update('DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }',callback);
+    },
+    start: function(callback) {
+        var triples = new Triples();
+        triples.add(toTriple('rdfs:member', 'notepad:inverseLabel', 'appears on'));
+        this.insertData(triples, callback);
     },
     post: function(triples, callback) {
         // Not yet implemented

@@ -16,6 +16,7 @@
         _setOption: function(key, value) {
             this._super(key, value);
             switch(key) {
+                case 'dataset':
                 case 'endpoint':
                 case 'display':
                     this.updateElement();
@@ -58,7 +59,7 @@
         },
         getEndpoint: function() {
             if (typeof this.options.endpoint === "string") {
-                return new FusekiEndpoint(this.options.endpoint);       // Interpret as the URI to the endpoint
+                return new FusekiEndpoint(this.options.endpoint, this.options.dataset);       // Interpret as the URI to the endpoint
             }
             return this.options.endpoint;            
         },

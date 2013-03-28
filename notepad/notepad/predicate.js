@@ -149,6 +149,7 @@
             if (this.getLabel()) {
                 this.getLabel().setUri(uri);    
             }
+            // consider: rdfs:range might affect the object's widget
         },
         newUri: function() {
             this.setDirection(FORWARD);
