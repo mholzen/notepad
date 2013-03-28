@@ -384,12 +384,21 @@ ul {
 /*
  * Menu
  */
+#control {
+    display: inline;
+    margin: 10px;
+}
 #menu {
     width: 400px;
+    position: relative;
+    left: 150px;
+    background: #ffe;
+    font-size: medium;
 }
 
 #menu-button {
     width: 24px;
+    display: inline-block;
 }
 
 #status {

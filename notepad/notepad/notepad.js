@@ -118,18 +118,16 @@
                 });
             }, 1000);
 
-            // this.element.on("mouseover", '[about]', function(event) {
-            //     if (event.metaKey) {
-            //         console.log('wrapping');
-            //         $(this).wrap('<a href="'+$(this).attr('about')+'">navigate to</a>');
-            //         event.stopPropagation();
-            //     }
-            // });
-            // this.element.on("mouseout", '[about]', function(event) {
-            //     if (event.metaKey) {
-            //         $(this).wrap('<a href="'+$(this).attr('about')+'">navigate to</a>');
-            //     }
-            // });
+            this.element.on("blur", '[contenteditable=true]', function(event) {
+                $("#control").hide();
+            });
+            this.element.on("focus", '[contenteditable=true]', function(event) {
+                var line = $(event.target).closest(':notepad-line');
+                if ( !line.length ) {
+                    return false;
+                }
+                $("#control").show().insertAfter(line.data('notepadLine').getObject().element.children('.notepad-template'));
+            });
 
         },
         _destroy : function() {

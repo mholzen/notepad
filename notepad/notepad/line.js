@@ -241,9 +241,9 @@
         // Children elements
         getChildList: function() {
             //this.getObject().uri();
-            var ul = this.getObject().element.find('ul:eq(0)');  // use find instead of children because jqueryui can move the element during transitions
+            var ul = this.getObject().element.find('ul.child:first');  // use find instead of children because jqueryui can move the element during transitions
             if (ul.length === 0) {
-                ul = $('<ul>').appendTo(this.getObject().element); // .sortable();
+                ul = $('<ul class="child">').appendTo(this.getObject().element); // .sortable();
             }
             return ul;
         },
