@@ -494,11 +494,18 @@
             this.element.find('[contenteditable="false"]').attr('contenteditable', 'true');
         },
         remove: function(line) {
-            if (line.modified()) {
-                alert('discard changes?');
-            }
-            // verify if line has modified
+            // if (line.modified()) {
+            //     alert('discard changes?');
+            // }
+            $("#control").appendTo('body');         // move the control out of the line to remove
             line.remove();
+        },
+        delete: function(line) {
+            // if (line.modified()) {
+            //     alert('discard changes?');
+            // }
+            $("#control").appendTo('body');         // move the control out of the line to remove
+            line.delete();
         },
 
     });

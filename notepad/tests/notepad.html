@@ -384,8 +384,8 @@ $(function() {
             <li><a property="ui:select" content="javascript: notepad.open(line.getUri());"><span class="ui-icon ui-icon-arrowthick-1-e"></span>Open...</a></li>
             <li><a property="ui:select" content="javascript: line.showPredicate();">Show relationship</a></li>
             <li><a property="ui:select" content="javascript: line.newPredicateUri();">New relationship</a></li>
-            <li><a property="ui:select" content="javascript: line.element.remove();">Remove line</a></li>
-            <li><a property="ui:select" content="javascript: line.element.detach();">Delete lines and contents</a></li>
+            <li><a property="ui:select" content="javascript: notepad.remove(line);">Remove line</a></li>
+            <li><a property="ui:select" content="javascript: notepad.delete(line);">Delete lines and contents</a></li>
             <li><a property="ui:select" content="javascript: line.addCheckboxToChildLines();">Convert to Todo list</a></li>
             <li><a property="ui:select" content="javascript: container.toggleSortable();">Re-order lines</a></li>
             <li class="ui-state-disabled"><a href="#">Add column</a></li>
