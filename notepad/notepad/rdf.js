@@ -426,6 +426,9 @@
             objects: { value: function(subject, predicate) {
                 return this.triples(subject, predicate).map(function(triple) { return triple.object; });
             } },
+            object: { value: function(subject, predicate) {
+                return this.objects(subject, predicate).join();
+            } },
             objectIndex: { value: function() {
                 return _.reduce(this, function(memo, triple) { memo[triple.object] = triple; return memo; }, {});
             } },

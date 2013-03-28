@@ -183,3 +183,85 @@ skippedTest("when I update a triple affected by a semantic rule, then", function
         });
     });
 });
+
+asyncTest("meta", function() {
+    var setup = '' +
+'PREFIX ex: <http://example.com/#>' +
+'INSERT DATA {' +
+'    GRAPH ex:guid1 {' +
+'        ex:c1 ex:member ex:o1 .' +
+'    } ' +
+'    GRAPH ex:guid2 {' +
+'        ex:c1 ex:member ex:o2 .' +
+'    } ' +
+'    GRAPH ex:guid3 {' +
+'        ex:c1 ex:member ex:o3 .' +
+'    } ' +
+'    GRAPH ex:guid4 {' +
+'        ex:c1 ex:member ex:o4 .' +
+'    } ' +
+'    GRAPH ex:c1-meta {' +
+'        ex:c1-meta notepad:orders ex:c1 . ' +
+'        ex:guid1 rdfs:before ex:guid2 .' +
+'        ex:guid2 rdfs:before ex:guid3 .' +
+'        ex:guid3 rdfs:before ex:guid4 .' +
+'    }' +
+'}'+
+'';
+
+var find_content_all = '' +
+'CONSTRUCT {  ' +
+'   ex:c1 ?p ?o . ' +
+'}' +
+'{ ' +
+'   graph ?g { ex:c1 ?p ?o } .' +
+'} ' +
+'';
+
+var find_order = '' +
+'CONSTRUCT {  ' +
+'   ?before rdfs:before ?after . ' +
+'}' +
+'{ ' +
+'  { graph ?meta { ' +
+'     ?before rdfs:before ?after  . ' +
+'     ?meta notepad:orders ex:c1 . ' +
+'   } } ' +
+'} ' +
+'';
+
+var find_content_given_meta = '' +
+'CONSTRUCT {  ' +
+'   ex:c1 ?p ?o . ' +
+'}' +
+'{ ' +
+'   { graph ?g { ex:c1 ?p ?o } .} UNION { graph ?g1 { ex:c1 ?p ?o } } .' +
+'   graph ?meta { ?meta notepad:orders ex:c1 . ?g rdfs:before ?g1 } ' +
+'} ' +
+'';
+
+
+
+    var endpoint = this.endpoint;
+    endpoint.execute(setup, function() {
+        endpoint.execute(find_content_all, function(content) {
+            assertThat(content.objects('ex:c1', 'ex:member'), hasItems('ex:o1', 'ex:o2', 'ex:o3', 'ex:o4'));
+
+            endpoint.execute(find_order, function(order) {
+                assertThat(order.object('ex:guid1', 'rdfs:before'), 'ex:guid2');
+                assertThat(order.object('ex:guid2', 'rdfs:before'), 'ex:guid3');
+                assertThat(order.object('ex:guid3', 'rdfs:before'), 'ex:guid4');
+
+                // must evaluate how complex it is to use the save/apply an order given this form
+
+                endpoint.execute(find_content_given_meta, function(content) {
+                    assertThat(content.objects('ex:c1', 'ex:member'), hasItems('ex:o1', 'ex:o2', 'ex:o3', 'ex:o4'));
+
+                    start();
+                });
+            });
+        });
+    });
+
+});
+
