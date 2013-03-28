@@ -118,17 +118,42 @@
                 });
             }, 1000);
 
-            this.element.on("blur", '[contenteditable=true]', function(event) {
-                $("#control").hide();
+            this._createMenu();
+
+        },
+        _createMenu: function() {
+            $("#menu").menu().hide();
+
+            $("#menu").bind('menuselect', function(event, ui) {
+                var uri = $(ui.item[0]).children('a[property="ui:select"]').attr('content');
+                eval(uri);
             });
-            this.element.on("focus", '[contenteditable=true]', function(event) {
+
+            $("#menu-button").button({
+                icons: { primary: "ui-icon-triangle-1-s" },
+                text: false
+            }).hover(function(event) {
+                $("#menu").show();
+            }).click(function(event) {
+                $("#menu").show();
+            });
+
+            $("#control").hide();
+
+            this.element.on('focus', '[contenteditable="true"]', function(event) {
                 var line = $(event.target).closest(':notepad-line');
                 if ( !line.length ) {
                     return false;
                 }
-                $("#control").show().insertAfter(line.data('notepadLine').getObject().element.children('.notepad-template'));
+                $("#control").show().insertBefore(line.data('notepadLine').getChildList());
             });
 
+            $("body").click(function(event) {
+                console.log('click', $(event.target));
+                if ($(event.target).parents("#menu-button").length === 0) {         // if we are not clicking on the menu button
+                    $("#menu").fadeOut("100");
+                }
+            });
         },
         _destroy : function() {
             this.element.removeClass("notepad").removeAttr('about').unbind();

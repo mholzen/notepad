@@ -145,6 +145,11 @@ ul {
     display: inline;
 }
 
+.value {
+    display: inline-block;
+    min-width: 100px;
+}
+
 .notepad .delete {
     text-decoration: line-through;
 }
