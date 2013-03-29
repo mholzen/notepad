@@ -37,6 +37,19 @@ ul {
     padding-left: 30px;
 }
 
+#save {
+    float: left;
+    width: 100%;
+    margin-top: 40px;
+}
+#save button {
+    font-size: 90%;
+    background: #ffe;
+    border-radius: 5px;    
+    padding: 8px;
+    float: right;
+}
+
 /*
  * ICONS
  */
@@ -302,6 +315,10 @@ ul {
  * DEBUG
  */
 
+#triples {
+    clear: both;
+}
+
 .debug {
     display: none;  /* turns this off */
     position: absolute; bottom: 0px;
@@ -317,6 +334,7 @@ ul {
 }
 
 .turtle {
+    clear: both;
     font-family: courier;
     font-size: small;
     white-space: pre;
