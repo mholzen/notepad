@@ -504,6 +504,10 @@ ul {
     display: none;      /* Start by hiding the content */
 }
 
+.tooltip .item {
+    background: #f0f0f0;
+}
+
 /*
 * HTML email
 */
