@@ -223,6 +223,9 @@ $(function() {
         var added = notepad.added().toTurtle();
         $(this).siblings(".update").text(added);
     });
+    $("#save .save").click(function() {
+        notepad.save();
+    });
     
     $(".debug .toggle").click(function() {
         $(this).siblings().toggleClass('hidden');
