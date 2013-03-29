@@ -121,7 +121,7 @@
                     notepad.reset();
                     return false;
                 }
-                if (event.keyCode === 83 /* S */ && event.metaKey /* avoid overriding Cmd-S save */) {
+                if (event.keyCode === 83 && event.metaKey /* Cmd-S */) {
                     notepad.save();
                     return false;
                 }

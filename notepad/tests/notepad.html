@@ -99,14 +99,9 @@ $(function() {
             // Must prevent autocomplete from triggering
         }
 
-        if (event.keyCode === 83 && event.altKey) { // Alt/Cmd - S
-            var line = $(event.target).closest(":notepad-line").data('notepadLine');
-            line.option('describeDepth', 1);
-            line.childrenToggle();
-            event.preventDefault();
-            event.stopPropagation();
-            return false;
-            // Must prevent autocomplete from triggering
+        if (event.keyCode === 83 && event.metaKey) { // Alt/Cmd - S
+            event.preventDefault();     // prevents save dialog
+            notepad.save();
         }
 
     });
