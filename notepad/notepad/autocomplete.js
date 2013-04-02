@@ -22,46 +22,6 @@
         }
     }
 
-    // function triplesToSource2(callback) {
-    //     return function(triples) {
-    //         var json = triples.dump();
-
-    //         var result = _.chain(json)
-    //             .map(function(predicate, subject) {
-    //                 return {
-    //                     label: predicate['notepad:reason'], 
-    //                     value: predicate['notepad:reason'],
-    //                     triples: triples.triples(subject)
-    //                 };
-    //             })
-    //             .sortBy(function(obj) { return obj.label.length; })
-    //             .value();
-
-    //         callback(result);
-    //     }
-    // }
-
-    // function triplesToSource(callback) {
-    //     return function(triples) {
-    //         var triplesByObject = triples.triples(undefined, "notepad:reason", undefined).objectIndex();
-
-    //         var result = _.chain(triplesByObject)
-    //             .map(function(triple, object) {
-    //                 return {label: object, value: object, triple: triple}
-    //             })
-    //             .sortBy(function(obj) { return obj.label.length; })
-    //             .value();
-
-    //         callback(result);
-
-    //         // _.map(triplesByObject, function(triple, object) {
-    //         //     return {label: object, value: triple}
-    //         // }).sortBy();
-    //         // callback();
-    //         // callback(triples.predicateValues("rdfs:label", "label"));
-    //     }
-    // }
-
     $.widget("notepad.autocomplete2", $.ui.autocomplete, {
 
         options: {
@@ -70,6 +30,9 @@
             minLength: 2,
 
             source: function(request,callback) {
+                var nbsp = String.fromCharCode(160);
+                request.term = request.term.replace(nbsp, ' ');
+
                 this.options.query.execute(this.element.findEndpoint(), request, triplesToBrowseResults(callback));
             },
 
