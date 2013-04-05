@@ -308,7 +308,7 @@
                     databank.load(json);
                     this.add(databank);
                 } else {
-                    this.push(value);
+                    this.push(toTriple(value));
                 }
                 return this;
             } },
