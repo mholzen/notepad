@@ -212,6 +212,9 @@ $(function() {
     $("#triples button").click(function() {
         $(this).siblings(".turtle").text(notepad.triples().toTurtle());
     });
+    $("#save .save").click(function() {
+        notepad.save();
+    });
 
     $("#save .preview").click(function() {
         var removed = notepad.removed().toTurtle();
