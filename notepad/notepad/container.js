@@ -27,6 +27,9 @@
             this.element.addClass("notepad-container");
             this._createHeadersContainer();
             this._createFilters();
+            if (this.getUri()) {
+                this.load();
+            }
         },
 
         _destroy: function() {
@@ -37,13 +40,16 @@
             if (this.options.sourceElement !== undefined) {
                 return this.options.sourceElement;
             }
-            if (this.element.closest('[about]').length !== 0) {
-                return this.element.closest('[about]');
+            var closestSubject = this.element.closest('[about]');
+            if (closestSubject.length !== 0) {
+                return closestSubject;
             }
-            throw new Error("cannot determine my source element");
         },
         getUri: function() {
-            return this.getSourceElement().attr('about');
+            var subjectElement = this.getSourceElement();
+            if (subjectElement) {
+                return subjectElement.attr('about');
+            }
         },
         getQuery: function() {
             var query = this.options.query || $.notepad.describeObject(this.getSourceElement());
