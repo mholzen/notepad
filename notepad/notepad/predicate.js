@@ -14,20 +14,23 @@
             '{{/rdfs:label}}' +
             '{{^rdfs:label}}' +
                 '{{#notepad:inverseLabel}}' +
-                    // Forward context, no forward label but an inverse one: compute its inverse (defaults to 'related to')
-                    '<span class="tooltip">' +
-                        '<div class="item notepad-literal" rel="rdfs:label">related to</div>' +
-                        '<span class="content">Reverse of: <span class="predicate-label" rel="notepad:inverseLabel">{{xsd:string}}</span></span>' +
+                    // Forward context, no forward label but an inverse one: compute the inverse (defaults to 'related to')
+                    '<span class="tooltip notepad-session">' +
+                        '<div class="item notepad-literal" rel="rdfs:label">'+
+                            '<img src="../external/images/glyphicons/glyphicons_210_left_arrow.png"/>' +
+                            '{{xsd:string}}' +
+                        '</div>' +
+
+                        '<span class="content">' +
+                            '<div class="context">read as:</div>' +
+                            '<div class="notepad-reverse-line"/>' +
+                        '</span>' +
+
+                        '</span>' +
                     '</span>' +
-                    // '<div class="tooltip" alt="inverse of &quot;{{xsd:string}}&quot;" contenteditable="true" rel="rdfs:label">related to</div>' +
-                    //'is <div contenteditable="true" rel="notepad:inverseLabel">{{xsd:string}}</div> of' +
                 '{{/notepad:inverseLabel}}' +
                 '{{^notepad:inverseLabel}}' +
-                    // Forward context, no inverse label, no forward label: default value for a forward relationship')
-                    '<span class="tooltip">' +
-                        '<div class="item notepad-literal" rel="rdfs:label">related to</div>' +
-                        '<span class="content">No known labels</span>' +
-                    '</span>' +                
+                    '<div class="item notepad-literal" rel="rdfs:label">related to</div>' +
                 '{{/notepad:inverseLabel}}' +
             '{{/rdfs:label}}' +
             '',
@@ -38,17 +41,20 @@
             '{{^notepad:inverseLabel}}' +
                 '{{#rdfs:label}}' +
                     // Inverse context, no inverse label but a forward one: compute the inverse (defaults to 'related to')
-                    '<span class="tooltip">' +
-                        '<div class="item notepad-literal" rel="notepad:inverseLabel">related to</div>' +
-                        '<span class="content">Reverse of: <span class="predicate-label" rel="rdfs:label">{{xsd:string}}</span></span>' +
+                    '<span class="tooltip notepad-session">' +
+                        '<div class="item notepad-literal" rel="notepad:inverseLabel">'+
+                            '<img src="../external/images/glyphicons/glyphicons_210_left_arrow.png"/>' +
+                            '{{xsd:string}}' +
+                        '</div>' +
+
+                        '<span class="content">' +
+                            '<div class="context">read as:</div>' +
+                            '<div class="notepad-reverse-line"/>' +
+                        '</span>' +
                     '</span>' +
                 '{{/rdfs:label}}' +
                 '{{^rdfs:label}}' +
-                    // Inverse context, no inverse label, no forward label: default value for a inverse relationship')
-                    '<span class="tooltip">' +
-                        '<div class="item notepad-literal" rel="notepad:inverseLabel">related to</div>' +
-                        '<span class="content">No known labels</span>' +
-                    '</span>' +                
+                    '<div class="item notepad-literal" rel="notepad:inverseLabel">related to</div>' +
                 '{{/rdfs:label}}' +
             '{{/notepad:inverseLabel}}' +
             ''
@@ -112,7 +118,7 @@
             return this.getDirection() === BACKWARD;
         },
 
-        setDirection: function(direction) {
+        _setDirection: function(direction) {
             if (direction === FORWARD) {
                 var uri = this.element.attr('rev');
                 this.element.attr('rel', uri).removeAttr('rev');
@@ -129,7 +135,10 @@
             } else {
                 throw new Error('unknow direction', direction);
             }
-            if (this.getLabel()) {
+        },
+        setDirection: function(direction) {
+            this._setDirection(direction);
+            if (this.hasLabel()) {
                 this.getLabel().option('template', labelTemplates[direction]);    
             }
         },
@@ -151,10 +160,10 @@
             }
         },
         newUri: function() {
-            this.setDirection(FORWARD);
             var uri = $.notepad.getNewUri();
             this._setUri(uri);
-            if (this.getLabel()) {
+            this._setDirection(FORWARD);
+            if (this.hasLabel()) {
                 this.getLabel().newUri(uri);
             }
         },
@@ -183,6 +192,9 @@
             }
             return element;
         },
+        toString: function() {
+            return this.getUri().toString();
+        },
         _createLabel: function() {
             if (!this.options.label) {
                 return;
@@ -190,42 +202,32 @@
             var element = this._labelElement();
             var predicate = this;
             $(element)[this.options.label] ({
+                query: $.notepad.queries.describe_predicate,
                 template: labelTemplates[this.getDirection()],
-
-                // Taken care of via autocompleteSelect: only way for the label to change the predicate URI
-                // urichange: function() {
-                //     var label = $(this).data(predicate.options.labelNamespace);
-                //     predicate.setUri(label.getUri());
-                // },
-                autocompleteSource: function(request,callback) {
-                    var urilabel = this.element.closest(':notepad-urilabel').data('notepadUrilabel');
-                    var query = new Query($.notepad.templates.find_predicate_label_by_label);
-
-                    query.execute(urilabel.getEndpoint(), {'rdfs:label': request.term.trim()}, function(triples) {
-                        callback(triples.map(function(triple) {
-                            return {label: triple.object, value: triple};
-                        }));
-                    });
-                },
-                autocompleteSelect: function(event, ui) {
-                    var triple = ui.item.value;
-                    var urilabel = $(event.target).closest(':notepad-urilabel').data('notepadUrilabel');
-
-                    // This code execute as a of setting the urilabel triple
-                    // which implies that it's not just the URI that affects the predicate, it's also its label
-                    var direction = triple.predicate == 'rdfs:label' ? FORWARD : BACKWARD;
-                    predicate.setUriDirection(triple.subject, direction);
-                    urilabel.set(triple);
-                    predicate.getObjects()[0].focus();
-
-                    event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
-                },
             });
             var label = $(element).data(this.options.labelNamespace);
+
+            var childAutocomplete = element.find(":notepad-autocomplete2");
+            childAutocomplete.on('autocomplete2select', function(event, ui) {
+                var triples = ui.item.value;
+                var uris = triples.subjects();
+                if (uris.length != 1) {
+                    throw new Error("cannot determine a single subject from a graph", uri);
+                }
+                var uri = uris[0],
+                    direction;
+                if ( triples.triples(uri, 'rdfs:label').length ) {
+                    direction = 'forward';
+                } else if ( triples.triples(uri, 'notepad:inverseLabel').length ) {
+                    direction = 'backward';
+                } else {
+                    throw new Error("cannot determine direction from", triples);
+                }
+                predicate._setDirection(direction);
+                predicate._setUri(uri);
+            });
+
             label.setUri(predicate.getUri());
-            // this.element.on('predicateurichange', function() {
-            //     label.setUri(predicate.getUri());  // may or may not trigger label.load()
-            // });
             return element.data(this.options.labelNamespace);
         },
         // consider moving the predicate label to line
