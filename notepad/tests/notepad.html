@@ -228,7 +228,6 @@ $(function() {
         $(this).siblings().toggleClass('hidden');
     });
 
-    //$('#notepad').on("focus", ':notepad-label [rel="rdfs:label"], :notepad-urilabel [rel="rdfs:label"]', function(event) {
     $('#notepad').on("focus", '[contenteditable="true"]', function(event) {
         container = $(event.target).closest(":notepad-container").data('notepadContainer');
 
@@ -369,6 +368,7 @@ $(function() {
             <li><a property="ui:select" content="javascript: line.addCheckboxToChildLines();">Convert to Todo list</a></li>
             <li class="ui-state-disabled"><a property="ui:select" content="javascript: container.toggleSortable();">Re-order lines</a></li>
             <li class="ui-state-disabled"><a href="#">Add column</a></li>
+            <li class="ui-state-disabled"><a property="ui:select" content="">Send to ...</a></li>
             <li class="ui-state-disabled">
                 <a href="#">View ...</a>
                 <ul class="templates">
