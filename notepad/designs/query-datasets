@@ -1,0 +1,23 @@
+
+# it makes sense to look for triples <endpoint> n:dataset <uri> .
+n:dataset rdfs:domain n:endpoint .
+
+# Here's how to get triples <endpoint> n:dataset <uri>
+n:dataset n:sparql "CONSTRUCT { ?endpoint n:dataset ?dataset } WHERE { GRAPH ?dataset { ?session a n:session } }" .
+								^^^^^^^^^
+
+
+# Given an endpoint
+<http://instruct.vonholzen.org:3030/test> a n:endpoint .
+
+# When I query for its datasets
+
+
+# Then I receive its datasets
+<http://instruct.vonholzen.org:3030/test> n:dataset <http://instruct.vonholzen.org:3030/test#123-123-121> .
+<http://instruct.vonholzen.org:3030/test> n:dataset <http://instruct.vonholzen.org:3030/test#123-123-122> .
+<http://instruct.vonholzen.org:3030/test> n:dataset <http://instruct.vonholzen.org:3030/test#123-123-123> .
+
+
+
+# Consider sd:		http://www.w3.org/TR/2013/REC-sparql11-service-description-20130321/

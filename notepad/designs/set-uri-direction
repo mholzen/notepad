@@ -1,0 +1,35 @@
+# display a triple in a line
+# display a reverse triple in a line
+# display a triple with no label for the predicate
+# display a triple with a label for the predicate
+# display a triple with a reverse label for the predicate
+
+line.setContainerPredicateUri  (uri, direction)
+	predicate.setUriDirection
+		predicate._setUri
+			trigger urichange
+		predicate._setDirection
+			label.setTemplate
+		label.setUri
+			label.load
+
+
+
+
+# new relationship
+line.newUri (term)
+	predicate.newUri
+		predicate.newUri(newUri)
+			label.newUri(newUri)
+		predicate.setDirection(forward)
+			label.setTemplate
+	label.setLabel(term)
+
+
+
+# select a label for a predicate from a dropdown
+
+
+
+
+# select a reverse label for a predicate from the dropdown
