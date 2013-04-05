@@ -423,9 +423,9 @@
         triples: function(){
             var triples = new Triples();
 
-            var rdf = this.element.children('div').rdf();
-            rdfaTriples = $.notepad.toTriples(rdf.databank);  // This shouldn't need its own code
-            triples.add(rdfaTriples);
+            // var rdf = this.element.children('div').rdf();
+            // rdfaTriples = $.notepad.toTriples(rdf.databank);  // This shouldn't need its own code
+            // triples.add(rdfaTriples);
 
             triples.push(new Triple(this.getUri(), "rdf:type", "notepad:Session")); // ALT: use RDFAs typeof attribute instead
 
