@@ -41,9 +41,14 @@
             }
             if (context[triple.predicate] === undefined) {
                 context[triple.predicate] = value;
+            } else if ( context[triple.predicate] instanceof Array ) {
+                context[triple.predicate].push(value);
             } else {
-                context[triple.predicate] = [ value, context[triple.predicate] ];
+                context[triple.predicate] = [ value ];
             }
+            // consider: is the following pattern usable for the case above?
+            // memo[triple.subject] = (memo[triple.subject] || new Triples()).add(triple);
+
         });
         return context;        
     }
@@ -58,12 +63,12 @@
             var variables = this.template.match(/{{#*[a-zA-Z:]*?}}/gm).map(function(s) {return s.replace(/[\{\}#]/g, ''); });
             return _.without(variables, 'uri', 'about');
         },
-        context: function(triples) {
-            return graphToContext(triples);
+        context: function(triples, uri) {
+            return graphToContext(triples, uri);
         },
-        render: function(triples, context) {
+        render: function(triples, context, uri) {
             var context = context || {};
-            context = _.extend(context, this.context(triples));
+            context = _.extend(context, this.context(triples, uri));
             return Mustache.render(this.template, context);
         }
     };
