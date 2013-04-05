@@ -144,6 +144,7 @@
 
             $("#menu").bind('menuselect', function(event, ui) {
                 var uri = $(ui.item[0]).children('a[property="ui:select"]').attr('content');
+                $("#control").hide().appendTo('body');                  // move the control out of the line to remove
                 eval(uri);
             });
 
@@ -533,6 +534,7 @@
         },
         reset: function() {
             // should: confirm if changes will be discarded
+            $("#control").hide().appendTo('body');  // move the control out of the line to remove
             this.getContainer().reset();
             this.focus();
             return this;
