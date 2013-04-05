@@ -121,6 +121,12 @@ test("triples", function() {
     assertThat(toTriples(':s :p :o', ':s :p :o2').length, 2);
 });
 
+test('triples.add', function() {
+    triples = new Triples();
+    triples.add(":s :p :o");
+    assertThat(triples, hasItem(equalToObject(toTriple(':s :p :o'))));
+});
+
 test('triples.literal', function() {
     var triples = toTriples(toTriple(':s', ':p1', '1'));
     assertThat(triples.literal(), '1');
