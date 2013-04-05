@@ -1,54 +1,7 @@
 CONSTRUCT {
-	?predicate rdfs:label ?label  .
-	?predicate rdfs:range ?range .
-	?predicate notepad:inverseLabel ?inverseLabel .
-	?predicate notepad:subject ?sX .
-	?sX ?pX ?oX .
-	?oX rdfs:label ?oLabel .
-	?sX rdfs:label ?sLabel .
-} WHERE {
-	{
-		?predicate rdfs:label ?label FILTER (
-			(?predicate = {{{about}}})
-		) .
-		?predicate notepad:inverseLabel ?inverseLabel FILTER (
-			(?predicate = {{{about}}})
-		) .
-	}
-	UNION
-	{
-		# when no inverse label but a forward one with examples, get those examples
-		?predicate rdfs:label ?label FILTER (
-			NOT EXISTS { ?predicate notepad:inverseLabel ?inverseLabel } &&
-			(?predicate = {{{about}}})
-		) .
-
-		# And examples of its use
-		#OPTIONAL { ?sX ?pX ?oX FILTER (?pX = {{{about}}}) } .
-#		?sX ?pX ?oX FILTER (?pX = {{{about}}}) .
-
-		# with labels
-#		?sX rdfs:label ?sLabel .
-#		?oX rdfs:label ?oLabel .
-	}
-	UNION
-	{
-		# when no forward label, but an inverse label, get examples of its use in inverse context
-		?predicate notepad:inverseLabel ?inverseLabel FILTER (
-			NOT EXISTS { ?predicate rdfs:label ?label } &&
-			(?predicate = {{{about}}})
-		) .
-
-		# And examples of its use, in inv
-		# OPTIONAL { ?oX ?pX ?sX FILTER (?pX = {{{about}}}) } .
-#		?oX ?pX ?sX FILTER (?pX = {{{about}}}) .
-
-#		# with labels
-#		?sX rdfs:label ?sLabel .
-#		?oX rdfs:label ?oLabel .
-
-	}
-
-
+	{{{about}}} ?p ?o .
 }
-LIMIT 30
+WHERE {
+	{{{about}}} ?p ?o .
+	# query:cache
+}
