@@ -516,3 +516,11 @@
     $.notepad.toTriples = toTriples;
 
 }(jQuery));
+
+// should: be properly exported
+function pp(triples) {
+    console.log(triples.toPrettyString());
+}
+function ttl(triples) {
+    console.log(triples.toTurtle());
+}
