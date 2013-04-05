@@ -535,3 +535,9 @@ ul {
     overflow: scroll;
     max-height: 400px;
 }
+
+
+#notepad > ul:first-of-type > li:first-of-type > .notepad-predicate > .notepad-object3 > .notepad-template > div:first-of-type {
+    font-size: large;
+    font-weight: bold;
+}
