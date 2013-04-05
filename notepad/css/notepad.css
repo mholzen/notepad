@@ -85,6 +85,13 @@ ul {
     font-size: small;
 }
 
+/* Light, small visually, to set the context, if necessary */
+.context {
+    font-size: small;
+    margin-bottom: 1em;
+    color: grey;
+}
+
 /*
  * PREDICATES
  */
@@ -182,6 +189,12 @@ ul {
 
 .notepad td {
     vertical-align: top;
+}
+
+.notepad-predicate-label img {
+    vertical-align: middle;
+    margin: 4px;
+    width: 12px;
 }
 
 /*
@@ -507,6 +520,21 @@ ul {
 .tooltip .item {
     background: #f0f0f0;
 }
+.ui-tooltip-content {
+    margin: 10px;
+}
+.ui-tooltip {
+    min-width: 600px;
+    max-width: 1000px;
+}
+.ui-tooltip-content h4 {
+    vertical-align: top;
+}
+.ui-tooltip-content > div, .ui-tooltip-content > ul {
+    margin-left: 30px;
+}
+
+
 
 /*
 * HTML email
