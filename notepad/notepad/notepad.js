@@ -65,7 +65,7 @@
         _create: function() {
             var notepad = this;
 
-            this.element.addClass("notepad");
+            this.element.addClass("notepad notepad-session");
 
             this.element.endpoint({display: true});  // Create the endpoint widget
 

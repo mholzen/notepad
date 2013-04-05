@@ -56,7 +56,7 @@
             return query;
         },
         getNotepad: function() {
-            return this.element.parents('.notepad').data("notepadNotepad");
+            return this.element.parents('.notepad-session').data("notepadNotepad");
         },
         getParent: function() {
             var parent = this.element.parents(".notepad-container").data('notepadContainer');
