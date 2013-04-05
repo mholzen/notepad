@@ -90,13 +90,12 @@ WHERE { \n\
 } \n\
 ";
 $.notepad.templates.describe_predicate = "CONSTRUCT { \n\
-	{{{predicate}}} ?p ?o . \n\
+	{{{about}}} ?p ?o . \n\
 } \n\
 WHERE { \n\
-	{{{predicate}}} ?p ?o . \n\
+	{{{about}}} ?p ?o . \n\
 	# query:cache \n\
-} \n\
-";
+}";
 $.notepad.templates.describe_with_sessions = "CONSTRUCT { \n\
 	?about ?predicateForward ?neighbourForward . \n\
 	?neighbourBackward ?predicateBackward ?about . \n\
