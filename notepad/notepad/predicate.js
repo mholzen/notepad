@@ -146,7 +146,7 @@
         },
         setUri: function(uri) {
             this._setUri(uri);
-            if (this.getLabel()) {
+            if (this.hasLabel()) {
                 this.getLabel().setUri(uri);    
             }
         },
@@ -162,7 +162,9 @@
         setUriDirection: function(uri, direction) {
             this._setUri(uri);
             this.setDirection(direction);
-            this.getLabel().setUri(uri);
+            if (this.hasLabel()) {
+                this.getLabel().setUri(uri);
+            }
         },
         getUri: function() {
             var value = this.element.attr(this.getAttribute());
@@ -170,6 +172,9 @@
                 return undefined;
             }
             return toResource(value);
+        },
+        hasLabel: function() {
+            return this.element.siblings(".notepad-predicate-label").length != 0;
         },
         _labelElement: function() {
             var element = this.element.siblings(".notepad-predicate-label");
@@ -308,7 +313,7 @@
             } else {
                 return;
             }
-            if (this.getLabel()) {
+            if (this.hasLabel()) {
                 this.getLabel().uriChanged();    
             }
 
@@ -329,7 +334,7 @@
         },
         triples: function() {
             var triples = new Triples();
-            if (this.getLabel() !== undefined) {
+            if (this.hasLabel()) {
                 triples.add(this.getLabel().triples());
             }
             _.each(this.getObjects(), function(object) {
