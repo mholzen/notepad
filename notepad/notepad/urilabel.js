@@ -24,7 +24,6 @@
                 '',
                                 
             urichange:          $.noop,
-            loadOnSetUri:       true,
 
             // should: use literal, to: use autocomplete2 on literal
             autocomplete:       true,
@@ -52,9 +51,7 @@
                     }
                     break;
                 case 'template':
-                    // What should be the behaviour here?
-                    // If changing the template triggers a load(), then ... we issue a request with a possibly changing URI
-                    this.uriChanged();
+                    // When changing the template, we leave it up to the caller to know when to reload
                 break;
             }
         },
@@ -77,11 +74,9 @@
             if (uri === undefined) {
                 throw new Error("cannot set uri to undefined");
             }
-            if (uri.toString() == this.getUri()) {
-                return;
-            }
+            // Do not ignore if the URI is the same, as the template might have changed
             this._setUri(uri);
-            if (!this.options.loadOnSetUri && triples) {
+            if ( triples ) {
                 this.update(triples)
             } else {
                 this.uriChanged();    
@@ -146,12 +141,12 @@
             return this.templateQuery().execute(this.element.findEndpoint(), undefined, callback);
         },
 
-        // refactor using above
+        // refactor: using above
         uriChanged: function(callback) {
-            if (this.getEndpoint() === undefined) {
+            if ( this.getEndpoint() === undefined ) {
                 return;
             }
-            if (this.getUri().isBlank()) {
+            if ( this.getUri().isBlank() ) {
                 return;
             }
             var label = this;
@@ -161,6 +156,7 @@
                     label.templateReceived(templateTriples, callback);
                 });
             } else {
+                // refactor: using load()
                 var template = new Template(this.options.template);
                 var dataQuery = $.notepad.queryFromPredicates(template.predicates());
                 dataQuery.execute(this.getEndpoint(), {about: this.getUri()}, function(dataTriples) {
@@ -187,7 +183,7 @@
 
             var label = this;
             var template = new Template(this.options.template);
-            var dataQuery = $.notepad.queryFromPredicates(template.predicates());
+            var dataQuery = this.options.query || $.notepad.queryFromPredicates(template.predicates());
             dataQuery.execute(this.getEndpoint(), {about: this.getUri()}, function(dataTriples) {
                 label.dataReceived(dataTriples, callback);
             });
@@ -208,7 +204,7 @@
             if (this.getUri()) {
                 context['about'] = this.getUri();
             }
-            var html = new Template(this.options.template).render(triples, context);
+            var html = new Template(this.options.template).render(triples, context, this.getUri());
 
             this.getTemplateElement().empty();
             this.getTemplateElement().append(html);
@@ -219,6 +215,8 @@
             this.getTemplateElement().find(".notepad-predicate").predicate({label: null});
 
             this.getTemplateElement().find(".notepad-literal").literal();
+
+            this.getTemplateElement().find(".notepad-reverse-line").reverseLine();
 
             this.getTemplateElement().tooltip({items: ".tooltip > .item", content: function() {
                 return $(this).siblings('.content').html();
