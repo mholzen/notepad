@@ -49,8 +49,9 @@ var line;
 var childContainer;
 var childLines;
 var object;
-var urilabel;
+var uri;
 var literal;
+var urilabel;
 var predicate;
 var predicateLabel;
 var toUri = $.notepad.toUri;
@@ -233,6 +234,8 @@ $(function() {
         predicateLabel = predicate ? predicate.getLabel() : undefined;
 
         object = line ? line.getObject() : undefined;
+        uri = object.isUri() ? object.uri().getUri() : undefined;
+
         childContainer = line ? line.getChildContainer() : undefined;
         childLines = childContainer ? childContainer.getLines() : undefined;
 
