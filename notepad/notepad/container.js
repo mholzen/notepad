@@ -181,6 +181,11 @@
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
                     container.option('describeElements', false);
                 }
+                if (!container.element.findEndpoint()) {
+                    // consider: refactor into query.execute
+                    console.log('no more endpoint -- might have been removed from the DOM -- igonring');
+                    return;
+                }
                 container._updateFromRdf(triples);
             });
         },
