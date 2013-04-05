@@ -190,6 +190,51 @@
             name: 'notepadXsddate'
         },
 
-    }
+    };
+
+
+    // consider: using the line widget with {objectWidget: readonly-label, predicateWidget: readonly-forward-label}
+    $.widget("notepad.reverseLine", {
+        _line: function() {
+            return this.element.closest(':notepad-line').data('notepadLine');
+        },
+        _subject: function() {
+            return $("<div>")
+                .attr('about', this._line().getUri())
+                .endpoint({endpoint: this.element.findEndpoint()})
+                .urilabel();
+        },
+        _predicate: function() {
+
+            // should be:
+            // (this._line().options.forwardLabel)({edit: false, about: uri})
+
+            var template = this._line().getDirection() === 'forward' ?
+                '{{#notepad:inverseLabel}}<div class="notepad-literal notepad-predicate" rel="notepad:inverseLabel">{{xsd:string}}</div>{{/notepad:inverseLabel}}' :
+                '{{#rdfs:label}}<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>{{/rdfs:label}}' ;
+
+            return $('<div class="notepad-predicate-label">')
+                .attr('about', this._line().getContainerPredicateUri())
+                .endpoint({endpoint: this.element.findEndpoint()})
+                .urilabel({template: template});
+        },
+        _object: function() {
+            return $('<span>')
+                .attr('about', this._line().getContainerUri())
+                .endpoint({endpoint: this.element.findEndpoint()})
+                .urilabel();
+        },
+
+        _list: function() {
+            return this._line()
+                ? this._subject().append( $("<ul>").append(this._predicate(), this._object()) ) 
+                : undefined;
+        },
+
+        _create: function() {
+            // consider: send triples to a "read only urilabel" widget
+            this.element.append(this._list());
+        }
+    });
 
 }(jQuery));
