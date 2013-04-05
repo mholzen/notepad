@@ -61,6 +61,11 @@
         },
 
         _setLiteral: function(literal, ranges) {
+            if ( ! this.literal() ) {
+                // the literal might have been destroyed, 
+                // and this method is being called after an ajax finally query returns
+                return;
+            }
             if (typeof literal === 'string' && literal.length === 0) {
                 return;
             }
