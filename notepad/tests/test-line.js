@@ -25,18 +25,13 @@ module("given a new line", {
     setup: function() {
         // this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
         this.endpoint = new Triples();
-    	this.dom = $('<div id="container" about=":s"><div id="line"/></div>');
+    	this.dom = $('<div id="container" about=":s"><div id="line"/></div>').appendTo("#fixture");
     	this.container = this.dom.container().data('notepadContainer');
         this.line = this.dom.find('#line').line().data('notepadLine');
     },
     teardown: function() {
         this.line.destroy();
     }
-});
-test("when I do nothing", function() {
-	assertThat(this.line.getObject(), not(nil()), "it has an object");
-	// this.line.setTriple(new Triple(":s", ":p", ":o"));
-    // assertThat(this.line.getObject().length, 1, "initial line has 1 object");
 });
 test("when I access the child container", function() {
     // Current: predicate.getSubjectUri(). uses: closest() to find subjectUri. implies: predicate should be inside object
@@ -59,4 +54,47 @@ test("when I access the child container", function() {
     var triple = new Triple(":abc", ":p", "123");
     childContainer.update(toTriples(triple));
     assertThat(childContainer.triples(), hasItem(equalToObject(triple)));
+});
+
+test("new relationship", function() {
+    var prevUri = this.line.getContainerPredicateUri();
+
+    this.line.newPredicateUri("a new label");
+
+    assertThat( this.line.element.find(":visible").text(), containsString('a new label'));
+    assertThat( this.line.getContainerPredicateUri(), not(prevUri));
+    assertThat( this.line.getPredicateLabel().getUri(), this.line.getContainerPredicateUri());
+
+    this.line.newPredicateUri();
+
+    assertThat( this.line.element.find(":visible").text(), containsString('related to'));
+
+});
+
+test("select a label", function() {
+
+    var autocomplete = this.line.getPredicateLabel().element.find(":notepad-autocomplete2").data('notepadAutocomplete2');
+    var ui = { item: { value: toTriples('ex:created rdfs:label "created"') } };
+
+    var target = this.line.getPredicateLabel().element;
+
+    autocomplete._trigger('select', { target: target }, ui);
+
+    assertThat( this.line.getContainerPredicateUri().toString(), 'ex:created');
+    assertThat( this.line.element.text(), containsString('created') );
+    assertThat( this.line.getDirection(), 'forward');
+});
+
+test("select a reverse label", function() {
+
+    var autocomplete = this.line.getPredicateLabel().element.find(":notepad-autocomplete2").data('notepadAutocomplete2');
+    var ui = { item: { value: toTriples('ex:created notepad:inverseLabel "created by"') } };
+
+    var target = this.line.getPredicateLabel().element;
+
+    autocomplete._trigger('select', { target: target }, ui);
+
+    assertThat( this.line.getContainerPredicateUri(), 'ex:created');
+    assertThat( this.line.element.text(), containsString('created by') );
+    assertThat( this.line.getDirection(), 'backward');
 });

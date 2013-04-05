@@ -1,20 +1,4 @@
 QUnit.file = "test-notepad.js";
-module("given a new div", {
-    setup: function() {
-        this.div = $("<div>").appendTo("#notepad-container");
-    },
-    teardown: function() {
-        this.div.data('destroy');
-    }
-});
-test("when I create a new notepad with options", function() {
-    var endpoint = toTriples(toTriple('rdfs:member', 'rdfs:label', 'label'), toTriple(':a', ':b', ':c'));
-
-    this.div.notepad( {endpoint: endpoint} );
-
-    assertThat(this.div.data('notepadNotepad').getEndpoint(), endpoint, "the notepad should provide the endpoint");
-});
-
 
 module("given a new div", {
     setup: function() {
@@ -22,7 +6,7 @@ module("given a new div", {
     }
 });
 test("when I create a notepad, it should have initial components", function(){
-   this.div.notepad();
+   this.div.notepad({endpoint: toTriples()});
 
    equal(this.div.find("li").length, 1, "should have one line element");
 
@@ -42,7 +26,7 @@ test("when I create a notepad, it should have initial components", function(){
    this.div.notepad('destroy');
 });
 test("when I create a notepad, it should be destroyed cleanly", function() {
-    this.div.notepad();
+    this.div.notepad({endpoint: toTriples()});
     var notepad = this.div.data('notepadNotepad');
     notepad.destroy();
 
@@ -69,17 +53,6 @@ module("given a new notepad", {
     }
 });
 
-skippedTest("when i place the cursor at the beginning of the line", function() {
-    var target = this.div.find("li:first .notepad-object");
-    assertThat(target.caret(), not(equalTo(undefined)), "we need a way to know cursor position in a contenteditable div")
-    target.text('text');
-    target.change();
-    target.caretToStart();
-    target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
-    
-    equal(this.div.find("li:first .notepad-object").text(), "", "the first line should be empty");
-    equal(this.div.find("li:last .notepad-object").text(), "text", "the second line should be where the text remained");
-});
 asyncTest("when set RDF with cycles, then it should not display a triple twice", function() {
 
     // WARNING: this test has a race condition that makes it fail once every other time.
@@ -109,36 +82,6 @@ asyncTest("when set RDF with cycles, then it should not display a triple twice",
             }
         });
 });
-// depends on displaying reverse triples
-skippedTest("when set RDF with a reverse relationship, then it should display it once", function() {
-    expect(4);
-    var uri = this.notepad.getUri();
-    var triples = Triples(
-            toTriple(uri,'rdfs:member',':line1'),
-            toTriple(':line2','rdfs:member',':line1')
-    );
-
-    this.notepad.endpoint = new FusekiEndpoint('http://localhost:3030/test');
-    this.notepad.endpoint.graph = 'ex' + $.notepad.getNewUri();
-
-    var test = this;
-    testAsyncStepsWithPause(200,
-        function() {
-            test.notepad.endpoint.insertData(triples);
-            return function() {
-                ok(true,'inserted');
-            };
-        },
-        function() {
-            test.line.setUri(":line1");
-            return function() {
-                equal(test.line.getUri(), '_:line1', "the first line should be _:line1");
-                equal(test.line.getLines().length, 1, "the first line should have one child");
-                equal(test.line.getLines()[0].getUri(), '_:line2', "the child line should be the uri _:line1");
-            };
-        }
-    );
-});
 function enterNewLine(div) {
     var target = div.find('li [contenteditable="true"]');
     target.text('Test a widget');
@@ -146,50 +89,19 @@ function enterNewLine(div) {
     target.caretToEnd();
     target.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
 }
-test("newline beginning", function() {
+asyncTest("newline beginning", function() {
     enterNewLine(this.div);
     assertThat(this.div.find("li").length, 2, "should have 2 lines");
 
     var line = this.div.find("li:first").data('notepadLine');
     equal(line.getLiteral(), "Test a widget", "line literal should be the typed text");
-});
 
-test("when I add a second line with text", function() {
-    this.container.appendLine();
-    assertThat(this.container.getLines().length, equalTo(2), "the container should have 2 lines");
+    setTimeout(function() { start(); }, 500);
 });
-skippedTest("when I set the predicate label to a new label, then", function() {
-    this.line.element.find('.notepad-predicate').val('a new label');
-    this.line.element.find('.notepad-predicate').change();
-    this.line.element.find('.notepad-object').text('a new value');
-
-    assertThat(this.line.triples().triples(undefined, "rdfs:label", 'a new labe'), []);
-    ok(false);
-
-    ok(this.line.getPredicateLabelTriple(), "the line should generate a triple for the predicate");
-});
-skippedTest("when I set the predicate label to a label that indicates an inverse predicate (e.g ':Person -rdf:type :louis .', then", function() {
-    ok(false,"it should save the inverse triple");
-});
-test("when I append a column with a predicate", function() {
-    var predicateUri = "rdf:example";
-    var column = this.container.appendColumn(predicateUri);
-    ok(this.container.getColumns().length, 1, "the container should have two headers");
-    // ok(column, "this column should be defined");
-    // equal(1, column.getObjects().length, "the column should have one row");
-    // notEqual(column.getObjects()[0].element.css('display'), 'static', "the first cell should be visible");
-})
-test("when I add two lines", function() {
-    this.container.appendLine("first line");
-    this.container.appendLine("second line");
-    ok(this.container.sortBy().length >= 2, "then the list of available sort orders should have at least 2 elements(decreasing and increasing): " + this.container.sortBy());
-});
-
-
 
 module("given a notepad with one line of text", {
     setup: function() {
-        this.div = $("#notepad").notepad();
+        this.div = $("#notepad").notepad({endpoint: toTriples()});
         this.notepad = this.div.data('notepadNotepad');
         this.firstLineElement = this.div.find("li:first");
         this.firstObject = this.div.find("li:first .notepad-object3");
@@ -237,21 +149,8 @@ module("given a notepad with two lines", {
     },
     teardown: function() { this.notepad.destroy(); }    
 });
-skippedTest("when I delete the predicate label, it should delete the line triple", function() {
-
-    $(".notepad-predicate:first").addClass("delete");
-
-    equal(this.line.getContainerTriple().operation, "delete", "the line triple should be deleted");
-
-    deepEqual(this.notepad.deletedTriples(), [this.line.getContainerTriple()], "the line triple should be in the deleted triples");
-})
 function indentSecondLine(div) {
     var target = div.find("li:last .notepad-object3");
-
-    // e = jQuery.Event("keydown");
-    // e.which = $.ui.keyCode.TAB;
-    // target.trigger(e);
-
     target.trigger($.Event("keydown", { keyCode: $.ui.keyCode.TAB }));
 }
 test("when I indent the second line,", function() {
@@ -268,21 +167,6 @@ test("a new line should update labels from RDF", function() {
     var uri = this.line.getUri();
     this.notepad.getContainer()._updateLabelsFromRdf( toTriples(toTriple(uri,'rdfs:label','line label')) );
     assertThat(this.line.getLiteral(),'line label','line label should be set by RDF retrieved');
-});
-skippedTest("a new line should display RDF when setting its URI", function() {
-    expect(1);
-    this.notepad.endpoint = mock(FusekiEndpoint);
-    when(this.notepad.endpoint).getRdf('_:lineUri').then( function() { 
-        start();
-        return ['_:lineUri','rdfs:label','line label'];
-    });
-    stop();
-    this.line.setUri('_:lineUri');
-
-    verify(this.notepad.endpoint).getRdf('_:lineUri');
-    ok(true, "test complete");
-    // TODO: figure out how (and when) to test that the line label was properly set
-    // equal(line.getLineLiteral(),'line label','line label should be set by RDF retrieved');
 });
 test("a notepad should display RDF", function() {
     var uri = this.notepad.getUri();
@@ -307,9 +191,9 @@ test("newline end-of-line", function() {
 
     firstObject.trigger(jQuery.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
 
-    equal(this.div.find("li:eq(0)").data('notepadLine').getLineLiteral(),"first line");
-    assertThat(this.div.find("li:eq(1)").data('notepadLine').getLineLiteral(), not(truth()));
-    equal(this.div.find("li:eq(2)").data('notepadLine').getLineLiteral(),"second line");
+    assertThat(this.div.find("li:eq(0)").text(), containsString("first line"));
+    assertThat(this.div.find("li:eq(1)").text(), not(containsString("first line")));
+    assertThat(this.div.find("li:eq(2)").text(), containsString("second line"));
 });
 
 
@@ -329,16 +213,4 @@ test("when I add a triple that is being expressed but is not yet retrieve, then 
     // for example, with a label being redisplayed as a child of the node
     // must ignore triples that are being expressed by a notepad-object
     ok(true);
-});
-test("when I add a triple describing membershipt to a notepad, then it should filter it out", function() {
-    ok(true);
-});
-skippedTest("when I save, then the empty line should save because it has a child", function() {
-});
-
-
-
-module("given a notepad with a line and a child line", {
-});
-skippedTest("when I unindent the second line, then the second line relatinoship to the first line should be deleted", function() {
 });
