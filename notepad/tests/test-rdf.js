@@ -75,6 +75,9 @@ test("triple", function() {
     ok(new Triple(':1', ':2', ':3').equals(new Triple(':1', ':2', ':3')), "two identical triples should be identical with .equal");
     assertThat(new Triple(':1', ':2', ':3'), equalToObject(new Triple(':1', ':2', ':3')), "two identical triples should be identical with ==");
 
+    assertThat(toTriple(":1 :2 :3").toString(), ':1 :2 :3 .');
+    assertThat(toTriple(':1 :2 "abc"').toString(), ':1 :2 "abc" .');
+
     // Does not work
     //assertThat(new Triple(':1', ':2', ':3'), equalTo(new Triple(':1', ':2', ':3')), "two identical triples should be identical with ==");
 });
@@ -114,6 +117,14 @@ test("triples", function() {
     triples.push(new Triple(':1', ':2', ':3', "delete"));
     equal(triples.update().length, 0, "in a new list of triples, they should all be to deleted");
     equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
+
+    assertThat(toTriples(':s :p :o', ':s :p :o2').length, 2);
+});
+
+test('triples.add', function() {
+    triples = new Triples();
+    triples.add(":s :p :o");
+    assertThat(triples, hasItem(equalToObject(toTriple(':s :p :o'))));
 });
 
 test('triples.literal', function() {

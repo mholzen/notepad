@@ -10,9 +10,6 @@ module("given a container with no uri", {
         this.container.destroy();
     }
 });
-test("when I load the content, then ", function() {
-    raises(function() { this.container.load() } , /cannot /, "it should require the URI");
-});
 test("when I set the URI and load, then", function() {
     this.element.attr('about', ':s');    
     assertThat(this.container.getSourceElement()[0], equalTo(this.element[0]), "the source element for the container is itself");

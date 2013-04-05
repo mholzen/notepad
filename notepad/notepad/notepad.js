@@ -65,7 +65,7 @@
         _create: function() {
             var notepad = this;
 
-            this.element.addClass("notepad");
+            this.element.addClass("notepad notepad-session");
 
             this.element.endpoint({display: true});  // Create the endpoint widget
 
@@ -144,6 +144,7 @@
 
             $("#menu").bind('menuselect', function(event, ui) {
                 var uri = $(ui.item[0]).children('a[property="ui:select"]').attr('content');
+                $("#control").hide().appendTo('body');                  // move the control out of the line to remove
                 eval(uri);
             });
 
@@ -422,9 +423,9 @@
         triples: function(){
             var triples = new Triples();
 
-            var rdf = this.element.children('div').rdf();
-            rdfaTriples = $.notepad.toTriples(rdf.databank);  // This shouldn't need its own code
-            triples.add(rdfaTriples);
+            // var rdf = this.element.children('div').rdf();
+            // rdfaTriples = $.notepad.toTriples(rdf.databank);  // This shouldn't need its own code
+            // triples.add(rdfaTriples);
 
             triples.push(new Triple(this.getUri(), "rdf:type", "notepad:Session")); // ALT: use RDFAs typeof attribute instead
 
@@ -533,6 +534,7 @@
         },
         reset: function() {
             // should: confirm if changes will be discarded
+            $("#control").hide().appendTo('body');  // move the control out of the line to remove
             this.getContainer().reset();
             this.focus();
             return this;

@@ -1,4 +1,4 @@
-QUnit.file = "test-sparql.js";
+
 module("given a hostname", {
     setup: function() {
         this.hostname = "http://localhost:3030/test";
@@ -17,7 +17,7 @@ asyncTest("when I create a fusekiendpoint", function() {
     start();
 });
 
-module('given a FusekiEndpoint', {
+module('endpoint', {
     setup: function() {
         this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
     },
@@ -73,7 +73,7 @@ test("when query for nodes by labels, then", function() {
                     equal(subjects.length,1, "endpoint should have one label");
                     start();
                 });
-            }, 100);
+            }, 1000);
         });
     }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
 });
@@ -264,4 +264,3 @@ var find_content_given_meta = '' +
     });
 
 });
-

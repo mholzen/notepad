@@ -125,21 +125,22 @@ asyncTest("label", function() {
     var element = $('<div about=":s" rel=":p">').appendTo(container);
 
     element.predicate();
-
     var predicate = element.data('notepadPredicate');
+    predicate.getLabel();
 
     setTimeout(function() {
+
         var forwardLabel = predicate.getLabel().element.text();
         assertThat(forwardLabel, containsString("forward label"));
 
-        predicate.setDirection('backward');
+        predicate.setUriDirection(':p', 'backward');
 
         setTimeout(function() {
             var backwardLabel = predicate.getLabel().element.text();
             assertThat(backwardLabel, not('forward label'));
             start();
-        }, 400);
+        }, 1000);
 
-    }, 400);
+    }, 1000);
 
 });

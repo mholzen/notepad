@@ -27,6 +27,9 @@
             this.element.addClass("notepad-container");
             this._createHeadersContainer();
             this._createFilters();
+            if (this.getUri()) {
+                this.load();
+            }
         },
 
         _destroy: function() {
@@ -37,13 +40,16 @@
             if (this.options.sourceElement !== undefined) {
                 return this.options.sourceElement;
             }
-            if (this.element.closest('[about]').length !== 0) {
-                return this.element.closest('[about]');
+            var closestSubject = this.element.closest('[about]');
+            if (closestSubject.length !== 0) {
+                return closestSubject;
             }
-            throw new Error("cannot determine my source element");
         },
         getUri: function() {
-            return this.getSourceElement().attr('about');
+            var subjectElement = this.getSourceElement();
+            if (subjectElement) {
+                return subjectElement.attr('about');
+            }
         },
         getQuery: function() {
             var query = this.options.query || $.notepad.describeObject(this.getSourceElement());
@@ -56,7 +62,7 @@
             return query;
         },
         getNotepad: function() {
-            return this.element.parents('.notepad').data("notepadNotepad");
+            return this.element.parents('.notepad-session').data("notepadNotepad");
         },
         getParent: function() {
             var parent = this.element.parents(".notepad-container").data('notepadContainer');
@@ -174,6 +180,11 @@
             query.execute(endpoint, {}, function(triples) {
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
                     container.option('describeElements', false);
+                }
+                if (!container.element.findEndpoint()) {
+                    // consider: refactor into query.execute
+                    console.log('no more endpoint -- might have been removed from the DOM -- igonring');
+                    return;
                 }
                 container._updateFromRdf(triples);
             });
@@ -331,6 +342,7 @@
             return this.element.children('.notepad-filters').data('notepadContainer2');
         },
         _createFilters: function() {
+            return;
             if (this.element.findEndpoint())
             if (this.filters()) {
                 return;

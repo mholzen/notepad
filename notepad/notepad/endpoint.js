@@ -105,6 +105,7 @@
         },
     });
 
+    // should: rename closestEndpoint()
     $.fn.findEndpoint = function() {
         var element = this.closest(":notepad-endpoint");
         if (element.length === 0) {

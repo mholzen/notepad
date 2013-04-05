@@ -31,18 +31,17 @@
             return this.sparqlTemplate.match(/WHERE\s*{\s*([\s\S]*)\s*}/i)[1];
         },
         name: function() {
-            return this._name || this.toSparql().replace(/\s+/mg,' ').substring(0,50);
+            return this._name || 'unnamed' || this.toSparql().replace(/\s+/mg,' ').substring(0,50);
         },
         execute: function(endpoint, context, callback) {
             var sparql = this.toSparql(context);
 
-            console.groupCollapsed('query:', 'executing:', this.name(), 'with', this.context);
-            console.log('query', this);
-            console.groupEnd();
+            console.log('query '+this.name(), 'with', this.context);
 
+            var query = this;
             return endpoint.execute(sparql, function(triples) {
 
-                console.groupCollapsed('query', 'received ', triples.length, ' triples');
+                console.groupCollapsed('receive '+query.name(), triples.length, 'triples');
                 if (triples.length > 0) {
                     console.log(triples.toTurtle());
                 }
@@ -91,7 +90,7 @@
         //var uri = element.data('notepadObject') ? element.data('notepadObject').getUri() : element.attr('about');
         var resource = new Resource(uri);
         var about = resource.toSparqlString();
-        return new Query($.notepad.templates.describe, {about: about});
+        return new Query($.notepad.templates.describe, {about: about}, 'describe');
     }
     
     $.notepad.clusterFromTriples = function(triples) {

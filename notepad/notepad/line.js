@@ -132,10 +132,8 @@
             this.updatePredicateDisplay();
         },
         newPredicateUri: function(term) {
-            this.getPredicate().newUri(term);
-        },
-        newPredicateUri: function() {
             this.getPredicate().newUri();
+            this.getPredicateLabel().setLabel(term);
             this.updatePredicateDisplay();
         },
         getContainerPredicateUri: function() {
@@ -578,8 +576,7 @@
 
                 if (triples.length == 0) {
                     console.info("no matching results.");
-                    line.newPredicateUri();
-                    predicateLabel.setLabel(predicateTerm);
+                    line.newPredicateUri(predicateTerm);
                     urilabel.getLabelElement().focus();
                     return;
                 }

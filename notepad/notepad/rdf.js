@@ -102,7 +102,7 @@
         if (binding.type == 'literal') {
             return $.rdf.literal('"' + binding.value.toString().replace(/"/g, '\\"') + '"');
         }
-        throw "unknown type "+binding.type;
+        throw new Error("unknown type "+binding.type);
     };
     
     Resource = function(value) {
@@ -206,7 +206,21 @@
         return resource.toString();
     };
 
-    toTriple = function(subject,predicate,object,operation) {
+    toTriple = function(tripleOrSubject,predicate,object,operation) {
+        if (tripleOrSubject === undefined) {
+            return undefined;
+        }
+        if ( typeof tripleOrSubject === 'string' && !predicate && !object ) {
+            tripleOrSubject = $.rdf.triple(tripleOrSubject, {namespaces: namespaces});
+        }
+        if (tripleOrSubject.subject !== undefined) {
+            subject = tripleOrSubject.subject;
+            predicate = tripleOrSubject.property || tripleOrSubject.predicate;
+            object = tripleOrSubject.object;
+        } else {
+            subject = tripleOrSubject;
+        }
+
         if (subject === undefined || predicate === undefined || object === undefined || object.length === 0) {
             return undefined;
         }
@@ -294,7 +308,7 @@
                     databank.load(json);
                     this.add(databank);
                 } else {
-                    this.push(value);
+                    this.push(toTriple(value));
                 }
                 return this;
             } },
@@ -492,11 +506,21 @@
         };
     })();
 
-    toTriples = function(value) {
+    toTriples = function() {
         var triples = new Triples();
-        triples.add(value);    
+        for(var i = 0; i < arguments.length; i++) {
+            triples.add(arguments[i]);
+        }
         return triples;
     }
     $.notepad.toTriples = toTriples;
 
 }(jQuery));
+
+// should: be properly exported
+function pp(triples) {
+    console.log(triples.toPrettyString());
+}
+function ttl(triples) {
+    console.log(triples.toTurtle());
+}

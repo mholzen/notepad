@@ -45,7 +45,28 @@
     <h2 id="qunit-userAgent"></h2>
     <ol id="qunit-tests"></ol>
     <div id="qunit-fixture">test markup, will be hidden</div>
-    <div id="fixture">visible test markup</div>
+    <div id="fixture">
+
+    	<div class="notepad-predicate-label">
+		    <span rel="rdfs:label" 			class="notepad-predicate-label"></span>
+		    <span rel="rdfs:inverseLabel" 	class="notepad-predicate-label-with-inverse" ></span>
+		</div>
+
+	    <div class="notepad-predicate-label">
+	    </div>
+
+	    <div class="notepad-predicate-label-with-inverse">
+	        <span class="tooltip">
+	            <span class="item notepad-predicate" rel="rdfs:label">related to</span>
+	            <span class="content">
+	                <h1>Reverse of <span rel="notepad:inverseLabel"></span></h1>
+	                <h2>Examples</h2>
+	                <ul about="notepad:examples" class="notepad-container" />
+	            </span>
+	        </span>
+	    </div>
+
+    </div>
     <div id="main"/>
 </body>
 
