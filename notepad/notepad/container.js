@@ -331,6 +331,7 @@
             return this.element.children('.notepad-filters').data('notepadContainer2');
         },
         _createFilters: function() {
+            return;
             if (this.element.findEndpoint())
             if (this.filters()) {
                 return;
