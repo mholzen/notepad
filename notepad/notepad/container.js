@@ -255,7 +255,6 @@
                 
                 // refactor to: line.update(triple);
                 line.setContainerPredicateUri(triple.predicate, lineSelector.direction);
-
                 if (triple.object.isLiteral()) {
                     line.setLineLiteral(triple.object);
                 } else {
@@ -280,7 +279,6 @@
                 if (triple.predicate.toString() !== 'rdfs:label') {
                     return;
                 }
-
                 // Find a line with the subject as URI
                 container.element.find(':notepad-urilabel[about="'+triple.subject+'"]').each(function(i,urilabel) {
                     $(urilabel).data('notepadUrilabel').update(triples);       // could optimize to only related triples?

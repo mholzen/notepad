@@ -561,7 +561,7 @@
             var remainder = parts[2].trim();
 
             if ($.notepad.knownScheme(predicateTerm)) {
-                console.info(predictTerm + "is a URI.  Ignoring.");
+                console.info(predicateTerm + "is a URI.  Ignoring.");
                 return;
             }
 

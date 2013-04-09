@@ -1,25 +1,3 @@
-test("discoverPredicate", function() {
-    $.notepad.queries.describe_predicate = mock(Query);
-    when($.notepad.queries.describe_predicate).execute(anything(), anything(), anything()).then(function() {
-        arguments[2](toTriples(toTriple("rdfs:member", "rdfs:range", "xsd:string")));
-    });
-    $.notepad.queries.find_predicate_label_by_label = mock(Query);
-    when($.notepad.queries.find_predicate_label_by_label).execute(anything(), anything(), anything()).then(function() {
-        arguments[2](toTriples(toTriple(":p", "rdfs:label", "predicate")));
-    });
-    
-    var container = $("<ul about=':s'>").appendTo("body").container();
-    var el = $("<li>").appendTo(container).line();
-    var line = el.data('notepadLine');
-
-    line.getObject().uri().setLabel("predicate: literal");
-
-    line.discoverPredicate();
-    assertThat(line.getPredicate().getUri(), ":p");
-    assertThat(line.getPredicateLabel().getLabel(), "predicate");
-    assertThat(line.getObject().uri().getLabel(), "literal");
-});
-
 QUnit.file = "test-line.js";
 module("given a new line", {
     setup: function() {
@@ -97,4 +75,26 @@ test("select a reverse label", function() {
     assertThat( this.line.getContainerPredicateUri(), 'ex:created');
     assertThat( this.line.element.text(), containsString('created by') );
     assertThat( this.line.getDirection(), 'backward');
+});
+
+test("discoverPredicate", function() {
+    $.notepad.queries.describe_predicate = mock(Query);
+    when($.notepad.queries.describe_predicate).execute(anything(), anything(), anything()).then(function() {
+        arguments[2](toTriples(toTriple("rdfs:member", "rdfs:range", "xsd:string")));
+    });
+    $.notepad.queries.find_predicate_label_by_label = mock(Query);
+    when($.notepad.queries.find_predicate_label_by_label).execute(anything(), anything(), anything()).then(function() {
+        arguments[2](toTriples(toTriple(":p", "rdfs:label", "predicate")));
+    });
+    
+    var container = $("<ul about=':s'>").appendTo("body").container();
+    var el = $("<li>").appendTo(container).line();
+    var line = el.data('notepadLine');
+
+    line.getObject().uri().setLabel("predicate: literal");
+
+    line.discoverPredicate();
+    assertThat(line.getPredicate().getUri(), ":p");
+    assertThat(line.getPredicateLabel().getLabel(), "predicate");
+    assertThat(line.getObject().uri().getLabel(), "literal");
 });
