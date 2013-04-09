@@ -25,9 +25,20 @@ To start developing
 
 * You should be able to start making changes
 
+To run using a webserver
+------------------------
+
+Running the tests will require that you access your repository using a webserver. Simply move your repository
+under the document root of an Apache server, and that should be enough.
+
+
 Test
 ----
 * You can execute tests by pointing your browser to `<directory>/notepad/notepad/tests/test-all.html`
 
-* Some of the tests require local components and so may not pass.  Additional work is 
-  required to identify and mark test requirements.
+* Some of the tests require a local triplestore (the jena-fuseki-notepad components running locally)
+  and will not pass otherwise.
+
+* You can reset the state of the `test` database by pointing your browser to:
+
+		http://localhost/<path-to-your-repository>/notepad/notepad/tests/reset-dataset.html
