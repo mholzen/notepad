@@ -168,7 +168,6 @@
             });
 
             $("body").click(function(event) {
-                console.log('click', $(event.target));
                 if ($(event.target).parents("#menu-button").length === 0) {         // if we are not clicking on the menu button
                     $("#menu").fadeOut("100");
                 }
