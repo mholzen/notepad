@@ -11,6 +11,20 @@ test("init", function() {
     assertThat(element.data('notepadLiteral').getLiteral(), "123");
 });
 
+test("type URL", function() {
+    var literal = $("<div>").literal().data('notepadLiteral');
+
+    // via the browser, keyboard, user
+    literal.element.find('[contenteditable="true"]').text('http://ex.com');
+    assertThat(literal.getObject().isLiteral(), true);
+    assertThat(literal.getObject(), 'http://ex.com');
+
+    // via the API
+    literal.setLiteral('http://another.example');
+    assertThat(literal.getObject().isLiteral(), true);
+    assertThat(literal.getObject(), 'http://another.example');
+});
+
 test("html", function() {
     var element = $('<div rel=":p">').literal();
     var literal = element.data('notepadLiteral');

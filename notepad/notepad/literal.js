@@ -134,7 +134,7 @@
             if (string.length === 0) {
                 return;
             }
-            return toResource(string);
+            return toLiteral(string);
         },
         _create: function() {
             this.element.autocomplete2();
