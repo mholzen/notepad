@@ -42,6 +42,8 @@
         notepad:    "http://www.vonholzen.org/instruct/notepad/#",
         sp:         "http://spinrdf.org/sp#",
         dc:         "http://purl.org/dc/elements/1.1/#",
+
+        // consider: map to endpoint+'#' instead, to remove the application from the resource URI
         '':         $.notepad.uri() + '#'
     };
     $.notepad.namespaces = namespaces;
