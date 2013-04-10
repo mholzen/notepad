@@ -154,6 +154,15 @@ test('triples.literal', function() {
     assertThat(triples.literal(undefined, ':p1'), '1');
 });
 
+test("triples.object", function() {
+    var triples = toTriples(':s :p :o');
+    assertThat(triples.object(), toResource(':o'));
+
+    triples.add(':s :p :o1');
+    assertThat(triples.object(), hasSize(2));
+    assertThat(triples.object(), hasItem(toResource(':o')));
+    assertThat(triples.object(), hasItem(toResource(':o1')));
+});
 
 test("triples from JSON", function() {
     var json = { 

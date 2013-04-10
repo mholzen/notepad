@@ -455,7 +455,14 @@
                 return this.triples(subject, predicate).map(function(triple) { return triple.object; });
             } },
             object: { value: function(subject, predicate) {
-                return this.objects(subject, predicate).join();
+                var objects = this.objects(subject, predicate);
+                if (objects.length === 0) {
+                    return;
+                }
+                if (objects.length === 1) {
+                    return objects[0];
+                }
+                return objects;
             } },
             objectIndex: { value: function() {
                 return _.reduce(this, function(memo, triple) { memo[triple.object] = triple; return memo; }, {});
