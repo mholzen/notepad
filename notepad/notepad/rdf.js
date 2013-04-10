@@ -17,6 +17,21 @@
         return $.uri.base().toString().replace(/#.*$/,'');
     }
 
+    toLiteral = function(value) {
+        if (value.resource) {
+            if (value.resource.type === 'literal') {
+                return value;
+            }
+            if (value.resource.type === 'uri') {
+                return toResource($.rdf.literal( '"' + value + '"'));
+            }
+        }
+        if (typeof value === 'string') {
+            return toResource( $.rdf.literal('"' + value.toString().replace(/"/g, '\\"') + '"') );
+        }
+        throw new Error("cannot create a literal from", value);
+    }
+
     var namespaces = {
         xsd:        "http://www.w3.org/2001/XMLSchema#",
         rdf:        "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -54,7 +69,7 @@
         return value.substr(0,value.indexOf(':'));
     }
     function knownScheme(value) {
-        return ["http", "https", "file", "urn", "mailto"].indexOf(scheme(value)) != -1;
+        return ["http", "https", "file", "urn", "mailto"].indexOf(value) != -1;
     }
     $.notepad.knownScheme = knownScheme;
 
@@ -72,15 +87,15 @@
 
             return $.rdf.blank(value);
         }
-        if ( knownScheme(value) ) {
-            // TODO: make more specific
-            return $.rdf.resource('<' + value.toString() + '>', {namespaces: namespaces} );
-        }
         if ( value.indexOf(':') == 0) {
             return $.rdf.resource('<' + $.notepad.uri() + '#' + value.toString().slice(1) + '>' );
         }
         if ( value.indexOf(':') > 0) {
             try {
+                var urlParts = value.match(/^(\w+):(\S+)/);
+                if ( knownScheme(urlParts[1]) ) {
+                    return $.rdf.resource('<' + value.toString() + '>', {namespaces: namespaces} );        
+                }
                 return $.rdf.resource(value.toString(), {namespaces: namespaces} );
             }
             catch(error) {
@@ -127,15 +142,12 @@
     };
     var memResource = {};
     toResource = function(value) {
-        var resource;
-        if (memResource[value]) {
-            return memResource[value];
-        }
-        resource = new Resource(value);
-        if (memResource[resource]) {
-            return memResource[resource];
+        var resource = new Resource(value);
+        var key = resource.resource.type + resource.toString();
+        if (memResource[key]) {
+            return memResource[key];
         } else {
-            memResource[resource] = resource;
+            memResource[key] = resource;
             return resource;
         }
     };

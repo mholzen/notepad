@@ -13,6 +13,7 @@ test("resources", function() {
     ok(toResource("rdfs:member") == toResource("rdfs:member"), "instances should be static final");
     ok(new Resource("_:blank").isBlank(), "a blank node should return an rdf resource blank node");
     ok(new Resource("http://example.com").isUri(), "a node with http:// should be of type uri");
+    ok(new Resource("http").isLiteral());
     equal(new Resource("Text").toRdfResource().type,'literal', "a node with text should be of type literal");
     equal(new Resource('a').toRdfResource().toString(),'"a"', "a character in RDF should be double quoted");
     equal(new Resource('"').toSparqlString(),'"\\""', "a double quote in RDF should be escaped ");
@@ -51,6 +52,22 @@ test("resources", function() {
     var resourceWithColon = new Resource("Hello my friend: how are you?");
     assertThat(resourceWithColon.isLiteral(), truth(), "a resource with ':' can be a literal");
 });
+test("literal", function() {
+    assertThat( toLiteral("some text"), "some text" );
+    assertThat( toLiteral("http://ex.com").isLiteral() );
+
+    assertThat( toLiteral(toResource("some text")).isLiteral() );
+    assertThat( toLiteral(toResource("http://ex.com")).isLiteral() );
+
+    assertThat( toResource(toLiteral("http://ex.com")).isLiteral() );
+    assertThat( toResource("http://ex.com").isUri() );
+});
+test("toResource", function() {
+    var uri = toResource('http://ex.com');
+    var literalOfUri = toResource(toLiteral('http://ex.com'));
+    assertThat(uri, not(literalOfUri), "a literal of a URI must be different from the URI");
+});
+
 test("string with known scheme prefix should be not interpreted as a namespace", function() {
     var r = new Resource('urn:uuid:02e123c8-8534-4b4d-b726-3db7eff2b6c3');
     assertThat(r.isUri());
