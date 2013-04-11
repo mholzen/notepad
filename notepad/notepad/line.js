@@ -85,8 +85,14 @@
             return !this.hasObjectUri();
         },
 
-        // Line Uri        
+        // Line Uri
+        toUri: function() {
+            return this.getObject().uri();
+        },
         getUri: function() {
+            if (! this.getObject().isUri()) {
+                return;
+            }
             return this.getObject().uri().getUri();
         },
         _setUri: function(uri) {
@@ -286,6 +292,10 @@
             return this.getChildContainer().getLines();
         },
         appendChildLine: function(li) {
+            this.toUri();
+            if (! this.getUri()) {
+                throw new Error("cannot determine uri when adding a child line");
+            }
             var newLine = this.getChildContainer().appendLine(li);
             this.options.describeDepth = 1;     // adding a new child line should not expand child lines recursively
             this.showChildren();

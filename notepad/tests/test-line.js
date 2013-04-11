@@ -11,6 +11,24 @@ module("given a new line", {
         this.line.destroy();
     }
 });
+test("line.toUri", function() {
+    this.line.setLineLiteral("a literal");
+
+    this.line.toUri();
+
+    assertThat(this.line.getObject().element.text(), containsString('a literal'));
+});
+
+test("appendChildLine", function() {
+    this.line.setLineLiteral("a literal");
+    assertThat(this.line.getUri(), not(truth()));
+
+    this.line.appendChildLine();
+
+    assertThat(this.line.getUri(), truth());
+    assertThat(this.line.getObject().element.text(), containsString('a literal'));
+});
+
 test("when I access the child container", function() {
     // Current: predicate.getSubjectUri(). uses: closest() to find subjectUri. implies: predicate should be inside object
     // (a) move childContainer inside label
