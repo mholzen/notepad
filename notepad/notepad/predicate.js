@@ -26,7 +26,6 @@
                             '<div class="notepad-reverse-line"/>' +
                         '</span>' +
 
-                        '</span>' +
                     '</span>' +
                 '{{/notepad:inverseLabel}}' +
                 '{{^notepad:inverseLabel}}' +
