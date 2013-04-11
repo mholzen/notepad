@@ -49,6 +49,12 @@
                 }
                 var widget = $(event.target).closest(':notepad-urilabel').data('notepadUrilabel');
                 widget.setUri(uris[0], triples);
+
+                // mark any triples resulting from setUri as having been loaded by this session
+                if (widget.getNotepad()) {
+                    widget.getNotepad().loaded(widget.triples());
+                }
+
                 event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
             },
 
