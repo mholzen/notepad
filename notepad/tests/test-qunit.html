@@ -39,6 +39,7 @@
         }
         test("using hamcrest's matchers", function() {
             assertThat([2,3,4], hasItem(3));
+            assertThat([2,3,4], not(hasItem(5)));
             assertThat([2,{a:3},4], hasItem(hasMember('a', equalTo(3))));
             assertThat([2,{a:3},4], not(hasItem(hasMember('a', equalTo(4)))));
             // We don't have the latest version of JsHamcrest
