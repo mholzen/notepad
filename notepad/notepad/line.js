@@ -544,7 +544,7 @@
 
             var objectTriples = urilabel.triples();
             if (objectTriples.length !== 1 && objectTriples[0].predicate != 'rdfs:label') {
-                log.info("ignoring discoverPredicate because cannot locate a single label triple in the line");
+                console.info("ignoring discoverPredicate because cannot locate a single label triple in the line");
                 return;
             }
 
@@ -554,7 +554,7 @@
             // Should ignore a colon in double, or single quotes
             var parts = literal.toString().match(/\s*(.+?\S):\s*(.*)/);
             if (!parts) {
-                log.info("can't extract parts");
+                console.info("can't extract parts from ", literal);
                 return;
             }
             var predicateTerm = parts[1].trim();
