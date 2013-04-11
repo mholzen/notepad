@@ -533,7 +533,7 @@
                 return object.uri().getLabel();
             }
         },
-        discoverPredicate: function(event) {
+        discoverPredicate: function() {
             var object = this.getObject();
 
             if (object.isLiteral()) {
