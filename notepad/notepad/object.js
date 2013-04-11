@@ -52,11 +52,7 @@
         },
         uri: function() {
             if (!this.isUri()) {
-                this.element.urilabel({templateReceived: function(triples) {
-                    // update menu
-                    $("#menu .templates").attr('about', $.notepad.getNewUri());
-                    $("#menu .templates").container().data('notepadContainer').addSubjects(urilabel.templates());
-                }});
+                this.element.urilabel();
             }            
             return this.element.data('notepadUrilabel');
         },
