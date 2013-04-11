@@ -601,13 +601,11 @@
                     return;
                 }
                 if (triples.length > 1) {
-                    console.info("more than one result ("+triples.length+")... triggering search");
+                    console.info("more than one result ("+triples.length+").  Marking as ambiguous.");
 
                     line.newPredicateUri();
                     predicateLabel.setLabel(predicateTerm);
-                    predicateLabel.getLabelElement().caretToEnd();
-                    predicateLabel.getLabelElement().focus();
-                    predicateLabel.getLabelElement().autocomplete("search", predicateTerm);
+                    predicateLabel.getLabelElement().addClass('ambiguous');
                     return;
                 }
             });

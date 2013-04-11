@@ -91,6 +91,11 @@ ul {
     margin-bottom: 1em;
     color: grey;
 }
+.ambiguous {
+    text-decoration: none;
+    border-bottom: 1px dashed;
+    border-color: orange;
+}
 
 /*
  * PREDICATES

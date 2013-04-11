@@ -121,6 +121,25 @@
 
     });
 
+    function discoverPredicate(text) {
+        // Should ignore a colon in double, or single quotes
+        var parts = text.match(/\s*(.*?\S):\s*(.*)/);
+        if (!parts) {
+            return;
+        }
+        var predicate = parts[1].trim();
+        var remainder = parts[2].trim();
+
+        if ($.notepad.knownScheme(predicate) ) {
+            // Ignore URIs
+            // consider: ignore CURIES?
+            return;
+        }
+        return {predicate: predicate, remainder: remainder};
+    }
+    $.notepad.discoverPredicate = discoverPredicate;
+
+
     $.widget("notepad.xsdstring", {
         setLiteral: function(literal) {
             this.element.text(literal.toString());

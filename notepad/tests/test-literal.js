@@ -93,3 +93,9 @@ test("create with triple", function() {
     start();
 
 });
+
+test("discover predicate", function() {
+    deepEqual($.notepad.discoverPredicate('a: foo'), {predicate: 'a', remainder: 'foo'});
+    deepEqual($.notepad.discoverPredicate('http:foo'), undefined);
+    deepEqual($.notepad.discoverPredicate('http protocol:foo'), {predicate: 'http protocol', remainder: 'foo'});
+});
