@@ -1,23 +1,28 @@
+# Given an URI that is an endpoint
+	?endpointUri 	a 		notepad:Endpoint
+	#  consider: sd:Service, http://www.w3.org/ns/sparql-service-description#Service
 
-# it makes sense to look for triples <endpoint> n:dataset <uri> .
-n:dataset rdfs:domain n:endpoint .
 
-# Here's how to get triples <endpoint> n:dataset <uri>
-n:dataset n:sparql "CONSTRUCT { ?endpoint n:dataset ?dataset } WHERE { GRAPH ?dataset { ?session a n:session } }" .
-								^^^^^^^^^
+# We are looking for triples of the form:
+	?endpointUri n:dataset ?datasetUri .
+
+
+# If we define the domain the n:dataset
+	n:dataset rdfs:domain n:endpoint .
+
+# And we defined how to compute objects given that predicate
+	n:dataset n:computeUsingSparql "select ?dataset  WHERE { GRAPH ?dataset { ?session a notepad:Session } }" .
 
 
 # Given an endpoint
-<http://instruct.vonholzen.org:3030/test> a n:endpoint .
+	<http://instruct.vonholzen.org:3030/test> a notepad:endpoint .
+
 
 # When I query for its datasets
+	endpoint.computeUsingSparql
 
 
 # Then I receive its datasets
 <http://instruct.vonholzen.org:3030/test> n:dataset <http://instruct.vonholzen.org:3030/test#123-123-121> .
 <http://instruct.vonholzen.org:3030/test> n:dataset <http://instruct.vonholzen.org:3030/test#123-123-122> .
 <http://instruct.vonholzen.org:3030/test> n:dataset <http://instruct.vonholzen.org:3030/test#123-123-123> .
-
-
-
-# Consider sd:		http://www.w3.org/TR/2013/REC-sparql11-service-description-20130321/
