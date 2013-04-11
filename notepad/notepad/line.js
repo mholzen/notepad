@@ -561,19 +561,13 @@
             var triple = objectTriples[0];
             var literal = triple.object;
 
-            // Should ignore a colon in double, or single quotes
-            var parts = literal.toString().match(/\s*(.+?\S):\s*(.*)/);
+            var parts = $.notepad.discoverPredicate(literal.toString());
             if (!parts) {
                 console.info("can't extract parts from ", literal);
                 return;
             }
-            var predicateTerm = parts[1].trim();
-            var remainder = parts[2].trim();
-
-            if ($.notepad.knownScheme(predicateTerm)) {
-                console.info(predicateTerm + "is a URI.  Ignoring.");
-                return;
-            }
+            var predicateTerm = parts.predicate;
+            var remainder = parts.remainder;
 
             var line = this;
             var query = $.notepad.queries.find_predicate_label_by_label;
@@ -587,6 +581,7 @@
                 if (triples.length == 0) {
                     console.info("no matching results.");
                     line.newPredicateUri(predicateTerm);
+
                     urilabel.getLabelElement().focus();
                     return;
                 }
@@ -606,6 +601,8 @@
                     line.newPredicateUri();
                     predicateLabel.setLabel(predicateTerm);
                     predicateLabel.getLabelElement().addClass('ambiguous');
+
+                    urilabel.getLabelElement().focus();
                     return;
                 }
             });
