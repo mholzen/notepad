@@ -325,7 +325,6 @@
         },
         triples: function() {
             var triples = new Triples();
-
             if ( this.getObject().isLiteral() ||
                  ( this.getObject().isUri() && this.getObject().uri().triples().length !== 0 ) )  {
                 // only count predicate triples if we've defined something about the URI itself
@@ -571,37 +570,31 @@
 
             var line = this;
             var query = $.notepad.queries.find_predicate_label_by_label;
-            query.execute(this.element.findEndpoint(), {'rdfs:label': predicateTerm}, function(triples) {
+
+            query.execute(this.element.findEndpoint(), {'rdfs:label': '^' + predicateTerm + '$' }, function(triples) {
 
                 line.showPredicate();
 
                 urilabel.setLabel(remainder);
                 var predicateLabel = line.getPredicateLabel();
 
-                if (triples.length == 0) {
-                    console.info("no matching results.");
+                if (triples.length === 0) {
+                    console.info("line.discoverPredicate", 'no predicate labels found matching "', predicateTerm, '"');
                     line.newPredicateUri(predicateTerm);
 
                     urilabel.getLabelElement().focus();
                     return;
                 }
-                if (triples.length === 1) {
-                    console.info("exactly one matching results.  Setting predicate.");
+                if (triples.length > 0) {
+                    var triple = triples[0];
+                    var direction = triple.predicate == 'rdfs:label' ? FORWARD : BACKWARD;
+                    line.getPredicate().setUriDirection(triple.subject, direction);
+                    predicateLabel.setLabel(triple.object);
 
-                    var direction = triples[0].predicate == 'rdfs:label' ? FORWARD : BACKWARD;
-                    line.getPredicate().setUriDirection(triples[0].subject, direction);
-                    predicateLabel.setLabel(triples[0].object);
+                    if (triples.length > 1) {
+                        predicateLabel.element.addClass('ambiguous');
+                    }
                     
-                    urilabel.getLabelElement().focus();
-                    return;
-                }
-                if (triples.length > 1) {
-                    console.info("more than one result ("+triples.length+").  Marking as ambiguous.");
-
-                    line.newPredicateUri();
-                    predicateLabel.setLabel(predicateTerm);
-                    predicateLabel.getLabelElement().addClass('ambiguous');
-
                     urilabel.getLabelElement().focus();
                     return;
                 }

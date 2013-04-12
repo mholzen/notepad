@@ -95,24 +95,44 @@ test("select a reverse label", function() {
     assertThat( this.line.getDirection(), 'backward');
 });
 
-test("discoverPredicate", function() {
-    $.notepad.queries.describe_predicate = mock(Query);
-    when($.notepad.queries.describe_predicate).execute(anything(), anything(), anything()).then(function() {
-        arguments[2](toTriples(toTriple("rdfs:member", "rdfs:range", "xsd:string")));
-    });
-    $.notepad.queries.find_predicate_label_by_label = mock(Query);
-    when($.notepad.queries.find_predicate_label_by_label).execute(anything(), anything(), anything()).then(function() {
-        arguments[2](toTriples(toTriple(":p", "rdfs:label", "predicate")));
-    });
+module("", {});
+testWithContainer("discoverPredicate",
+    toTriples(
+        ':p1 a rdf:Property',
+        ':p1 rdfs:label "predicate" '
+    ), function() {
     
-    var container = $("<ul about=':s'>").appendTo("body").container();
-    var el = $("<li>").appendTo(container).line();
+    var el = $("<li>").appendTo(this.container.element).line();
     var line = el.data('notepadLine');
 
     line.getObject().uri().setLabel("predicate: literal");
 
     line.discoverPredicate();
-    assertThat(line.getPredicate().getUri(), ":p");
-    assertThat(line.getPredicateLabel().getLabel(), "predicate");
-    assertThat(line.getObject().uri().getLabel(), "literal");
+    setTimeout(function() {
+        assertThat(line.getPredicate().getUri(), ":p1");
+        assertThat(line.getPredicateLabel().getLabel(), "predicate");
+        assertThat(line.getObject().uri().getLabel(), "literal");
+        start();
+    }, 500);
+});
+
+testWithContainer("discoverPredicate.ambiguous",
+    toTriples(
+        ':p1 a rdf:Property',
+        ':p2 a rdf:Property',
+        ':p1 rdfs:label "predicate" ',
+        ':p2 rdfs:label "predicate" '
+    ), function() {
+
+    var el = $("<li>").appendTo(this.container.element).line();
+    var line = el.data('notepadLine');
+
+    line.getObject().uri().setLabel("predicate: literal");
+
+    line.discoverPredicate();
+
+    setTimeout(function() {
+        assertThat(line.getPredicateLabel().element.hasClass('ambiguous'));
+        start();
+    }, 500);
 });
