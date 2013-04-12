@@ -36,12 +36,12 @@
         execute: function(endpoint, context, callback) {
             var sparql = this.toSparql(context);
 
-            console.log('query '+this.name(), 'with', this.context);
+            console.log('query.execute', {name:this.name(), with: this.context});
 
             var query = this;
             return endpoint.execute(sparql, function(triples) {
 
-                console.groupCollapsed('receive '+query.name(), triples.length, 'triples');
+                console.groupCollapsed('query.receive', {name: query.name(), length: triples.length, triples: triples.length ? triples : null});
                 if (triples.length > 0) {
                     console.log(triples.toTurtle());
                 }
