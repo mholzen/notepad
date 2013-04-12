@@ -441,8 +441,8 @@
                 return results;
             } },
             execute: { value: function(sparql, callback) {
-                TempFusekiEndpoint("http://localhost:3030/test", this, function() {
-                    this.execute(sparql, callback);
+                TempFusekiEndpoint(this, function() {
+                    this.endpoint.execute(sparql, callback);
                 })
             } },
             subjects: { value: function() {

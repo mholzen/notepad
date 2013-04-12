@@ -9,10 +9,11 @@ FusekiEndpoint = function(uri) {
     this.graph = 'default';
 }
 
-TempFusekiEndpoint = function(uri, triples, callback) {
-    var endpoint = new FusekiEndpoint(uri);
+TempFusekiEndpoint = function(triples, callback) {
+    var endpoint = new FusekiEndpoint("http://localhost:3030/test");
     endpoint.graph = $.notepad.getNewUri();
-    endpoint.insertData(triples, callback.bind(endpoint));
+    this.endpoint = endpoint;
+    endpoint.insertData( triples, callback.bind(this) );
 }
 
 FusekiEndpoint.prototype = {

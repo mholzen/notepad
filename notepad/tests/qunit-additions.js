@@ -18,17 +18,17 @@ QUnit.config.testTimeout = 5000;
  */
 
 function testAsyncStepsWithPause(pause) {
-  var args = arguments;
-  if (args.length > 1) {
-    stop();
-    var asyncTestFunction = args[1]();
-    setTimeout(function() {
-      asyncTestFunction();
-      start();
-      var params = [pause].concat(Array.prototype.slice.call(args, 2));
-      testAsyncStepsWithPause.apply(this, params);
-    }, pause)
-  }
+    var args = arguments;
+    if (args.length > 1) {
+        stop();
+        var asyncTestFunction = args[1]();
+        setTimeout(function() {
+            asyncTestFunction();
+            start();
+            var params = [pause].concat(Array.prototype.slice.call(args, 2));
+            testAsyncStepsWithPause.apply(this, params);
+        }, pause)
+    }
 }
 
 skippedTest = function(label, code) {};
@@ -46,16 +46,11 @@ var equalToObject = function(expected) {
     });
 };
 
-var here = function() {
-  console.log('here');  
-}
-var c = console;
-
 module = function(label, options) {
-  if (QUnit.file) {
-    label = QUnit.file + ':  '+ label;
-  }
-  return QUnit.module(label,options)
+    if (QUnit.file) {
+        label = QUnit.file + ':  '+ label;
+    }
+    return QUnit.module(label,options)  
 };
 
 function wrapInEndpoint(element, endpoint) {
@@ -64,3 +59,11 @@ function wrapInEndpoint(element, endpoint) {
     element.appendTo(endpointElement);
     return endpoint;
 }
+
+function testWithTriples(name, triples, testFunction) {
+    asyncTest(name, function() {
+        TempFusekiEndpoint(triples, testFunction);
+    });
+}
+
+

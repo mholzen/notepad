@@ -139,8 +139,8 @@ asyncTest("when I create a temp endpoint", function() {
         new Triple('ex:s2','ex:p1','ex:o1')
     );
 
-    var endpoint = TempFusekiEndpoint('http://localhost:3030/test', triples, function() {
-        this.execute("construct {ex:s1 ex:p1 ?o} { ex:s1 ex:p1 ?o }", function(triples) {
+    var endpoint = TempFusekiEndpoint(triples, function() {
+        this.endpoint.execute("construct {ex:s1 ex:p1 ?o} { ex:s1 ex:p1 ?o }", function(triples) {
             assertThat(triples, hasItem(equalToObject(new Triple('ex:s1','ex:p1','ex:o1'))), "it returns the triple I just created");
             start();
         })
@@ -263,4 +263,11 @@ var find_content_given_meta = '' +
         });
     });
 
+});
+
+testWithTriples("testWithTriples", toTriples(":s :p :o"), function() {
+    $.notepad.queries.describe.execute(this.endpoint, {about: ':s'}, function(triples) {
+        assertThat(triples, hasItem(':s :p :o .'));
+        start();
+    });
 });
