@@ -269,7 +269,6 @@
 
             this._updateLabelsFromRdf(triples);
             console.groupEnd();
-            console.info('triggering contentchanged on ', this.getUri());
             this.element.trigger('contentchanged');
         },
         _updateLabelsFromRdf: function(triples) {

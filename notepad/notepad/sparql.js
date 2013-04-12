@@ -78,9 +78,13 @@ FusekiEndpoint.prototype = {
         return $.getJSON(this.queryUri(), options, finalCallback);
     },
     update: function(command, callback) {
+        console.log('endpoint.update', {command:command});
+
         return $.post(this.updateUri(), {update: command}, function() {
             // There is a delay before the updates are available in the query server.
             // So we force the client to wait for this delay here.
+
+            console.log('endpoint.update-complete', {command:command});
             setTimeout(callback, 100);
         });
 
