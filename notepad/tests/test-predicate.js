@@ -119,10 +119,8 @@ test("when I toggle the predicate", function() {
 });
 
 module("", { } );
-asyncTest("label", function() {
-    var container = $('<div>').endpoint({endpoint: toTriples(toTriple(":p", "rdfs:label", "forward label"))});
-
-    var element = $('<div about=":s" rel=":p">').appendTo(container);
+testWithContainer("label", toTriples(toTriple(":p", "rdfs:label", "forward label")), function() {
+    var element = $('<div about=":s" rel=":p">').appendTo(this.container.element);
 
     element.predicate();
     var predicate = element.data('notepadPredicate');

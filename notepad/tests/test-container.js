@@ -230,3 +230,12 @@ skippedTest("when I add a triple to it", function() {
 
     assertThat(this.container.getLines().length, greaterThanOrEqualTo(3), "it has at least 3 lines");
 });
+
+testWithContainer("testWithContainer", toTriples(':s :p :o'), function() {
+    this.container.element.attr('about', ':s');
+    this.container.load();
+    setTimeout(function() {
+        assertThat(this.container.getLines().length, 1);
+        start();
+    }, 200);
+});

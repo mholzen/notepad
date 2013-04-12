@@ -66,4 +66,11 @@ function testWithTriples(name, triples, testFunction) {
     });
 }
 
+function testWithContainer(name, triples, testFunction) {
+    testWithTriples(name, triples, function() {
+        this.container = $("<ul>").appendTo("body").endpoint({endpoint: this.endpoint}).container().data('notepadContainer');
+        testFunction();
+    });
+}
+
 
