@@ -55,6 +55,7 @@ test("resources", function() {
 test("literal", function() {
     assertThat( toLiteral("some text"), "some text" );
     assertThat( toLiteral("http://ex.com").isLiteral() );
+    assertThat( toLiteral(":foo").isLiteral() );
 
     assertThat( toLiteral(toResource("some text")).isLiteral() );
     assertThat( toLiteral(toResource("http://ex.com")).isLiteral() );
@@ -127,6 +128,8 @@ test("triples", function() {
     assertThat(triples.triples(undefined, undefined, ":3"), hasItem(equalToObject(triples[0])));
     assertThat(triples.triples(undefined, ":2", ":3"), hasItem(equalToObject(triples[0])));
 
+    assertThat(triples, hasItem(':1 :2 :3 .'));
+
     equal(triples.update().length, 2, "in a new list of triples, they should all be to updateable");
     equal(triples.delete().length, 0, "in a new list of triples, none should be to delete");
 
@@ -136,6 +139,7 @@ test("triples", function() {
     equal(triples.delete().length, 1, "in a new list of triples, none should be to update");
 
     assertThat(toTriples(':s :p :o', ':s :p :o2').length, 2);
+
 });
 
 test('triples.add', function() {
