@@ -197,20 +197,91 @@ test("newline end-of-line", function() {
 });
 
 
-
-module("given a notepad with two lines (first empty, second with a label)", {
+module("2 lines api", {
     setup: function() {
         this.div = $("#notepad").notepad();
         this.notepad = this.div.data('notepadNotepad');
-        enterNewLine(this.div);
-        this.firstLine = this.div.find("li:first").data('notepadLine');
-        this.line = this.firstLine;
-        this.lastLine = this.div.find("li:last").data('notepadLine');
+        var line1 = this.notepad.getContainer().appendLine();
+        var line2 = this.notepad.getContainer().appendLine();
+        var child1 = line1.appendChildLine();
+        var child2 = line2.appendChildLine();
+
+        line1.getObject().uri().setLabel('line 1');
+        line2.getObject().uri().setLabel('line 2');
+        child1.getObject().uri().setLabel('child line 1');
+        child2.getObject().uri().setLabel('child line 2');
     },
-    teardown: function() { this.notepad.destroy(); }
+    teardown: function() {
+        this.notepad.destroy();
+    }
 });
-test("when I add a triple that is being expressed but is not yet retrieve, then I should not add it to the container", function() {
-    // for example, with a label being redisplayed as a child of the node
-    // must ignore triples that are being expressed by a notepad-object
-    ok(true);
+
+test("verify setup", function() {
+    assertThat ( this.notepad.getContainer().getAllLines().length, 5);
+});
+
+module("2 lines DOM", {
+    setup: function() {
+        this.div = $("#notepad").notepad();
+        this.notepad = this.div.data('notepadNotepad');
+
+        $(this.div).find('[contenteditable="true"]:last')
+            .text('line 1')
+            .caretToEnd()
+            .trigger($.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+
+        $(this.div).find('[contenteditable="true"]:last')
+            .trigger($.Event("keydown", { keyCode: $.ui.keyCode.TAB }) )
+            .text('child line 1')
+            .caretToEnd()
+            .trigger($.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+
+        $(this.div).find('[contenteditable="true"]:last')
+            .trigger($.Event("keydown", { keyCode: $.ui.keyCode.TAB, shift: true }) )
+            .text('line 2')
+            .caretToEnd()
+            .trigger($.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+
+        $(this.div).find('[contenteditable="true"]:last')
+            .trigger($.Event("keydown", { keyCode: $.ui.keyCode.TAB }) )
+            .text('child line 1')
+            .caretToEnd()
+            .trigger($.Event("keydown", { keyCode: $.ui.keyCode.ENTER }) );
+    },
+    teardown: function() {
+        this.notepad.destroy();
+    }
+});
+test("test setup", function() {
+    assertThat ( this.notepad.getContainer().getAllLines().length, 5 );
+});
+
+module("notepad-2-lines-load", {
+    setup: function() {
+        var triples = toTriples(
+            ':session rdfs:member :line1',
+            ':session rdfs:member :line2',
+            ':line1 rdfs:member :childline1',
+            ':line2 rdfs:member :childline2',
+            ':line1 rdfs:label "line 1"',
+            ':line2 rdfs:label "line 2"',
+            ':childline1 rdfs:label "child line 1"',
+            ':childline2 rdfs:label "child line 2"'
+            );
+        this.div = $("#notepad").notepad({endpoint: triples});
+        this.notepad = this.div.data('notepadNotepad');
+        this.notepad.getContainer().option('describeElements', true)
+        this.notepad.getContainer().element.remove();
+        this.notepad.setUri(':session');
+    },
+    teardown: function() {
+        //this.notepad.destroy();
+    }
+});
+asyncTest("test setup", function() {
+    var notepad = this.notepad;
+    setTimeout(function() {
+        assertThat ( notepad.getContainer().getAllLines().length, 2 );
+        start();
+    }, 2000);
 });
