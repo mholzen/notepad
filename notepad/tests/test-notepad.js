@@ -270,7 +270,7 @@ module("notepad-2-lines-load", {
             );
         this.div = $("#notepad").notepad({endpoint: triples});
         this.notepad = this.div.data('notepadNotepad');
-        this.notepad.getContainer().option('describeElements', true)
+        this.notepad.getContainer().option('describeElements', true);
         this.notepad.getContainer().element.remove();
         this.notepad.setUri(':session');
     },
