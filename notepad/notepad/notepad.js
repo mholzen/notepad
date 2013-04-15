@@ -136,17 +136,13 @@
                 });
             }, 1000);
 
-            this._createMenu();
+            if ($("#menu").length > 0) {
+                this._createMenu();
+            }
 
         },
         _createMenu: function() {
-            $("#menu").menu().hide();
-
-            $("#menu").bind('menuselect', function(event, ui) {
-                var uri = $(ui.item[0]).children('a[property="ui:select"]').attr('content');
-                $("#control").hide().appendTo('body');                  // move the control out of the line to remove
-                eval(uri);
-            });
+            $("#menu").menu2().hide();
 
             $("#menu-button").button({
                 icons: { primary: "ui-icon-triangle-1-s" },
@@ -164,6 +160,11 @@
                 if ( !line.length ) {
                     return false;
                 }
+                var literal = $(event.target).closest(':notepad-literal');
+                if ( literal.length > 0 ) {
+                    $("#menu").data('notepadMenu2').option('source', literal );
+                }
+
                 $("#control").show().insertBefore(line.data('notepadLine').getChildList());
             });
 

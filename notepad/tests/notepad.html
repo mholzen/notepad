@@ -39,6 +39,7 @@
 <script src="../notepad/template.js" type="text/javascript"></script>
 
 <script src="../notepad/autocomplete.js" type="text/javascript"></script>
+<script src="../notepad/menu.js" type="text/javascript"></script>
 
 <link href="../css/notepad.css" rel="stylesheet" type="text/css" media="screen" />
 
@@ -275,36 +276,12 @@ $(function() {
         <div id="menu-button">
         </div>
         <ul id="menu">
-            <!-- TODO: onclick won't catch menu selection via the keyboard -->
-            <li><a property="ui:select" content="javascript: notepad.open(line.getUri());"><span class="ui-icon ui-icon-arrowthick-1-e"></span>Open...</a></li>
-            <li><a property="ui:select" content="javascript: line.showPredicate();">Show relationship</a></li>
-            <li><a property="ui:select" content="javascript: line.newPredicateUri();">New relationship</a></li>
-            <li><a property="ui:select" content="javascript: notepad.remove(line);">Remove line</a></li>
-            <li><a property="ui:select" content="javascript: notepad.delete(line);">Delete lines and contents</a></li>
-            <li><a property="ui:select" content="javascript: line.addCheckboxToChildLines();">Convert to Todo list</a></li>
-            <li class="ui-state-disabled"><a property="ui:select" content="javascript: container.toggleSortable();">Re-order lines</a></li>
-            <li class="ui-state-disabled"><a href="#">Add column</a></li>
-            <li class="ui-state-disabled"><a property="ui:select" content="">Send to ...</a></li>
-            <li class="ui-state-disabled">
-                <a href="#">View ...</a>
-                <ul class="templates">
-                </ul>
-            </li>
-            <li class="ui-state-disabled">
-                <a href="#">Search within ...</a>
-                <ul>
-                    <li><a href="#"><span class="ui-icon ui-icon-check"></span>Labels</a></li>
-                    <li><a href="#">Relationships</a></li>
-                    <li><a href="#">Everything</a></li>
-                </ul>
-            </li>
+            <li class="template"><a property="ui:select"></li>
 
+            <!-- the following line is here only to ensure that the menu displays icons properly -->
             <li class="ui-state-disabled">
-                <a href="#">Describe ... </a>
                 <ul>
-                    <li><a href="#">Everything</a></li>
-                    <li><a href="#">Properties</a></li>
-                    <li><a href="#">Facts</a></li>
+                    <li><a href="#"><span class="ui-icon ui-icon-check"></span></a></li>
                 </ul>
             </li>
         </ul>
