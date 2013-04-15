@@ -21,6 +21,7 @@
                 '{{^rdfs:label}}' +
                     '<div class="notepad-literal notepad-predicate" rel="rdfs:label"></div>' +
                 '{{/rdfs:label}}' +
+                '<span class="notepad-external-link"/>' +
                 '',
                                 
             urichange:          $.noop,
@@ -95,17 +96,18 @@
         setLabel: function(literal) {
             var triples = new Triples();
             if (literal) {
+                literal = toLiteral(literal);
                 triples.add(toTriple(this.getUri(), "rdfs:label", literal));
             }
             return this.update(triples);
         },
         getLabel: function() {
-            var triples = this.triples().triples(undefined, "rdfs:label");
-            if (triples.length) {
-                return triples[0].object;
+            var triples = this.triples();
+            if (triples.length === 0) {
+                return;
             }
+            return triples.object(undefined, "rdfs:label");
         },
-
         newUri: function(uri) {
             var uri = uri || $.notepad.getNewUri();
             this._setUri(uri);
@@ -156,12 +158,7 @@
                     label.templateReceived(templateTriples, callback);
                 });
             } else {
-                // refactor: using load()
-                var template = new Template(this.options.template);
-                var dataQuery = $.notepad.queryFromPredicates(template.predicates());
-                dataQuery.execute(this.getEndpoint(), {about: this.getUri()}, function(dataTriples) {
-                    label.dataReceived(dataTriples, callback);
-                });
+                this.load(callback);
             }
         },
         templateReceived: function(templateTriples, callback) {
@@ -216,7 +213,13 @@
 
             this.getTemplateElement().find(".notepad-literal").literal();
 
-            this.getTemplateElement().find(".notepad-reverse-line").reverseLine();
+            if ($.fn.reverseLine) {
+                this.getTemplateElement().find(".notepad-reverse-line").reverseLine();
+            }
+
+            if ($.fn.externalLink) {
+                this.getTemplateElement().find(".notepad-external-link").externalLink();
+            }
 
             this.getTemplateElement().tooltip({items: ".tooltip > .item", content: function() {
                 return $(this).siblings('.content').html();
@@ -251,6 +254,9 @@
             if (this.element.data('notepadLiteral')) {
                 literal = this.element.data('notepadLiteral').getLiteral();
                 this.element.data('notepadLiteral').destroy()
+            } else if (this.element.text().length > 0) {
+                literal = this.element.text();
+                this.element.text('');
             }
 
             if (this.getUri()) {
@@ -259,6 +265,16 @@
                 this.newUri();
                 this.setLabel(literal);
             }
+            var urilabel = this;
+
+            // consider: when the user clears out the content, give it a new URI
+            //      should: handle situation
+            // this.element.on('keyup', '[contenteditable="true"]', function(event) {
+            //     if ( urilabel.getLabel() === undefined ) {
+            //         debugger;
+            //         urilabel.newUri();
+            //     }
+            // });
         },
         _destroy : function() {
             this.element.removeAttr('about');
