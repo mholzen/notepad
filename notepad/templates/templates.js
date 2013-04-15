@@ -1,6 +1,17 @@
 $.notepad = $.notepad || {};
 $.notepad.templates = $.notepad.templates || {};
 
+$.notepad.templates.all_labels = "CONSTRUCT { \n\
+	?subject ?labelPredicate ?label . \n\
+} \n\
+WHERE { \n\
+    ?subject ?labelPredicate ?label \n\
+    FILTER ( \n\
+    	isLiteral(?label) && \n\
+    	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent, nmo:content) \n\
+    ) \n\
+} \n\
+LIMIT 200";
 $.notepad.templates.c_paths_by_words = "CONSTRUCT {  \n\
     ?subject rdfs:label ?reason . \n\
 	?subject ?predicate ?object  .  \n\
@@ -89,6 +100,10 @@ WHERE { \n\
 	{{{graphPatterns}}} \n\
 } \n\
 ";
+$.notepad.templates.datasets = "select ?dataset \n\
+WHERE {  \n\
+	GRAPH ?dataset { ?session a notepad:Session } \n\
+}";
 $.notepad.templates.describe_predicate = "CONSTRUCT { \n\
 	{{{about}}} ?p ?o . \n\
 } \n\

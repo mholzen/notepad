@@ -1,0 +1,11 @@
+CONSTRUCT {
+	?subject ?labelPredicate ?label .
+}
+WHERE {
+    ?subject ?labelPredicate ?label
+    FILTER (
+    	isLiteral(?label) &&
+    	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent, nmo:content)
+    )
+}
+LIMIT 200

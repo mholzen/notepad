@@ -1,0 +1,4 @@
+select ?dataset
+WHERE { 
+	GRAPH ?dataset { ?session a notepad:Session }
+}
