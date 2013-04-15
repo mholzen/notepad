@@ -1,39 +1,61 @@
-TEMPLATES - Triples to context
-==============================
+TEMPLATES - DOM - BASED
+=======================
 
-when applying a triple to a template
-one template behaviour is to replace, another could be to append
+# GOAL: can we design a templating system that does not use string interpolation, but uses DOM objects and attributes directly.
 
-REPLACE:
-	<div rel="rdfs:label">
+## Examples
 
-APPEND
-	<ul subprop="rdfs:member">
-		<li>
-	</ul>
-or
-	<ul>
-		<li rel="rdfs:member">
-	</ul>
+### Simple: triple matched by subject and predicate
+		<div about=":s" rel="rdfs:label">
+	+
+		:s rdfs:label foo
+	=
+		<div about=":s" rel="rdfs:label">foo</div>
 
-beyond that, the template needs "meta information" to know how process differently the triple (sort, filter, etc... for instance)
+### Triple ignored
+		<div>
+	+
+		:s rdfs:label foo
+	=
+		<div>
 
-Question: how does a template define how a new item should be added to a list?
+### Triple matched by predicate only
+		<div rel="rdfs:label">
+	+
+		:s rdfs:label foo
+	=
+		<div about=":s" rel="rdfs:label">foo</div>
 
-NOTEPAD TEMPLATE
-<div>
-	<h1 rel="rdfs:label"></h1>
-	<ul class="notepadContainer">
+### Triple replaced by new value
+
+		<div about=":s" rel="rdfs:label">foo</div>
+	+
+		:s rdfs:label bar
+	=
+		<div about=":s" rel="rdfs:label">bar</div>
+
+
+### Triple added to collection
+
+		<ul subPropertyOf="rdfs:member">
+			<li class="template">The model to use for every new line: <div rel="rdfs:member"/> </li>
+		</ul>
+	+
+		:s rdfs:member ( :o1, :o2 ) .
+	=
+		<ul subPropertyOf="rdfs:member">
+			<li>The model to use for every new line: <div rel="rdfs:member" about=":o1"/> </li>
+			<li>The model to use for every new line: <div rel="rdfs:member" about=":o2"/> </li>
+			<li class="template">The model to use for every new line: <div rel="rdfs:member"/> </li>
+		</ul>
+
+	.template { display: none; }		// could use this to hide the model
+
+Attribute `subPropertyOf` could be simply `add`.
 
 
 
-
-RELATED TO:  Query
-
-this.options.query
-
-
-
+# USING MUSTACHE (should: replace with DOM-based)
 
 
 Object is a URI
