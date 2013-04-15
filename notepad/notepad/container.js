@@ -183,7 +183,7 @@
                 }
                 if (!container.element.findEndpoint()) {
                     // consider: refactor into query.execute
-                    console.log('no more endpoint -- might have been removed from the DOM -- igonring');
+                    console.log('no more endpoint -- might have been removed from the DOM -- ignoring');
                     return;
                 }
                 container._updateFromRdf(triples);
