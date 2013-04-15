@@ -178,7 +178,7 @@
             this.element.removeClass("notepad").removeAttr('about').unbind();
             this.element.children().remove();
         },
-        _up : function(event) {
+        _up: function(event) {
             var target = $(event.target);
             var li = target.closest(':notepad-line');
             if (li.length === 0) {
