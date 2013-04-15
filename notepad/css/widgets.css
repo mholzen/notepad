@@ -1,0 +1,9 @@
+/* external link */
+
+.notepad-external-link img {
+    height: 12px;
+    margin-left: 10px;
+}
+.ui-menu-item .notepad-external-link > a {
+    display: inline-block;
+}
