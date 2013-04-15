@@ -55,6 +55,11 @@
                     widget.getNotepad().loaded(widget.triples());
                 }
 
+                // should: focus on the source text element
+
+                // this.focus();
+                // doesn't work because the DOM element is re-created during update
+
                 event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
             },
 
