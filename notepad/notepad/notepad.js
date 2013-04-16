@@ -69,7 +69,7 @@
 
             this.element.addClass("notepad");
 
-            this.element.endpoint({display: true});  // Create the endpoint widget
+            this.element.endpoint({display: true, dataset: this.options.dataset});  // Create the endpoint widget
 
             if (this.options.endpoint instanceof Array
                 && this.options.endpoint.length > 0
