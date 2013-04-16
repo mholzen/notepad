@@ -13,15 +13,26 @@ body {
     font-size: large;
 }
 
-#container {
+.meta {
     margin-left: auto;
-    margin-right: auto;
+    margin-right: auto;    
     max-width: 1000px;
+    font-family: 'Geneva', 'Helvetica', sans-serif;
+}
+button {
+    font-family: 'Geneva', 'Helvetica', sans-serif;   
+}
+
+.data {
+    margin: 10px 0px;
+    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
+}
+.container {
     border: solid 1px #888;
     border-radius: 5px;
     box-shadow: 0px 0px 10px 0px #aaa;
     background: white;
-    padding: 20px;
+    padding: 30px 15px ;
     clear: both;
 }
 
@@ -40,7 +51,7 @@ ul {
 #save {
     float: left;
     width: 100%;
-    margin-top: 40px;
+    margin-top: 0px;
 }
 #save button {
     font-size: 90%;
@@ -465,38 +476,49 @@ ul {
     right: 20px;
 }
 
+
+/*
+ * Toogle
+ */
+.toggle .toggle-button {
+    cursor: pointer;
+}
+
+
 /*
  * Notepad title, date created and endpoint
  */
 
-.notepad .title {
-    font-size: 2em;
+.title {
+    color: grey;
 }
 
-.notepad .title [about] {
-    font-size: .4em;
-    margin-bottom: .5em;
+.title h3 {
+    display: inline-block;
+    margin-top: 0px;
+    margin-bottom: 8px;
 }
 
-.notepad .title [property] {
-    font-size: .4em;
-    margin-bottom: .5em;
+.title td {
+    vertical-align: middle;
 }
 
-.notepad .title [property="rdfs:label"] {
-    font-size: 1em;
-    font-weight: bold;
-}
-
-
-#notepad-toggle {
-    cursor: pointer;
+.title .toggle-button {
+    margin-top: 7px;
     display: inline-block;
 }
 
-#notepad-toggle-target {
-    display: none;    
+.title .toggle-target {
+    display: none;          /* start collapsed */
+    font-size: small;
 }
+.title [rel="rdfs:label"] {
+    max-width: 1000px;
+}
+
+
+
+
 
 .table {
     display: table;
@@ -570,7 +592,7 @@ ul {
 }
 
 
-#notepad > ul:first-of-type > li:first-of-type > .notepad-predicate > .notepad-object3 > .notepad-template > div:first-of-type {
-    font-size: large;
+#notepad > div > ul:first-of-type > li:first-of-type > .notepad-predicate > .notepad-object3 > .notepad-template > div:first-of-type {
+    font-size: 22px;
     font-weight: bold;
 }

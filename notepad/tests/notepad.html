@@ -193,10 +193,9 @@ $(function() {
         console.timeEnd("load");
     });
 
-    $("#notepad-toggle").click(function() {
-        $("#notepad-toggle-target").toggle();
-        $("#notepad-toggle").toggleClass('ui-icon-plus');
-        $("#notepad-toggle").toggleClass('ui-icon-minus');
+    $(".toggle .toggle-button").click(function(event) {
+        $(event.target).closest('.toggle').find('.toggle-target').toggle();      // should: not depend on having to call parent() twice
+        $(event.target).toggleClass('ui-icon-plus').toggleClass('ui-icon-minus');
     });
 
     setTimeout(function() {
@@ -217,44 +216,52 @@ $(function() {
         Help
         <!-- <div rel="rdfs:label">Help</div> --><!-- rel="rdfs:label" could be implied -->
     </a>
-    <div id="container">
+    <div>
         <div id="status"></div>
         <div id="notepad">
-            <div class="title">
-                <span id="notepad-toggle" class="ui-icon ui-icon-plus"></span>
-                <span style="display:inline-block; vertical-align: text-top;">
-                    <div property="rdfs:label" contenteditable="true">Notepad</div>
-                    <div id="notepad-toggle-target" class="table">
-                        <div class="row">
-                            <div about="notepad:endpoint" class="predicate">
-                                <div property="rdfs:label">Endpoint</div>
+            <div class="meta">
+                <table class="title toggle">
+                    <tr>
+                        <td><h3><span class="toggle-button ui-icon ui-icon-plus"></span></h3></td>
+                        <td><h3 rel="rdfs:label">inStruct</h2></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <div class="table toggle-target">
+                                <div class="row">
+                                    <div about="notepad:endpoint" class="predicate">
+                                        <div property="rdfs:label">Endpoint</div>
+                                    </div>
+                                    <div property="notepad:endpoint" class="object"></div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div about="notepad:created" class="predicate">
+                                        <div property="rdfs:label">Created</div>
+                                    </div>
+                                    <div property="notepad:created" class="object"></div>
+                                </div>
+                                <div class="row">
+                                    <div about="notepad:uri" class="predicate">
+                                        <div property="rdfs:label">URL</div>
+                                    </div>
+                                    <div property="notepad:uri" class="object"></div>
+                                </div>
                             </div>
-                            <div property="notepad:endpoint" class="object"></div>
-                        </div>
-                        
-                        <div class="row">
-                            <div about="notepad:created" class="predicate">
-                                <div property="rdfs:label">Created</div>
-                            </div>
-                            <div property="notepad:created" class="object"></div>
-                        </div>
-                        <div class="row">
-                            <div about="notepad:uri" class="predicate">
-                                <div property="rdfs:label">URL</div>
-                            </div>
-                            <div property="notepad:uri" class="object"></div>
-                        </div>
+                        </td>
+                    </tr>
+                </table>
 
-                    </div>
-                </span>
+                <ul class="data container"></ul>
+                <div id="save">
+                    <button class="save">Save</button>
+                    <button class="preview">Preview...</button>
+                    <div class="status"></div>
+                    <div class="turtle delete"></div>
+                    <div class="turtle update"></div>
+                </div>
             </div>
-        </div>
-        <div id="save">
-            <button class="save">Save</button>
-            <button class="preview">Preview...</button>
-            <div class="status"></div>
-            <div class="turtle delete"></div>
-            <div class="turtle update"></div>
         </div>
 
     </div>
