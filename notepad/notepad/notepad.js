@@ -46,14 +46,19 @@
         open: function(uri) {
             $("#control").hide().appendTo('body');                  // move the control out of the line to remove
             this.unloaded(this.getContainer().triples());           // to avoid triples being marked as deleted
-            this.getContainer().element.remove();
+            this.getContainer().element.empty();
+            this.getContainer().destroy();
             var line = this.getContainer().appendLine();            // getContainer() will recreate the deleted element
             line.setUri(uri);
+        },
+        ul: function() {
+            var container = this.element.find('ul.data');
+            return container.length ? container : $('<ul class="data">').appendTo(this.element);
         },
         getContainer: function() {
             var element = this.element.children(':notepad-container');
             if (element.length === 0) {
-                element = $('<ul>').appendTo(this.element).container();
+                element = this.ul().container();
             }
             return element.data('notepadContainer');
         },
