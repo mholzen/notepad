@@ -448,13 +448,13 @@
         },
 
         _save: function() {
-            var removed = notepad.removed();
-            var added = notepad.added();
-            var command = removed.deleteSparql() + added.insertSparql();
-            return notepad.getEndpoint().execute(command).success(function() {
-                notepad.loaded(added);
-                notepad.unloaded(removed);
-            });
+            var removed = this.removed();
+            var added = this.added();
+            return this.getEndpoint().deleteInsertData(removed, added)
+                .success(function() {
+                    notepad.loaded(added);
+                    notepad.unloaded(removed);
+                });
         },
 
         save: function() {

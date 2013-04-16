@@ -204,21 +204,31 @@ FusekiEndpoint.prototype = {
             callback(labels);
         });
     },
-    insertData: function(triples, callback) {
+    _insertSparql: function(triples) {
         var sparql = '{' + triples.update().toSparqlString() + '}';
         if ( this.graph != 'default') {
             sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
         }
         sparql = 'INSERT DATA ' + sparql;
-        this.execute(sparql,callback);
+        return sparql;
     },
-    deleteData: function(triples, callback) {
+    insertData: function(triples, callback) {
+        return this.execute(this._insertSparql(),callback);
+    },
+    _deleteSparql: function(triples) {
         var sparql = '{' + triples.toSparqlString() + '}';
         if ( this.graph != 'default') {
             sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
         }
         sparql = 'DELETE DATA ' + sparql;
-        this.execute(sparql,callback);
+        return sparql;
+    },
+    deleteData: function(triples, callback) {
+        return this.execute(this._deleteSparql(),callback);
+    },
+    deleteInsertData: function(deleted,inserted,callback) {
+        var sparql = this._deleteSparql(deleted) + this._insertSparql(inserted);
+        return this.execute(sparql,callback);  
     },
     constructAll: function(callback) {
         var sparql = '{ ?s ?p ?o }';
