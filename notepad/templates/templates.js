@@ -89,6 +89,11 @@ WHERE { \n\
 	{{{graphPatterns}}} \n\
 } \n\
 ";
+$.notepad.templates.datasets = "CONSTRUCT { ?dataset a notepad:Dataset } \n\
+WHERE {  \n\
+	GRAPH ?dataset { ?session a notepad:Session } \n\
+} \n\
+";
 $.notepad.templates.describe_predicate = "CONSTRUCT { \n\
 	{{{predicate}}} ?p ?o . \n\
 } \n\
