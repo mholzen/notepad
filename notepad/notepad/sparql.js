@@ -213,7 +213,7 @@ FusekiEndpoint.prototype = {
         return sparql;
     },
     insertData: function(triples, callback) {
-        return this.execute(this._insertSparql(),callback);
+        return this.execute(this._insertSparql(triples),callback);
     },
     _deleteSparql: function(triples) {
         var sparql = '{' + triples.toSparqlString() + '}';
@@ -224,7 +224,7 @@ FusekiEndpoint.prototype = {
         return sparql;
     },
     deleteData: function(triples, callback) {
-        return this.execute(this._deleteSparql(),callback);
+        return this.execute(this._deleteSparql(triples),callback);
     },
     deleteInsertData: function(deleted,inserted,callback) {
         var sparql = this._deleteSparql(deleted) + this._insertSparql(inserted);
