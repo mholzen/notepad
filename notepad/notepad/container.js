@@ -178,6 +178,17 @@
                 container._updateFromRdf(triples);
             });
         },
+        loadAll: function() {
+            // shoud: refactor with load()
+            var endpoint = this.element.findEndpoint();
+            if (!endpoint) {
+                return;
+            }
+
+            var container = this;
+            var query = this.getQuery();
+            return query.execute(endpoint, {}, this.addSubjects);
+        },
         unload: function() {
             if (this.getNotepad()) {
                 this.getNotepad().unloaded(this.triples());
