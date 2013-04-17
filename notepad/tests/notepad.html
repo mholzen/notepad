@@ -89,8 +89,9 @@ $(function() {
         ];
 
     var endpoint = $.notepad.getParameterByName('endpoint') || defaultEndpoints;
-
-    notepad = $("#notepad").notepad({endpoint: endpoint}).data('notepadNotepad');
+    var dataset = $.notepad.getParameterByName('dataset');
+    
+    notepad = $("#notepad").notepad({endpoint: endpoint, dataset: dataset}).data('notepadNotepad');
 
     $("#notepad").on('keydown', '[contenteditable="true"]', function(event) {
         if (event.keyCode === 32 && event.ctrlKey) {
@@ -295,6 +296,8 @@ $(function() {
             </li>
         </ul>
     </span>
-
+    
+    <ul id="query-results"></ul>
+    
 </body>
 </html>

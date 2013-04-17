@@ -100,10 +100,11 @@ WHERE { \n\
 	{{{graphPatterns}}} \n\
 } \n\
 ";
-$.notepad.templates.datasets = "select ?dataset \n\
+$.notepad.templates.datasets = "CONSTRUCT { ?dataset a notepad:Dataset } \n\
 WHERE {  \n\
 	GRAPH ?dataset { ?session a notepad:Session } \n\
-}";
+} \n\
+";
 $.notepad.templates.describe_predicate = "CONSTRUCT { \n\
 	{{{about}}} ?p ?o . \n\
 } \n\

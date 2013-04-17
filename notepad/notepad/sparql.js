@@ -4,9 +4,12 @@ $.notepad = $.notepad || {};
 
 cache = {};
 
-FusekiEndpoint = function(uri) {
+FusekiEndpoint = function(uri, graph) {
     this.uri = uri;
-    this.graph = 'default';
+    if (graph === 'new') {
+        graph = $.notepad.getNewUri();
+    }
+    this.graph = graph || 'default';
 }
 
 TempFusekiEndpoint = function(triples, callback) {
@@ -116,6 +119,11 @@ FusekiEndpoint.prototype = {
     clear: function(callback) {
         return this.update('DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }',callback);
     },
+    start: function(callback) {
+        var triples = new Triples();
+        triples.add(toTriple('rdfs:member', 'notepad:inverseLabel', 'appears on'));
+        this.insertData(triples, callback);
+    },
     post: function(triples, callback) {
         // Not yet implemented
     },
@@ -201,21 +209,31 @@ FusekiEndpoint.prototype = {
             callback(labels);
         });
     },
-    insertData: function(triples, callback) {
+    _insertSparql: function(triples) {
         var sparql = '{' + triples.update().toSparqlString() + '}';
         if ( this.graph != 'default') {
             sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
         }
         sparql = 'INSERT DATA ' + sparql;
-        this.execute(sparql,callback);
+        return sparql;
     },
-    deleteData: function(triples, callback) {
+    insertData: function(triples, callback) {
+        return this.execute(this._insertSparql(triples),callback);
+    },
+    _deleteSparql: function(triples) {
         var sparql = '{' + triples.toSparqlString() + '}';
         if ( this.graph != 'default') {
             sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
         }
         sparql = 'DELETE DATA ' + sparql;
-        this.execute(sparql,callback);
+        return sparql;
+    },
+    deleteData: function(triples, callback) {
+        return this.execute(this._deleteSparql(triples),callback);
+    },
+    deleteInsertData: function(deleted,inserted,callback) {
+        var sparql = this._deleteSparql(deleted) + this._insertSparql(inserted);
+        return this.execute(sparql,callback);  
     },
     constructAll: function(callback) {
         var sparql = '{ ?s ?p ?o }';

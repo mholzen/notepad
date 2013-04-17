@@ -10,8 +10,11 @@
         _setOption: function(key, value) {
             switch(key) {
                 case 'endpoint':
-                this.element.data('notepadEndpoint').option('endpoint', value);
-                break;
+                    this.element.data('notepadEndpoint').option('endpoint', value);
+                    break;
+                case 'dataset':
+                    this.element.data('notepadEndpoint').option('dataset', value);
+                    break;
             }
             this._super(key, value);
         },
@@ -72,7 +75,7 @@
 
             this.element.addClass("notepad notepad-session");
 
-            this.element.endpoint({display: true});  // Create the endpoint widget
+            this.element.endpoint({display: true, dataset: this.options.dataset});  // Create the endpoint widget
 
             if (this.options.endpoint instanceof Array
                 && this.options.endpoint.length > 0
@@ -475,13 +478,13 @@
         },
 
         _save: function() {
-            var removed = notepad.removed();
-            var added = notepad.added();
-            var command = removed.deleteSparql() + added.insertSparql();
-            return notepad.getEndpoint().execute(command).success(function() {
-                notepad.loaded(added);
-                notepad.unloaded(removed);
-            });
+            var removed = this.removed();
+            var added = this.added();
+            return this.getEndpoint().deleteInsertData(removed, added)
+                .success(function() {
+                    notepad.loaded(added);
+                    notepad.unloaded(removed);
+                });
         },
 
         save: function() {

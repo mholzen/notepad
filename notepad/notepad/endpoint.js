@@ -16,6 +16,7 @@
         _setOption: function(key, value) {
             this._super(key, value);
             switch(key) {
+                case 'dataset':
                 case 'endpoint':
                 case 'display':
                     this.updateElement();
@@ -56,9 +57,20 @@
                 this.getElement().remove();
             }
         },
+        identity: function() {
+            var identity = localStorage.identity ?
+                localStorage.identity :
+                ( localStorage.identity = $.notepad.getNewUri());
+            return toResource(identity);
+        },
+        dataset: function() {
+            return this.options.dataset ?
+                this.options.dataset :
+                this.identity();
+        },
         getEndpoint: function() {
             if (typeof this.options.endpoint === "string") {
-                return new FusekiEndpoint(this.options.endpoint);       // Interpret as the URI to the endpoint
+                return new FusekiEndpoint(this.options.endpoint, this.dataset());       // Interpret as the URI to the endpoint
             }
             return this.options.endpoint;            
         },
