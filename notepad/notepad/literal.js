@@ -67,7 +67,6 @@
             if ( !(literal instanceof Resource) ) {
                 literal = new Resource(literal);
             }
-
             var datatype = ( ranges ) ?
                 ranges.objects(this.getPredicateUri(), 'rdfs:range') : 
                 literal.datatype();
@@ -171,6 +170,28 @@
         },
     });
 
+    $.widget("notepad.sparql", {
+        setLiteral: function(literal) {
+            this.element.text(literal);
+        },
+        getLiteral: function() {
+            return toLiteral(this.element.text()+'^^notepad:sparql');
+        },
+        query: function() {
+            return new Query(this.getLiteral(), {}, "this.subject() rdfs:label");
+        },
+        _create: function() {
+            debugger;
+            // this should replace (or create) a container that will receive the results of the execution of this sparql
+            $('#query').container({query: this.query()});
+        },
+    });
+
+    var notepadSparql = toTriples(
+        toTriple('notepad:sparql', 'rdfs:label', "Sparql"),
+        toTriple('notepad:sparql', 'rdfs:range', "notepad:sparql")
+    );
+
     var types = {
         'xsd:string': {
             widget: $.fn.xsdstring,
@@ -183,6 +204,10 @@
         'xsd:dateTime': {
             widget: $.fn.xsddate,
             name: 'notepadXsddate'
+        },
+        'notepad:sparql': {
+            widget: $.fn.sparql,
+            name: 'notepadSparql'
         },
 
     }
