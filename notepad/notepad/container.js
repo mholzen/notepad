@@ -195,10 +195,7 @@
             if (!endpoint) {
                 return;
             }
-
-            var container = this;
-            var query = this.getQuery();
-            return query.execute(endpoint, {}, this.addSubjects);
+            return this.getQuery().execute(endpoint, {}, this.addSubjects.bind(this));
         },
         unload: function() {
             if (this.getNotepad()) {
