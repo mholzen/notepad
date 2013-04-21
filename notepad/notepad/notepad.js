@@ -100,9 +100,15 @@
                     return notepad.joinLines(event);
                     break;
                 case keyCode.UP:
+                    if ( $(event.target).data("notepadAutocomplete2").menu.active ) {
+                        return;     // let autocomplete handle this event
+                    }
                     return notepad._up(event);
                     break;
                 case keyCode.DOWN:
+                    if ( $(event.target).data("notepadAutocomplete2").menu.active ) {
+                        return;     // let autocomplete handle this event
+                    }
                     return notepad._down(event);
                     break;
                 case keyCode.TAB:
