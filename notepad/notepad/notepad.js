@@ -94,6 +94,9 @@
                 switch (event.keyCode) {
                 case keyCode.ENTER:
                 case keyCode.NUMPAD_ENTER:
+                    if (event.shiftKey) {
+                        return;     // pass up, to allow insert newline
+                    }
                     return notepad.splitLines(event);
                     break;
                 case keyCode.BACKSPACE:
