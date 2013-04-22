@@ -165,9 +165,14 @@
         hidePredicate: function() {
             this.getPredicate().getLabel().element.hide();
         },
+        _predicateUriSameAsContainer: function() {
+            if ( ! this.getContainer() ) {
+                return false;
+            }
+            return this.getPredicate().getUri() == this.getContainer().options.predicate
+        },
         updatePredicateDisplay: function() {
-            if (this.getPredicate().getUri() == this.getContainer().options.predicate
-                && this.getDirection() === FORWARD) {
+            if (this._predicateUriSameAsContainer() && this.getDirection() === FORWARD) {
                 this.hidePredicate();
             } else {
                 this.showPredicate();
