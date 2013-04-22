@@ -186,10 +186,6 @@ ul {
     min-width: 100px;
 }
 
-.notepad .delete {
-    text-decoration: line-through;
-}
-
 .notepad-line {
     list-style: none;
     line-height: 30px;
