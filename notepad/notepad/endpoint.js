@@ -80,6 +80,7 @@
             var uri = uris.shift();
 
             var sparqlEndpoint = new FusekiEndpoint(uri);
+            console.log('endpoint checks for an answer from', uri);
             return sparqlEndpoint.canAnswer(function() {
                 endpoint.option('endpoint', uri);
                 if (callback) {

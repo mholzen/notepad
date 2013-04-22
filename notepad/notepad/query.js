@@ -2,6 +2,16 @@
 
     $.notepad = $.notepad || {};
 
+    function summaryOf(value) {
+        if ( value instanceof Triples ) {
+            return value.length + " triples";
+        }
+        if ( value.results && value.results.bindings ) {
+            return value.results.bindings.length + " rows";
+        }
+        return value.toString();
+    }
+
     Query = function(sparql, context, name) {
         this.sparqlTemplate = sparql;           // default to describe?
         this.context = context || {};
@@ -36,18 +46,13 @@
         execute: function(endpoint, context, callback) {
             var sparql = this.toSparql(context);
 
-            console.log('query.execute', {name:this.name(), with: this.context});
+            console.log('query "' + this.name() + '", executed with', this.context);
 
             var query = this;
-            return endpoint.execute(sparql, function(triples) {
+            return endpoint.execute(sparql, function(results) {
 
-                console.groupCollapsed('query.receive', {name: query.name(), length: triples.length, triples: triples.length ? triples : null});
-                if (triples.length > 0) {
-                    console.log(triples.toTurtle());
-                }
-                console.groupEnd();
-                
-                callback(triples);
+                console.log('query "'+query.name()+'", receives ' + summaryOf(results), results );
+                callback(results);
             });
         },
         appendPattern: function(pattern) {
