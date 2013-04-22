@@ -30,11 +30,28 @@ $(document).ready(function() {
         _create: function() {
             console.log(this.options.anOption);
             this.options.initCounter ++;
+            this.member = 2;
         }
     });
     test("init", function() {
         var element = $('<p>').aWidget().aWidget();
         assertThat(element.data('notepadAWidget').option('initCounter'), 1);
+    });
+
+    test("2nd init with options", function() {
+        var element = $('<p>').aWidget().aWidget({anOption: '2nd value'});
+        assertThat(element.data('notepadAWidget').option('anOption'), '2nd value');
+        assertThat(element.data('notepadAWidget').option('initCounter'), 1);
+    });
+
+    test("member", function() {
+        // I think this is correct
+        var element1 = $('<p>').aWidget().data('notepadAWidget');
+        var element2 = $('<p>').aWidget().data('notepadAWidget');
+        element1.member = 1;
+        element2.member = 2;
+        assertThat(element1.member, 1);
+        assertThat(element2.member, 2);
     });
 
     test("when I set options", function() {
