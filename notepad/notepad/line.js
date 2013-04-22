@@ -258,10 +258,9 @@
             objectElement.on("urilabelurichange", function(event) {
                 event.stopPropagation();
                 if (event.target != objectElement[0]) {
-                    console.debug("ignoring event for another target");
+                    // ignoring event for another target
                     return false;
                 }
-                console.debug('received urichange', event);
 
                 container.unload();
 

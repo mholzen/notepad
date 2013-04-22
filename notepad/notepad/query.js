@@ -41,17 +41,17 @@
             return this.sparqlTemplate.match(/WHERE\s*{\s*([\s\S]*)\s*}/i)[1];
         },
         name: function() {
-            return this._name || 'unnamed' || this.toSparql().replace(/\s+/mg,' ').substring(0,50);
+            return '"' + this._name + '"' || '<unnamed>' || this.toSparql().replace(/\s+/mg,' ').substring(0,50);
         },
         execute: function(endpoint, context, callback) {
             var sparql = this.toSparql(context);
 
-            console.log('query "' + this.name() + '", executed with', this.context);
+            console.log('[query]', this.name() + ' executed with', this.context);
 
             var query = this;
             return endpoint.execute(sparql, function(results) {
 
-                console.log('query "'+query.name()+'", receives ' + summaryOf(results), results );
+                console.log('[query]', query.name() + ' receives ' + summaryOf(results), results );
                 callback(results);
             });
         },
