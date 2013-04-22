@@ -30,18 +30,6 @@
             autocomplete:       true,
             allowBlankNodes:    true,
             dynamicTemplate:    true,
-            autocompleteSource: function(request,callback) {
-                var urilabel = this.element.closest(':notepad-urilabel').data('notepadUrilabel');
-                urilabel.getEndpoint().getSubjectsLabelsByLabel(request.term.trim(),callback);
-            },
-            autocompleteSelect: function(event, ui) {
-                var uri = ui.item.value;
-                var label = ui.item.label;
-                var urilabel = $(event.target).closest(':notepad-urilabel').data('notepadUrilabel');
-                urilabel.set(toTriple(uri, "rdfs:label", label));
-                event.preventDefault();  // prevent the default behaviour of replacing the text with the value.  _updateRdf has taken care of it
-            },
-
         },
         _setOption: function(key, value) {
             this._super(key, value);
