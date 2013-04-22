@@ -479,7 +479,7 @@
 
             this.getObject().uri();
             
-            this._createColumnObjects();
+            // this._createColumnObjects();
         },
 
         getChildrenToggle: function() {
