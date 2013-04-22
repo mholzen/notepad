@@ -7,6 +7,24 @@
         return ( direction === undefined || direction === FORWARD ? "rel" : "rev" );
     }
 
+    function direction(triples) {
+        var inverseCount = triples.triples(undefined, 'notepad:inverseLabel').length;
+        var forwardCount  = triples.triples(undefined, 'rdfs:label').length;
+
+        if (inverseCount && forwardCount) {
+            console.warn("ambiguous direction, assuming forward, given triples:", triples);
+            return 'forward';
+        }
+        if (forwardCount) {
+            return 'forward';
+        }
+        if (inverseCount) {
+            return 'backward';
+        }
+        console.warn("no direction, assuming forward, given triples:", triples);
+        return 'forward';
+    }
+
     var labelTemplates = {
         forward: 
             '{{#rdfs:label}}' +
@@ -83,8 +101,6 @@
 
 
         options: {
-            label: "urilabel",
-            labelNamespace: "notepadUrilabel",
             allowBlankNodes: true,
             objectNamespace: "notepadObject"
         },
@@ -196,49 +212,37 @@
             return this.getUri().toString();
         },
         _createLabel: function() {
-            if (!this.options.label) {
-                return;
-            }
             var element = this._labelElement();
             var predicate = this;
-            $(element)[this.options.label] ({
+            element.urilabel({
                 query: $.notepad.queries.describe_predicate,
                 template: labelTemplates[this.getDirection()],
             });
-            var label = $(element).data(this.options.labelNamespace);
+            var label = element.data('notepadUrilabel');
 
-            var childAutocomplete = element.find(":notepad-autocomplete2");
-            childAutocomplete.on('autocomplete2select', function(event, ui) {
+            // selection of the autocomplete menu should
+            // set the direction (to: set the template), before: updating selection
+            element.on('autocomplete2select', ':notepad-autocomplete2', function(event, ui) {
                 var triples = ui.item.value;
-                var uris = triples.subjects();
-                if (uris.length != 1) {
-                    throw new Error("cannot determine a single subject from a graph", uri);
-                }
-                var uri = uris[0],
-                    direction;
-                if ( triples.triples(uri, 'rdfs:label').length ) {
-                    direction = 'forward';
-                } else if ( triples.triples(uri, 'notepad:inverseLabel').length ) {
-                    direction = 'backward';
-                } else {
-                    throw new Error("cannot determine direction from", triples);
-                }
-                predicate._setDirection(direction);
-                predicate._setUri(uri);
+                predicate.setDirection(direction(triples));
+                    // to: change the labelTemplates
+            });
+
+            element.on('urilabelurichange', function(event) {
+                var urilabel = $(event.target).data('notepadUrilabel');
+                var uri = urilabel.getUri();
+                predicate._setUri(urilabel.getUri());
             });
 
             label.setUri(predicate.getUri());
-            return element.data(this.options.labelNamespace);
+            return label;
         },
         // consider moving the predicate label to line
             // 1-recreate label in line
                 // direction change -> event
             // 2-disable _createLabel
         getLabel: function() {
-            if ( !this.options.label ) {
-                return undefined;
-            }
-            var label = this._labelElement().data(this.options.labelNamespace);
+            var label = this._labelElement().data('notepadUrilabel');
             if (!label) {
                 label = this._createLabel();
             }
