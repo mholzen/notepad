@@ -377,6 +377,15 @@
             }
             return this._createChildToggle();
         },
+        _initiallyCollapsed: function() {
+            if (this.options.describeDepth === 0) {
+                return true;
+            }
+            if (this.getContainer() && ! this.getContainer().option('describeElements')) {
+                return true;
+            }
+            return false;
+        },
         _createChildToggle: function() {
             // Children collapse/expand
             var childrenToggle = $('<a>').addClass('childrenToggle');
@@ -391,8 +400,7 @@
             // When the child container has no elements, show '-'
 
             // Initial state depends on the container
-            var describeElements = this.getContainer().option('describeElements');
-            if (!describeElements || this.options.describeDepth === 0) {
+            if (this._initiallyCollapsed()) {
                 this.hideChildren();
             }
 
