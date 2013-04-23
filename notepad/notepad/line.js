@@ -611,7 +611,37 @@
                     return;
                 }
             });
-        }
+        },
+        discoverSparql: function() {
+            if (! this.getObject().isLiteral() ) {
+                return; // consider: converting a URI into a literal
+            }
+            // if literal is sparql
+            var literal = this.getObject().literal();
+
+            // the datatype should already be set.  Call discoverDatatype() on the literal, if not.
+            if ( literal.getLiteral().datatype() != 'notepad:sparql' ) {
+                // consider: test this using instanceOf
+                return;
+            }
+            return literal.datatype().query();   // consider: rename literal() to widget()
+        },
+        executeSparql: function() {
+            var query = this.discoverSparql();
+            if ( ! query ) {
+                return;
+            }
+
+            // should:
+            // container = this.newChildContainer({query: function() { return line.discoverSparql(); } loadAll: true});
+            var container = this.getChildContainer();
+            container.option('describeElements', false);
+            container.option('sourceElement', container.element);
+            container.element.attr('about', $.notepad.newUri()); // should: have one URI per invocation (or response)
+            this.getChildContainer().option('query', query);     // should: have the container obtain a new query everytime it is invoked
+            this.getChildContainer().loadAll();
+        },
+
 
     });
 

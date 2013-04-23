@@ -87,7 +87,6 @@ test("select a reverse label", function() {
     var ui = { item: { value: toTriples('ex:created notepad:inverseLabel "created by"') } };
 
     var target = this.line.getPredicateLabel().element;
-
     autocomplete._trigger('select', { target: target }, ui);
 
     assertThat( this.line.getContainerPredicateUri(), 'ex:created');
@@ -116,23 +115,10 @@ testWithContainer("discoverPredicate",
     }, 500);
 });
 
-testWithContainer("discoverPredicate.ambiguous",
-    toTriples(
-        ':p1 a rdf:Property',
-        ':p2 a rdf:Property',
-        ':p1 rdfs:label "predicate" ',
-        ':p2 rdfs:label "predicate" '
-    ), function() {
-
-    var el = $("<li>").appendTo(this.container.element).line();
+test("discoverSparql", function() {
+    var el = $("<li>").line();
     var line = el.data('notepadLine');
 
-    line.getObject().uri().setLabel("predicate: literal");
-
-    line.discoverPredicate();
-
-    setTimeout(function() {
-        assertThat(line.getPredicateLabel().element.hasClass('ambiguous'));
-        start();
-    }, 500);
+    line.setLineLiteral( toLiteral('construct {?s ?p ?o} from {?s ?p ?o}', 'notepad:sparql') );
+    assertThat(line.discoverSparql(), instanceOf(Query));
 });
