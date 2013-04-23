@@ -17,17 +17,20 @@
         return $.uri.base().toString().replace(/#.*$/,'');
     }
 
-    toLiteral = function(value) {
+    toLiteral = function(value, datatype) {
         if (value.resource) {
             if (value.resource.type === 'literal') {
                 return value;
             }
             if (value.resource.type === 'uri') {
-                return toResource($.rdf.literal( '"' + value + '"'));
+                return toResource($.rdf.literal( '"' + value + '"', {datatype: datatype} ));
             }
         }
         if (typeof value === 'string') {
-            return toResource( $.rdf.literal('"' + value.toString().replace(/"/g, '\\"') + '"') );
+            if ( ! datatype) {
+                value = '"' + value.toString().replace(/"/g, '\\"') + '"';
+            }
+            return toResource( $.rdf.literal(value, {datatype: datatype}) );
         }
         throw new Error("cannot create a literal from", value);
     }

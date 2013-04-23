@@ -54,6 +54,9 @@ test("resources", function() {
 });
 test("literal", function() {
     assertThat( toLiteral("some text"), "some text" );
+    assertThat( toLiteral("some text").datatype(), not(truth()) );
+    assertThat( toLiteral("some text", 'xsd:string').datatype(), 'xsd:string' );
+    assertThat( toLiteral("some text", 'notepad:mytype').datatype(), 'notepad:mytype' );
     assertThat( toLiteral("http://ex.com").isLiteral() );
     assertThat( toLiteral(":foo").isLiteral() );
 
