@@ -58,19 +58,29 @@
             if (! this._source() ) {  // requires a urilabel
                 throw new Error("cannot create an externalLink without a urilabel");
             }
+            var element = this._source().element;
+
             // this widget adds meta data to the source
-            this._source().element.meta({meta: this._meta.bind(this)});         // should: add if there is already a meta element
+            element.meta().data('notepadMeta').add(this._meta.bind(this));         // should: add if there is already a meta element
             
             this._update();
             var link = this;
-            this._source().element.on("urilabelurichange", this._update.bind(this));
+            element.on("urilabelurichange.externalLink", this._update.bind(this));
 
             // keypress does not cover all changes (eg, paste or even BACKSPACE)
             // consider: textinput?
-            this._source().element.on("keyup", function(event) {
+            element.on("keyup.externalLink", function(event) {
+                if (event.target != element) {
+                    return;
+                }
+                console.log("[externalLink]", "updating itself and updating menu", event);
                 link._update();
                 $("#menu").data('notepadMenu2')._update();          // should: be an event handler
             });
+        },
+        _destroy: function() {
+            this._source().element.off("urilabelurichange.externalLink");
+            this._source().element.off("keyup.externalLink");
         },
 
         _source: function() {

@@ -3,7 +3,7 @@
 .notepad-external-link a {
 	text-decoration: none;
 	font-size: small;
-    margin-left: 10px;
+	margin-left: 10px;
 }
 .ui-menu-item .notepad-external-link > a {
     display: inline-block;
