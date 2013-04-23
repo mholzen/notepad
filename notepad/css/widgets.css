@@ -1,7 +1,8 @@
 /* external link */
 
-.notepad-external-link img {
-    height: 12px;
+.notepad-external-link a {
+	text-decoration: none;
+	font-size: small;
     margin-left: 10px;
 }
 .ui-menu-item .notepad-external-link > a {

@@ -99,7 +99,11 @@
         _update: function() {
             var uri = this._uri();
             if (uri) {
-                this.element.html( $('<a target="_blank">').attr('href', uri).append('<img src="../external/images/glyphicons/glyphicons_050_link.png"/>') );
+                this.element.html(
+                    $('<a target="_blank">')
+                        .attr('href', uri)
+                        .append('<i class="icon-link icon-small"></i>')
+                );
             } else {
                 this.element.html( "" );
             }
