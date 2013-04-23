@@ -258,10 +258,6 @@
                 return false;
             }
             var literalWidget = literalElement.data('notepadLiteral');
-            if (literalWidget.getLiteral().datatype() !== 'xsd:string') {
-                return false;
-            }
-
             var literal = literalWidget.getLiteral().toString();
 
             var beforeCaret = literal.slice(0,caret),
