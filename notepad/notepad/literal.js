@@ -35,13 +35,23 @@
             this.value().remove();
         },
 
+        _datatype: function(value) {
+            if (value === null) {
+                this.element.removeAttr('datatype');
+            } else if ( value !== undefined ) {
+                this.element.attr('datatype', value);
+            }
+            return this.element.attr('datatype');
+        },
+
         _setOption: function(key, value) {
             this._super(key, value);
             switch (key) {
                 case 'type':
-                    var type = types[value.toString()] || types['xsd:string'];
-                    type.widget.apply(this.value());
-                    this.options.name = type.name;
+                    var datatype = this._datatype(value);
+                    var widget = widgetsByDatatype[datatype] || widgetsByDatatype['xsd:string'];
+                    widget.init.apply(this.value());
+                    this.options.name = widget.name;
                 break;
             }
         },
@@ -52,71 +62,42 @@
             return this.options.query;
         },
 
-
+        // consider: typedLiteral(), or datatype()
         literal: function() {
             return this.value().data(this.options.name);
+        },
+        datatype: function() {
+            return this.literal();
+        },
+        discoverDatatype: function() {
+            var endpoint = this.element.findEndpoint();
+            if ( !endpoint ) {
+                return new $.Deferred().resolveWith();
+            }
+            var literal = this;
+            return this._query().execute(endpoint, this._context(), function(ranges) {
+                var datatype = ranges.objects(literal.getPredicateUri(), 'rdfs:range');
+                literal.option('type', datatype);
+            });
         },
 
         getLiteral: function() {
             return this.literal().getLiteral();
         },
 
-        _setLiteral: function(literal, ranges) {
-            if ( ! this.literal() ) {
-                // the literal might have been destroyed, 
-                // and this method is being called after an ajax finally query returns
-                return;
-            }
-            if (typeof literal === 'string' && literal.length === 0) {
-                return;
-            }
-            if ( !(literal instanceof Resource) ) {
-                literal = new Resource(literal);
-            }
-            var datatype = ( ranges ) ?
-                ranges.objects(this.getPredicateUri(), 'rdfs:range') : 
-                literal.datatype();
-            
-            this.option('type', datatype);
-            this.literal().setLiteral(literal, datatype);
-        },
-
         _context: function() {
-            return { predicate: this.getPredicateUri() };
+            return { about: this.getPredicateUri() };
         },
-
-        setLiteral: function(literal) {
-            var endpoint = this.element.findEndpoint();
-            if ( endpoint ) {
-                return this._query().execute(endpoint, this._context(), this._setLiteral.bind(this, literal));
+        setLiteral: function(value) {
+            value = toLiteral(value);
+            if ( value.datatype() ) {
+                this.option('type', value.datatype());
+                return this.datatype().setLiteral(value);
             }
-            return this._setLiteral(literal, this.options.ranges);
-
-        },
-
-        setLiteralOld: function(literal) {
-            // Set Literal using predicate ranges
-            var self = this;
-
-            // var endpoint = this.element.findEndpoint();
-            // if (!endpoint) {
-            //     // this doesn't return a promise.  should it?
-            //     return self._setLiteral(literal);
-            // }
-
-            return $.notepad.queries.describe_predicate.execute(this.element.findEndpoint(), this._context(), function(triples) {
-                // filter could be added to the query instead of filtered here
-                var ranges = triples.objects(undefined, 'rdfs:range');
-
-                if (ranges.length === 0) {
-                    return self._setLiteral(literal);
-                }
-
-                literal = new Resource(literal);
-                literal.resource.datatype = ranges[0];
-                self._setLiteral(literal);
+            var literal = this;
+            return this.discoverDatatype().done( function() {
+                literal.datatype().setLiteral(value);
             });
-
         },
 
     });
@@ -179,7 +160,7 @@
     });
     $.widget("notepad.xsddate", {
         setLiteral: function(literal) {
-            var date = new Date(literal)
+            var date = new Date(literal.toString())
             this.element.attr('content', date.valueOf());
             this.element.text(moment(date.valueOf()).fromNow());
         },
@@ -188,7 +169,7 @@
             if (date.length === 0) {
                 return;
             }
-            return new Resource(date+'^^xsd:date');
+            return toLiteral(date, 'xsd:dateTime');
         },
         _create: function() {
             this.element.datepicker();
@@ -200,38 +181,39 @@
             this.element.text(literal);
         },
         getLiteral: function() {
-            return toLiteral(this.element.text()+'^^notepad:sparql');
+            return toLiteral(this.element.text(), 'notepad:sparql');
         },
         query: function() {
-            return new Query(this.getLiteral(), {}, "this.subject() rdfs:label");
+            return new Query(this.getLiteral().toString(), {}, "<from a literal; could search rdfs:label of the uri>");
+        },
+        _meta: function() {
+            return toTriples(
+                toTriple('javascript:line.executeSparql()', 'rdfs:label', "Execute SPARQL query..."),
+                toTriple('javascript:line.toggleSparql()', 'rdfs:label', "Show/hide query")
+                );
         },
         _create: function() {
-            debugger;
-            // this should replace (or create) a container that will receive the results of the execution of this sparql
-            $('#query').container({query: this.query()});
+            this.element.meta();
+            this.element.data('notepadMeta').add(this._meta.bind(this));
         },
     });
 
-    var notepadSparql = toTriples(
-        toTriple('notepad:sparql', 'rdfs:label', "Sparql"),
-        toTriple('notepad:sparql', 'rdfs:range', "notepad:sparql")
-    );
-
-    var types = {
+    // should: translate to RDF
+    var widgetsByDatatype = {
         'xsd:string': {
-            widget: $.fn.xsdstring,
+            init: $.fn.xsdstring,
             name: 'notepadXsdstring'
         },
         'rdf:XMLLiteral': {
-            widget: $.fn.rdfxmlliteral,
+            init: $.fn.rdfxmlliteral,
             name: 'notepadRdfxmlliteral'
         },
         'xsd:dateTime': {
-            widget: $.fn.xsddate,
+            init: $.fn.xsddate,
             name: 'notepadXsddate'
         },
         'notepad:sparql': {
-            widget: $.fn.sparql,
+            init: $.fn.sparql,
             name: 'notepadSparql'
         },
 
