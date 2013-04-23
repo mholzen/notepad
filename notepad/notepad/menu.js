@@ -5,12 +5,23 @@
         // pros: all triples might have meta data.  Only triples can have meta data?
     $.widget("notepad.meta", {
         options: {
-            meta: $.noop
+            meta: []
         },
         _create: function() {
+            this.element.addClass('has-meta');
+        },
+        _destroy: function() {
+            this.element.removeClass('has-meta');
+        },
+        add: function(value) {
+            this.options.meta.push(value);
         },
         triples: function() {
-            return this.options.meta();
+            return this.options.meta.map(function(value) {
+                return value();
+            }).reduce(function(total, value) {
+                return total.add(value)
+            }, toTriples());
         }
     });
 
@@ -40,13 +51,15 @@
         },
         _meta: function() {
             // walk up the DOM path (including self) and return _meta() triples
-            var meta = toTriples();
+            var results = toTriples();
 
+            console.log('[menu]','walking up DOM');
             this.source().parents(':notepad-meta').addBack(':notepad-meta').each(function(i,element) {
                 var triples = $(element).data('notepadMeta').triples();
-                meta.add ( triples );
+                results.add ( triples );
             });
-            return meta;
+            // should: filter for operations (maybe by filtering out triples who don't have javascript: as a scheme)
+            return results;
         },
         _triples: function() {
             var triples = toTriples(defaultMenu);
@@ -56,6 +69,7 @@
             return this.options.template || ( this.options.template = this.element.find('.template').detach().removeClass('template') );
         },
         _update: function() {
+            console.log('[menu]', 'updating itself');
             var template = this._template();
             if ( template.length === 0 ) {
                 throw new Error("cannot _update without a template");
