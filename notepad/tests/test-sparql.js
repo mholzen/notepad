@@ -156,7 +156,7 @@ skippedTest("given a predicate p, when I post a triple with that predicate, then
     });
 });
 asyncTest("when I update a triple, then", function() {
-    var uri = $.notepad.getNewUri();
+    var uri = $.notepad.newUri();
     var triple = new Triple(uri, ":p", ":o");
     var triples = new Triples();
     triples.push(triple);
@@ -171,7 +171,7 @@ asyncTest("when I update a triple, then", function() {
 
 // Skipped because the triplestore doesn't seem to rebind the basemodel anymore
 skippedTest("when I update a triple affected by a semantic rule, then", function() {
-    var uri = $.notepad.getNewUri();
+    var uri = $.notepad.newUri();
     var triple = new Triple(uri, "rdf:type", "rdf:Property");
     var derivedTriple = new Triple(uri, "rdfs:subPropertyOf", uri);
     var triples = new Triples();

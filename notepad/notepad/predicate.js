@@ -176,7 +176,7 @@
             // consider: rdfs:range might affect the object's widget
         },
         newUri: function() {
-            var uri = $.notepad.getNewUri();
+            var uri = $.notepad.newUri();
             this._setUri(uri);
             this._setDirection(FORWARD);
             if (this.hasLabel()) {

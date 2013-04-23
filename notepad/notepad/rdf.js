@@ -215,7 +215,7 @@
         }
     };
 
-    $.notepad.getNewUri = function() {
+    $.notepad.newUri = function() {
         return new Resource(":"+guidGenerator());
     };
 

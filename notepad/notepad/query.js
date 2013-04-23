@@ -108,7 +108,7 @@
         var clusterTriples = new Triples();
         for (var predicate in clusters) {
             for (var object in clusters[predicate]) {
-                var clusterUri = $.notepad.getNewUri();
+                var clusterUri = $.notepad.newUri();
                 clusterTriples.push(
                     new Triple(clusterUri, "rdfs:label", "filter by " + predicate + "=" + object)
                 );

@@ -97,7 +97,7 @@
             return triples.object(undefined, "rdfs:label");
         },
         newUri: function(uri) {
-            var uri = uri || $.notepad.getNewUri();
+            var uri = uri || $.notepad.newUri();
             this._setUri(uri);
         },
         ensureUri: function() {

@@ -7,14 +7,14 @@ cache = {};
 FusekiEndpoint = function(uri, graph) {
     this.uri = uri;
     if (graph === 'new') {
-        graph = $.notepad.getNewUri();
+        graph = $.notepad.newUri();
     }
     this.graph = graph || 'default';
 }
 
 TempFusekiEndpoint = function(triples, callback) {
     var endpoint = new FusekiEndpoint("http://localhost:3030/test");
-    endpoint.graph = $.notepad.getNewUri();
+    endpoint.graph = $.notepad.newUri();
     this.endpoint = endpoint;
     endpoint.insertData( triples, callback.bind(this) );
 }

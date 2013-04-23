@@ -60,7 +60,7 @@
         identity: function() {
             var identity = localStorage.identity ?
                 localStorage.identity :
-                ( localStorage.identity = $.notepad.getNewUri());
+                ( localStorage.identity = $.notepad.newUri());
             return toResource(identity);
         },
         dataset: function() {

@@ -20,7 +20,7 @@
         },
 
         newUri: function() {
-            this._setUri($.notepad.getNewUri());
+            this._setUri($.notepad.newUri());
             var line = this.getContainer().appendLine();  // Start with one empty line
             line.focus();
         },
