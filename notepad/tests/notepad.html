@@ -17,6 +17,10 @@
 <script src="../external/moment.min.js"></script>
 <script src="../external/google-analytics.js"></script>
 
+<!-- bootstrap conflicts with tooltip from jQuery UI.  I renamed .tooltip to .bs-tooltip in the following file -->
+<link  href="../external/bootstrap/css/bootstrap.css" type="text/css" rel="stylesheet" media="screen" />
+<link  href="../external/font-awesome/css/font-awesome.min.css" type="text/css" rel="stylesheet" media="screen" />
+
 <!-- Notepad code -->
 <script src="../notepad/console.js" type="text/javascript"></script>
 <script src="../notepad/endpoint.js" type="text/javascript"></script>
@@ -126,28 +130,25 @@ $(function() {
         line.discoverPredicate(event);
     });
 
-    $("#triples button").click(function() {
+    $(".triples").click(function() {
         $(this).siblings(".turtle").text(notepad.triples().toTurtle());
     });
-    $("#save .save").click(function() {
-        notepad.save();
-    });
 
-    $("#save .preview").click(function() {
+    $(".preview").click(function() {
         var removed = notepad.removed().toTurtle();
         $(this).siblings(".delete").text(removed);
 
         var added = notepad.added().toTurtle();
         $(this).siblings(".update").text(added);
     });
-    $("#save .save").click(function() {
+    $(".save").click(function() {
         notepad.save();
     });
     
-    $(".debug .toggle").click(function() {
-        $(this).siblings().toggleClass('hidden');
+    $('.toggle').on('click', function(event) {
+        var targetSelector = $(event.target).data('toggle');
+        $(targetSelector).toggle();
     });
-
     $('#notepad').on("focus", '[contenteditable="true"]', function(event) {
         container = $(event.target).closest(":notepad-container").data('notepadContainer');
 
@@ -221,6 +222,10 @@ $(function() {
         <div id="status"></div>
         <div id="notepad">
             <div class="meta">
+                <a id="feedback" class="btn btn-mini" href="mailto:instruct@vonholzen.org">
+                    <i class="icon-envelope"></i>
+                    Send feedback...</a>
+
                 <table class="title toggle">
                     <tr>
                         <td><h3><span class="toggle-button ui-icon ui-icon-plus"></span></h3></td>
@@ -255,32 +260,33 @@ $(function() {
                 </table>
 
                 <ul class="data container"></ul>
-                <div id="save">
-                    <button class="save">Save</button>
-                    <button class="preview">Preview...</button>
+
+                <div>
+                    <a class="save btn btn-primary" href="#">
+                        <i class="icon-save"></i>
+                        Save</a>
                     <div class="status"></div>
-                    <div class="turtle delete"></div>
-                    <div class="turtle update"></div>
+
+                    <div>
+                        <a class="preview btn debug" href="#">
+                            Preview...</a>
+                        <div class="turtle delete"></div>
+                        <div class="turtle update"></div>
+                    </div>
+
+                    <div>
+                        <a class="triples btn debug" href="#">
+                            View triples...</a>
+                        <div class="turtle"></div>
+                    </div>
                 </div>
+
             </div>
         </div>
 
     </div>
-    <div id="triples">
-        <button>View page triples...</button>
-        <div class="turtle"></div>
-    </div>
 
-    <div class="debug">
-        <button class="toggle">Show/Hide Debug</button>
-        <div id="sparql-results" class="hidden">
-            <h4>SPARQL Commands</h4>
-            <table id="sparql">
-                <tr/>
-            </table>
-        </div>
-        <input id="datepicker"></input>
-    </div>
+    <i id="debug" class="btn toggle icon-wrench icon-2x" data-toggle=".debug"></i>
 
     <span id="control">
         <div id="menu-button">
@@ -298,6 +304,6 @@ $(function() {
     </span>
     
     <ul id="query-results"></ul>
-    
+
 </body>
 </html>

@@ -24,9 +24,9 @@ button {
 }
 
 .data {
-    margin: 10px 0px;
     font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
 }
+
 .container {
     border: solid 1px #888;
     border-radius: 5px;
@@ -34,6 +34,7 @@ button {
     background: white;
     padding: 30px 15px ;
     clear: both;
+    width: auto;
 }
 
 #container h2 {
@@ -46,20 +47,30 @@ button {
 
 ul {
     padding-left: 30px;
+    margin-left: 0px;
 }
 
-#save {
-    float: left;
-    width: 100%;
-    margin-top: 0px;
+/*
+ * LINES
+ */
+.notepad .childrenToggle {
+    color: black;
+    text-decoration: none;
 }
-#save button {
-    font-size: 90%;
-    background: #ffe;
-    border-radius: 5px;    
-    padding: 8px;
+
+
+/*
+ * BUTTONS
+ */
+.save {
     float: right;
 }
+#feedback {
+    float: right;
+    margin-top: 8px;
+    color: grey;
+}
+
 
 /*
  * ICONS
@@ -344,20 +355,18 @@ ul {
     clear: both;
 }
 
-.debug {
-    display: none;  /* turns this off */
-    position: absolute; bottom: 0px;
+#debug {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
 }
-.debug .hidden {
+.debug {
     display: none;
 }
-.debug td {
-    border: solid 1pt black;
-    white-space: pre-wrap;
-    font-family: courier;
-    font-size: xx-small;
+i.toggle {
+    color: grey;
+    text-shadow: 2px 2px white;
 }
-
 .turtle {
     clear: both;
     font-family: courier;
