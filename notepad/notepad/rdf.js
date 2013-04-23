@@ -129,10 +129,12 @@
         if (value === undefined) {
             throw new Error("cannot create a resource with an undefined value");
         }
-        if ( value.type && value.value ) {
-            this.resource = _fusekiToRdfResource(value);
-        } else if ( value.resource ) {
+        if ( value instanceof Resource ) {
             this.resource = value.resource;
+        } else if ( value instanceof $.rdf.resource || value instanceof $.rdf.literal ) {
+            this.resource = value;
+        } else if ( value.type && value.value ) {
+            this.resource = _fusekiToRdfResource(value);
         } else if ( value.toString() ) {
             this.resource = _stringToRdfResource(value.toString());
         }
@@ -148,7 +150,7 @@
     var memResource = {};
     toResource = function(value) {
         var resource = new Resource(value);
-        var key = resource.resource.type + resource.toString();
+        var key = (resource.resource.datatype || '') + resource.resource.type + resource.toString();
         if (memResource[key]) {
             return memResource[key];
         } else {
@@ -209,7 +211,7 @@
             if (!this.isLiteral()) {
                 return undefined;
             }
-            return this.resource.datatype || 'xsd:string';  // Not sure if this default is correct
+            return this.resource.datatype || undefined;  // Not sure if this default is correct
         }
     };
 
