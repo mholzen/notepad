@@ -242,8 +242,8 @@
             }
             return this.getObject().literal().getLiteral();
         },
-        setLineLiteral: function(text) {
-            this.getObject().literal().setLiteral(text);
+        setLineLiteral: function(literal) {
+            this.getObject().literal().setLiteral(literal);
             this.showChildren();        // A literal has no children, so this effectively ensures we have a '-' and not a '+'
             return this;
         },
