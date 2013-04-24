@@ -1,0 +1,59 @@
+
+extends layout
+
+block content
+	div.navbar.navbar-fixed-top
+		div.navbar-inner
+			div.container-fluid
+				ul#global-nav.nav.pull-left
+					a(href='/notepad').brand inStruct
+				button#btn-logout.btn.btn-primary
+					i.icon-lock.icon-white
+					| Sign Out
+
+	include endpoint
+	include modals/alert
+	include modals/confirm
+
+block scripts
+	script(src='/notepad/external/jquery.js')
+	//script(src='/vendor/jquery.min.js')
+	script(src='/vendor/jquery.form.js')
+	script(src='/vendor/bootstrap-modal.js')
+	script(src='/vendor/bootstrap-transition.js')
+	script(src='/js/views/home.js')
+	script(src='/js/controllers/homeController.js')
+	script(src='/js/form-validators/accountValidator.js')
+
+	script(src='/notepad/external/jquery-ui.js')
+	script(src='/notepad/external/jquery.rdfquery.rules-1.0.js')
+	script(src='/notepad/external/jquery.caret.js')
+	script(src='/notepad/external/subarray.js')
+	script(src='/notepad/external/underscore.js')
+	script(src='/notepad/external/underscore.string.min.js')
+	script(src='/notepad/external/mustache.js')
+	script(src='/notepad/external/moment.min.js')
+	script(src='/notepad/external/google-analytics.js')
+
+	script(src='/notepad/js/endpoint.js')
+	script(src='/notepad/js/rdf.js')
+	script(src='/notepad/js/container.js')
+	script(src='/notepad/js/object.js')
+	script(src='/notepad/js/literal.js')
+	script(src='/notepad/js/urilabel.js')
+	script(src='/notepad/js/fact.js')
+	script(src='/notepad/js/container2.js')
+	script(src='/notepad/js/line.js')
+	script(src='/notepad/js/sparql.js')
+	script(src='/notepad/js/column.js')
+	script(src='/notepad/js/predicate.js')
+	script(src='/notepad/js/templates/templates.js')
+	script(src='/notepad/js/query.js')
+	script(src='/notepad/js/template.js')
+	script(src='/notepad/js/autocomplete.js')
+	script(src='/notepad/js/menu.js')
+	script(src='/notepad/js/notepad.js')
+
+	script(src='/notepad/js/controller.js')
+
+	<!-- script(src='/notepad/js/widget.js') -->

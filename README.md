@@ -16,13 +16,19 @@ Prerequisites
 To start developing
 -------------------
 
+Install node.js & npm.
+
 Clone the [notepad git repository](https://github.com/mholzen/notepad/)
+
+Install mongodb and start it.
+
+	$ mongod
 
 Start the webserver
 
 	$ cd notepad
-	$ npm install connect
-	$ node server.js
+	$ npm install -d
+	$ node app
 
 Point your browser to [http://localhost:8080](http://localhost:8080)
 
