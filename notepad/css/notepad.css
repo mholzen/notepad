@@ -33,7 +33,7 @@ button {
     box-shadow: 0px 0px 10px 0px #aaa;
     background: white;
     padding: 30px 15px ;
-    clear: both;
+   clear: both;
     width: auto;
 }
 
@@ -592,8 +592,31 @@ i.toggle {
     max-height: 400px;
 }
 
+/*
+ * First line
+ */
 
 #notepad > div > ul:first-of-type > li:first-of-type > .notepad-predicate > .notepad-object3 > .notepad-template > div:first-of-type {
     font-size: 22px;
     font-weight: bold;
 }
+
+
+
+
+/*
+ * SPARQL  -- hide the query
+ */
+
+[datatype="notepad:sparql"] > .value {
+    font-family: courier;
+}
+
+/* Experimenting with hiding the SPARQL */
+[about="notepad:sparql"] [rel="rdfs:label"] {
+    /*display: none;*/
+}
+[rel="notepad:sparql"] > .notepad-object3 > .value {
+    /*display:none;*/
+}
+
