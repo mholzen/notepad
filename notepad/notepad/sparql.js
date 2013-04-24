@@ -1,6 +1,7 @@
 (function($) {
 
 $.notepad = $.notepad || {};
+$.notepad.core = toResource('notepad:core');
 
 cache = {};
 
@@ -43,15 +44,15 @@ FusekiEndpoint.prototype = {
         //return this.uri + "Inferred" + "/query";
     },
     query: function(command, callback) {
-        // var options = { query: command, output:'json', 'force-accept': 'text/json' };
         var options = { query: command, output:'json' };
+
         if (this.graph != 'default') {
-            options['default-graph-uri'] = this.graph.toSparqlString().slice(1,-1);
+            options['default-graph-uri'] = [ 
+                this.graph.toURL(),
+                $.notepad.core.toURL()
+            ];
         }
 
-        // $.ajaxSetup({cache: true});
-        // options.cache = true;
-        // if (cache.shouldCache(command)) {
         if (command.match(/# query:cache/)) {
             if (command in cache) {
                 console.debug("returning cached results");
@@ -78,7 +79,7 @@ FusekiEndpoint.prototype = {
                 }    
             }
         }
-        return $.getJSON(this.queryUri(), options, finalCallback);
+        return $.ajax({url: this.queryUri(), dataType: "json", data: options, traditional: true, success: finalCallback});
     },
     update: function(command, callback) {
         console.log('endpoint.update', {command:command});
@@ -117,7 +118,11 @@ FusekiEndpoint.prototype = {
         }
     },
     clear: function(callback) {
-        return this.update('DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }',callback);
+        var pattern = '{ ?s ?p ?o }';
+        if (this.graph !== 'default') {
+            pattern = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + pattern + '}';
+        }
+        return this.update('DELETE '+pattern+' WHERE '+pattern, callback);
     },
     start: function(callback) {
         var triples = new Triples();
@@ -248,6 +253,6 @@ FusekiEndpoint.prototype = {
     $.notepad.test = new FusekiEndpoint("http://localhost:3030/test");
     $.notepad.dev = new FusekiEndpoint("http://localhost:3030/dev");
     $.notepad.prod = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
-
+    $.notepad.defaultEndpoint = new FusekiEndpoint('http://' + $.uri.base().authority + ':3030/dev');
 
 })(jQuery);

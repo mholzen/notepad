@@ -45,9 +45,11 @@
 <!-- Tests -->
 <script type="text/javascript">
 $(function() {
-	$.notepad.test.clear(function() {
-        $.notepad.test.graph = $.notepad.core;
-		$.notepad.test.insertData(toTriples(
+    var endpoint = $.notepad.defaultEndpoint;
+    endpoint.graph = $.notepad.core;
+
+	endpoint.clear(function() {
+		endpoint.insertData(toTriples(
             'rdfs:member        rdfs:label           "member" ',
             'rdfs:member        notepad:inverseLabel "appears on" ',
 
