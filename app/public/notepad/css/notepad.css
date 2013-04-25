@@ -5,7 +5,6 @@
 }
 
 body {
-    font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
     background: url(../images/bg.png);
 }
 
@@ -16,14 +15,20 @@ body {
 .meta {
     margin-left: auto;
     margin-right: auto;    
-    max-width: 1000px;
-    font-family: 'Lucida Grande', 'Geneva', 'Helvetica', sans-serif;
+    /*font-family: 'Lucida Grande', 'Geneva', 'Helvetica', sans-serif;*/
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+.meta td {
+    vertical-align: middle;
+}
+
 button {
-    font-family: 'Lucida Grande', 'Geneva', 'Helvetica', sans-serif;   
+    /*font-family: 'Lucida Grande', 'Geneva', 'Helvetica', sans-serif;*/
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .data {
+    min-width: 940px;
     font-family: 'Palatino', 'Palatino Linotype', 'Georgia', serif;
 }
 
@@ -33,7 +38,7 @@ button {
     box-shadow: 0px 0px 10px 0px #aaa;
     background: white;
     padding: 30px 15px ;
-   clear: both;
+    clear: both;
     width: auto;
 }
 
@@ -65,10 +70,9 @@ ul {
 .save {
     float: right;
 }
-#feedback {
-    float: right;
-    margin-top: 8px;
-    color: grey;
+#feedback,
+#logout {
+    color: #777;
 }
 
 
@@ -194,7 +198,7 @@ ul {
 
 .value {
     display: inline-block;
-    min-width: 100px;
+    min-width: 200px;
 }
 
 .notepad-line {
@@ -211,7 +215,7 @@ ul {
 }
 
 .notepad td {
-    vertical-align: top;
+    /*vertical-align: top;*/
 }
 
 .notepad-predicate-label img {
@@ -494,19 +498,24 @@ i.toggle {
  * Notepad title, date created and endpoint
  */
 
-.title h3 {
+.title {
     display: inline-block;
     margin-top: 0px;
     margin-bottom: 0px;
+}
+
+.title,
+.title .btn {
+    color: #777;
 }
 
 .title td {
     vertical-align: middle;
 }
 
-.title .toggle-button {
-    margin-top: 7px;
-    display: inline-block;
+.title .btn {
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 .title .toggle-target {
@@ -534,6 +543,7 @@ i.toggle {
 }
 .object {
     display: table-cell;
+    vertical-align: bottom;
 }
 
 
@@ -596,7 +606,7 @@ i.toggle {
  * First line
  */
 
-#notepad > div > ul:first-of-type > li:first-of-type > .notepad-predicate > .notepad-object3 > .notepad-template > div:first-of-type {
+ul.data:first-of-type > li:first-of-type > .notepad-predicate > .notepad-object3 > .notepad-template > div:first-of-type {
     font-size: 22px;
     font-weight: bold;
 }

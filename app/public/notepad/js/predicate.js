@@ -35,7 +35,7 @@
                     // Forward context, no forward label but an inverse one: compute the inverse (defaults to 'related to')
                     '<span class="tooltip notepad-session">' +
                         '<div class="item notepad-literal" rel="rdfs:label">'+
-                            '<img src="../external/images/glyphicons/glyphicons_210_left_arrow.png"/>' +
+                            '<img src="./external/images/glyphicons/glyphicons_210_left_arrow.png"/>' +
                             '{{xsd:string}}' +
                         '</div>' +
 
@@ -60,7 +60,7 @@
                     // Inverse context, no inverse label but a forward one: compute the inverse (defaults to 'related to')
                     '<span class="tooltip notepad-session">' +
                         '<div class="item notepad-literal" rel="notepad:inverseLabel">'+
-                            '<img src="../external/images/glyphicons/glyphicons_210_left_arrow.png"/>' +
+                            '<img src="./external/images/glyphicons/glyphicons_210_left_arrow.png"/>' +
                             '{{xsd:string}}' +
                         '</div>' +
 
