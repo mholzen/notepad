@@ -6,7 +6,7 @@ function HomeController()
 	var that = this;
 
 // handle user logout //
-	$('#btn-logout').click(function(){ that.attemptLogout(); });
+	$('#logout').click(function(){ that.attemptLogout(); });
 
 // confirm account deletion //
 	$('#account-form-btn1').click(function(){$('.modal-confirm').modal('show')});
