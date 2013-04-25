@@ -100,12 +100,6 @@ body {
   width: 310px;
   margin: -200px 0 0 -150px;
 }
-#btn-logout {
-  width: 100px;
-  top: 1px;
-  right: 8px;
-  position: absolute;
-}
 #print {
   padding: 20px;
 }
@@ -140,7 +134,4 @@ label {
   -moz-text-shadow: -1px 1px 0 #fff;
   -webkit-text-shadow: -1px 1px 0 #fff;
   margin-top: 3px;
-}
-button i {
-  padding-left: 8px;
 }
