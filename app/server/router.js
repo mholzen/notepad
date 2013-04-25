@@ -2,6 +2,7 @@
 var CT = require('./modules/country-list');
 var AM = require('./modules/account-manager');
 var EM = require('./modules/email-dispatcher');
+var fs = require('fs');
 
 module.exports = function(app) {
 
@@ -63,9 +64,6 @@ module.exports = function(app) {
     		// res.redirect('/notepad/tests/notepad.html');
     	}
 	});
-
-	app.get('/notepad', function(req, res) {
-    });
 	
 	app.post('/home', function(req, res){
 		if (req.param('user') != undefined) {
@@ -188,13 +186,25 @@ module.exports = function(app) {
 			}
 	    });
 	});
-	
-	app.get('/reset', function(req, res) {
-		AM.delAllRecords(function(){
-			res.redirect('/print');	
-		});
+
+	app.get('/tests', function(req, res) {
+	  	fs.readdir("app/public/notepad/tests", function(err, data){
+	  		data = data
+	  			.reduce( function(result, file) {
+	  				var match = file.match(/test-(.*)\.js/);
+	  				if (match) {
+	  					result.push(match[1]);
+	  				}
+	  				return result;
+	  			}, []);
+	    	res.render('tests/index', {"files": data});
+	  	});
 	});
-	
+
+	app.get('/tests/:name', function(req, res) {
+		res.render('tests/test', { name: req.params.name });
+	});
+		
 	app.get('*', function(req, res) { res.render('404', { title: 'Page Not Found'}); });
 
 };

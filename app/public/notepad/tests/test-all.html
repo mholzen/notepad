@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>QUnit SubsuiteRunner Test Suite</title>
+
+	<!-- Test infrastructure -->
+	<script src="/notepad/external/qunit.js" type="text/javascript"></script>
+	<link  href="/notepad/external/qunit.css" type="text/css" rel="stylesheet" media="screen" />
+	<script src="/notepad/external/jsmockito-1.0.4.js" type="text/javascript"></script>
+	<script src="/notepad/external/jshamcrest-0.5.2.js" type="text/javascript"></script>
+	<script src="/notepad/js/tests/qunit-additions.js" type="text/javascript"></script>
+
+	<link  href="/notepad/external/qunit-composite.css" type="text/css" rel="stylesheet" media="screen" />
+	<script src="/notepad/external/qunit-composite.js"></script>
+
+	<script>
+		QUnit.testSuites([
+			"/tests/qunit",
+			"/tests/rdfquery",
+			"/tests/jquery",
+			"/tests/rdf",
+			"/tests/sparql",
+			"/tests/endpoint",
+			"/tests/template",
+			"/tests/literal",
+			"/tests/object",
+			"/tests/predicate",
+			"/tests/fact",
+			"/tests/urilabel",
+			"/tests/container",
+			"/tests/line",
+			"/tests/menu",
+			"/tests/notepad",
+		]);
+	</script>
+</head>
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture">
+</div>
+</body>
+</html>

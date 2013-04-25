@@ -1,0 +1,72 @@
+!!! 5
+html
+	head
+		title= name + " - Unit Test - inStruct"
+
+		// *All* Notepad dependencies for now
+		// should: refactor to an include or by extending
+		script(src='/notepad/external/jquery.js')
+		script(src='/vendor/jquery.form.js')
+		script(src='/notepad/external/bootstrap/js/bootstrap.js')
+		script(src='/js/views/home.js')
+		script(src='/js/controllers/homeController.js')
+		script(src='/js/form-validators/accountValidator.js')
+
+		script(src='/notepad/external/jquery-ui.js')
+		script(src='/notepad/external/jquery.rdfquery.rules-1.0.js')
+		script(src='/notepad/external/jquery.caret.js')
+		script(src='/notepad/external/subarray.js')
+		script(src='/notepad/external/underscore.js')
+		script(src='/notepad/external/underscore.string.min.js')
+		script(src='/notepad/external/mustache.js')
+		script(src='/notepad/external/moment.min.js')
+		script(src='/notepad/external/google-analytics.js')
+		script(src='/notepad/external/jquery.cookie.js')
+
+		script(src='/notepad/js/endpoint.js')
+		script(src='/notepad/js/rdf.js')
+		script(src='/notepad/js/container.js')
+		script(src='/notepad/js/object.js')
+		script(src='/notepad/js/literal.js')
+		script(src='/notepad/js/urilabel.js')
+		script(src='/notepad/js/fact.js')
+		script(src='/notepad/js/container2.js')
+		script(src='/notepad/js/line.js')
+		script(src='/notepad/js/sparql.js')
+		script(src='/notepad/js/column.js')
+		script(src='/notepad/js/predicate.js')
+		script(src='/notepad/js/templates/templates.js')
+		script(src='/notepad/js/query.js')
+		script(src='/notepad/js/template.js')
+		script(src='/notepad/js/autocomplete.js')
+		script(src='/notepad/js/menu.js')
+		script(src='/notepad/js/notepad.js')
+		script(src='/notepad/js/controller.js')
+		script(src='/notepad/js/widgets.js')
+
+		// QUnit
+		link(rel='stylesheet', href='/notepad/external/qunit.css')
+		script(src='../notepad/external/qunit.js')		
+		script(src='../notepad/external/jsmockito-1.0.4.js')
+		script(src='../notepad/external/jshamcrest-0.5.2.js')
+		script(src='../notepad/js/tests/qunit-additions.js')
+		script(src='../notepad/js/tests/integration.js')
+
+		// The test
+		script(src='/notepad/tests/test-' + name + '.js')
+
+	body
+		h1#qunit-header= name + " - Unit Test"
+		h2#qunit-banner
+		div#qunit-testrunner-toolbar
+		h2#qunit-userAgent
+		ol#qunit-tests
+		div#qunit-fixture
+		div#fixture
+
+		div#notepad-container
+			div#notepad
+		div#main
+
+	block content
+	block scripts
