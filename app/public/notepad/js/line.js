@@ -621,6 +621,7 @@
 
             // the datatype should already be set.  Call discoverDatatype() on the literal, if not.
             if ( literal.getLiteral().datatype() != 'notepad:sparql' ) {
+                console.warn('[line]', 'literal is not of notepad:sparql datatype');
                 // consider: test this using instanceOf
                 return;
             }

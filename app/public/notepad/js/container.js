@@ -183,7 +183,7 @@
                 }
                 if (!container.element.findEndpoint()) {
                     // consider: refactor into query.execute
-                    console.log('no more endpoint -- might have been removed from the DOM -- ignoring');
+                    console.warn('no more endpoint -- might have been removed from the DOM -- ignoring');
                     return;
                 }
                 container._updateFromRdf(triples);
@@ -211,7 +211,7 @@
             // Update the immediate descendant children
             var container = this;
 
-            console.log("container, updating with ", triples.length, " triples");
+            console.log("[container]","updating with ", triples.length, " triples");
 
             triples.sort();
 
@@ -365,7 +365,7 @@
                 }
 
                 if (container.getLines().length < MAX_TRIPLES_BEFORE_FILTERING) {
-                    console.info("too few lines so doing nothing with filters");
+                    console.info("[filters]", "too few lines so doing nothing with filters");
                     return false;
                 }
 

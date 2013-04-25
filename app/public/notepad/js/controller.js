@@ -124,7 +124,7 @@ $(function() {
         var status = $("#status");
         if (status.text() == "") {
             status.text("Loading...");
-            console.time("load");
+            console.time("[controller] load");
         }
         status.show();
     });
@@ -134,7 +134,7 @@ $(function() {
             status.fadeOut(200);
             setTimeout(function() {
                 status.text("");
-                console.timeEnd("load");
+                console.timeEnd("[controller] load");
             }, 200);
         }, 200);
     });
