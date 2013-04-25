@@ -1,0 +1,17 @@
+user account
+	default
+	named
+
+privileged account
+	default
+	named
+
+
+root account
+	default
+	named
+
+
+
+when I include a named graph,
+then I cannot access all named graphs?

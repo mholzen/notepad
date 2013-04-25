@@ -1,0 +1,14 @@
+create a newline that will receive a new URI (from update)
+
+
+
+expand a line
+	this.options.describeDepth = 1
+	this.showChildren()
+
+
+select from a top level menu
+
+
+
+select from a child menu
