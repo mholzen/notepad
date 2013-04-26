@@ -148,6 +148,10 @@ $(function() {
         $(event.target).toggleClass('ui-icon-plus').toggleClass('ui-icon-minus');
     });
 
+    $(".reload").click(function(event) {
+        notepad.reset();
+    });
+
     setTimeout(function() {
         notepad.focus();
     }, 500);

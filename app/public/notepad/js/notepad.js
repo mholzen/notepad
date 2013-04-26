@@ -475,6 +475,15 @@
             return (triple.predicate != 'nmo:htmlMessageContent' && triple.predicate != 'nmo:plainTextMessageContent');
             // could be generalized to excluding any objects that cannot be edited by the current notepad (images, audio, svg, ...)
         },
+        reset: function() {
+            // should: confirm if changes will be discarded
+            $("#control").hide().appendTo('body');  // move the control out of the line to remove
+            this._loaded = null;
+            this.getContainer().reset();
+            this.focus();
+            return this;
+        },
+
         added: function() {
             return this.triples().minus( this.loaded() ).filter(this.canSave);
         },
@@ -544,13 +553,6 @@
         },
         focus: function() {
             this.getContainer().element.find("[contenteditable='true']:visible:first").focus()
-        },
-        reset: function() {
-            // should: confirm if changes will be discarded
-            $("#control").hide().appendTo('body');  // move the control out of the line to remove
-            this.getContainer().reset();
-            this.focus();
-            return this;
         },
         remove: function(line) {
             // if (line.modified()) {
