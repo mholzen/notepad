@@ -26,7 +26,7 @@
     });
 
     var defaultMenu = toTriples(
-        toTriple("javascript:notepad.open(line.getUri())",  'rdfs:label', '<span class="ui-icon ui-icon-arrowthick-1-e"></span>Open...'),
+        toTriple("javascript:notepad.open(line.getUri())",  'rdfs:label', '<span class="ui-icon ui-icon-arrowthick-1-e"></span>Open'),
         toTriple("javascript:line.showPredicate()",         'rdfs:label', "Show relationship"),
         toTriple("javascript:line.newPredicateUri()",       'rdfs:label', "New relationship"),
         toTriple("javascript:notepad.remove(line)",         'rdfs:label', "Remove line"),
