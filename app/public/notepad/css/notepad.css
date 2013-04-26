@@ -18,8 +18,19 @@ body {
     /*font-family: 'Lucida Grande', 'Geneva', 'Helvetica', sans-serif;*/
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
-.meta td {
+.meta > tbody > tr.top > td {
+    vertical-align: top;
+}
+.meta > tbody > tr > td {
     vertical-align: middle;
+    padding: 5px;
+}
+.meta > tbody > tr.bottom > td {
+    vertical-align: bottom;
+}
+.brand {
+    font-weight: 700;
+    font-size: 24px;
 }
 
 button {
