@@ -26,7 +26,7 @@
         _create: function() {
             this.element.addClass("notepad-container");
             this._createHeadersContainer();
-            this._createFilters();
+            // this._createFilters();
             if (this.getUri()) {
                 this.load();
             }
