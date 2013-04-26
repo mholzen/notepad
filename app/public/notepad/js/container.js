@@ -143,8 +143,8 @@
             var memberTriples = toTriples(triples.subjects().map(function(subject) {
                 return toTriple(uri, predicate, subject);
             }));
-            triples.add(memberTriples);
-            this._updateFromRdf(triples);
+            memberTriples.add(triples);
+            this._updateFromRdf(memberTriples);
         },
         
         triples: function() {
