@@ -16,8 +16,6 @@ var dev = $.notepad.dev;
 var test = $.notepad.test;
 
 var log = console;
-//console.__proto__.debug = function() { };
-function here() { console.log('here'); }
 
 function hashToResource(hash) {
     var fragment = hash.substring(1);
