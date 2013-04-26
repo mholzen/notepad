@@ -33,15 +33,11 @@ $(function() {
         $("#notepad").attr('about', hashToResource(hash));
     }
 
-    var defaultEndpoints = [
-            'http://' + $.uri.base().authority.replace(/:(.*)$/, '') + ':3030/dev',
-            'http://instruct.vonholzen.org:3030/dev'
-        ];
+    var endpointParam = $.notepad.getParameterByName('endpoint') || $.notepad.defaultEndpoints;
+    var datasetParam = $.notepad.getParameterByName('dataset');
 
-    var endpoint = $.notepad.getParameterByName('endpoint') || defaultEndpoints;
-    var dataset = $.notepad.getParameterByName('dataset');
-
-    notepad = $("#notepad").notepad({endpoint: endpoint, dataset: dataset}).data('notepadNotepad');
+    notepad = $("#notepad").notepad({endpoint: endpointParam, dataset: datasetParam}).data('notepadNotepad');
+    endpoint = notepad.element.data('notepadEndpoint');
 
     $("#notepad").on('keydown', '[contenteditable="true"]', function(event) {
         if (event.keyCode === 32 && event.ctrlKey) {

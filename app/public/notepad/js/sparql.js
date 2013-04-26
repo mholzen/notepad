@@ -253,6 +253,10 @@ FusekiEndpoint.prototype = {
     $.notepad.test = new FusekiEndpoint("http://localhost:3030/test");
     $.notepad.dev = new FusekiEndpoint("http://localhost:3030/dev");
     $.notepad.prod = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
-    $.notepad.defaultEndpoint = new FusekiEndpoint('http://' + $.uri.base().authority + ':3030/dev');
+$.notepad.defaultEndpoint = new FusekiEndpoint('http://' + $.uri.base().authority.replace(/:(.*)$/, '') + ':3030/dev');
+$.notepad.defaultEndpoints = [
+    $.notepad.defaultEndpoint,
+    'http://instruct.vonholzen.org:3030/dev'
+];
 
 })(jQuery);

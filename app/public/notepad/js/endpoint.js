@@ -80,13 +80,14 @@
             var uri = uris.shift();
 
             var sparqlEndpoint = new FusekiEndpoint(uri);
-            console.log('endpoint checks for an answer from', uri);
+            console.log('[endpoint]', 'checks for an answer from', uri);
             return sparqlEndpoint.canAnswer(function() {
                 endpoint.option('endpoint', uri);
                 if (callback) {
                     callback();
                 }
             }).error(function() {
+                console.log('[endpoint]', 'received error from', uri);
                 if (uris.length === 0) {
                     endpoint.option('endpoint', undefined);
                     return;
@@ -97,14 +98,14 @@
 
         // This implementation has a bug. See test.
         setUriToFirstRespondingWithDeferred: function(uris) {
-            console.log('setUri with ',uris);
+            console.log('[endpoint]','setUri with ',uris);
             var endpoint = this;
             var uri = uris.shift();
 
             var sparqlEndpoint = new FusekiEndpoint(uri);
             return $.when( sparqlEndpoint.canAnswer() )
                .fail(function() {
-                    console.log('setUri.fail with ',uris);
+                    console.log('[endpoint] setUri.fail with ',uris);
                     if (uris.length === 0) {
                         endpoint.option('endpoint', undefined);
                         return;
