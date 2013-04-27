@@ -25,7 +25,7 @@
     $.widget("notepad.autocomplete2", $.ui.autocomplete, {
 
         options: {
-            query: new Query($.notepad.templates.find_subject_label_by_label),
+            query: $.notepad.queries.find_subject_label_by_label,
 
             minLength: 2,
 
