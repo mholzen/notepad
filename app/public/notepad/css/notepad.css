@@ -467,6 +467,7 @@ i.toggle {
     left: 5px;
     background: #ffe;
     font-size: medium;
+    display: none;      /* Start hidden */
 }
 
 #menu-button {
@@ -482,6 +483,7 @@ i.toggle {
     color: grey;
     background: lightyellow;
     padding: 20px;
+    display: none;      /* Start hidden */
 }
 
 /* Hide predicate label uri rdfs:member; */
