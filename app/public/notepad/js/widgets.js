@@ -112,7 +112,7 @@
                 this.element.html(
                     $('<a target="_blank">')
                         .attr('href', uri)
-                        .append('<i class="icon-link icon-small"></i>')
+                        .append('<i class="icon-external-link icon-small"></i>')
                 );
             } else {
                 this.element.html( "" );
