@@ -4,6 +4,8 @@ var AM = require('./modules/account-manager');
 var EM = require('./modules/email-dispatcher');
 var fs = require('fs');
 
+var cookiesMaxAge = 7/*d*/ * 24/*h*/ * 60/*m*/ * 60/*s*/ * 1000/*ms*/;
+
 module.exports = function(app) {
 
 // main login page //
@@ -32,8 +34,8 @@ module.exports = function(app) {
 			}	else{
 			    req.session.user = o;
 				if (req.param('remember-me') == 'true'){
-					res.cookie('user', o.user, { maxAge: 900000 });
-					res.cookie('pass', o.pass, { maxAge: 900000 });
+					res.cookie('user', o.user, { maxAge: cookiesMaxAge });
+					res.cookie('pass', o.pass, { maxAge: cookiesMaxAge });
 				}
 				res.send(o, 200);
 			}
@@ -57,7 +59,7 @@ module.exports = function(app) {
 
 	app.get('/notepad', function(req, res) {
 	    if (req.session.user == null){
-	// if user is not logged-in redirect back to login page //
+			// if user is not logged-in redirect back to login page //
 	        res.redirect('/');
 	    }   else{
 	    	res.render('notepad');
@@ -80,8 +82,8 @@ module.exports = function(app) {
 					req.session.user = o;
 			// update the user's login cookies if they exists //
 					if (req.cookies.user != undefined && req.cookies.pass != undefined){
-						res.cookie('user', o.user, { maxAge: 900000 });
-						res.cookie('pass', o.pass, { maxAge: 900000 });	
+						res.cookie('user', o.user, { maxAge: cookiesMaxAge });
+						res.cookie('pass', o.pass, { maxAge: cookiesMaxAge });	
 					}
 					res.send('ok', 200);
 				}
