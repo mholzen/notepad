@@ -243,6 +243,7 @@
             return this.getObject().literal().getLiteral();
         },
         setLineLiteral: function(literal) {
+            $("#control").hide().appendTo('body');  // move the control out of the line to remove.  should: refactor
             this.getObject().literal().setLiteral(literal);
             this.showChildren();        // A literal has no children, so this effectively ensures we have a '-' and not a '+'
             return this;
