@@ -438,7 +438,7 @@
                 return labels;
             } },
             getPredicatesLabelsByLabel: { value: function(label, callback) {
-                log.debug("warn: getPredicatesLabelsByLabel on an endpoint of triples not implemented");
+                console.warn("getPredicatesLabelsByLabel on an endpoint of triples not implemented");
                 var results = [];
                 if (callback) {
                     callback(results);
