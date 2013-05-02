@@ -161,10 +161,7 @@
         _createMenu: function() {
             $("#menu").menu2().hide();
 
-            $("#menu-button").button({
-                icons: { primary: "ui-icon-triangle-1-s" },
-                text: false
-            }).hover(function(event) {
+            $("#menu-button").hover(function(event) {
                 $("#menu").show();
             }).click(function(event) {
                 $("#menu").show();

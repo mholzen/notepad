@@ -470,11 +470,6 @@ i.toggle {
     display: none;      /* Start hidden */
 }
 
-#menu-button {
-    width: 24px;
-    display: inline-block;
-}
-
 #status {
     position: fixed;
     top: 10px;
