@@ -2,7 +2,7 @@ QUnit.file = "test-notepad.js";
 
 module("given a new div", {
     setup: function() {
-        this.div = $("#notepad");
+        this.div = $("<div>");
     }
 });
 test("when I create a notepad, it should have initial components", function(){
@@ -38,9 +38,8 @@ test("when I create a notepad, it should be destroyed cleanly", function() {
 
 module("given a new notepad", {
     setup: function() {
-        $("#notepad").remove();
-        $("<div id='notepad'><h1 rel='rdfs:label'></h1></div>").appendTo("#qunit-fixture");
-        this.div = $("#notepad").notepad();
+        this.div = $("<div><h1 rel='rdfs:label'></h1></div>").appendTo("#qunit-fixture");
+        this.div.notepad();
         this.notepad = this.div.data('notepadNotepad');
         this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
         this.endpoint.graph = $.notepad.newUri();
@@ -96,12 +95,14 @@ asyncTest("newline beginning", function() {
     var line = this.div.find("li:first").data('notepadLine');
     equal(line.getLiteral(), "Test a widget", "line literal should be the typed text");
 
-    setTimeout(function() { start(); }, 500);
+    setTimeout(function() {
+        start();
+    }, 500);
 });
 
 module("given a notepad with one line of text", {
     setup: function() {
-        this.div = $("#notepad").notepad({endpoint: toTriples()});
+        this.div = $("<div>").notepad({endpoint: toTriples()});
         this.notepad = this.div.data('notepadNotepad');
         this.firstLineElement = this.div.find("li:first");
         this.firstObject = this.div.find("li:first .notepad-object3");
@@ -132,7 +133,7 @@ test("when I unindent the first line, then it should not move", function() {
 
 module("given a notepad with two lines", {
     setup: function() {
-        this.div = $("#notepad").notepad();
+        this.div = $("<div>").appendTo("#qunit-fixture").notepad();
         this.notepad = this.div.data('notepadNotepad');
         this.firstObject = this.div.find("li:first .notepad-object3 [contenteditable='true']");
         this.firstObject.text("first line").change();
@@ -199,7 +200,7 @@ test("newline end-of-line", function() {
 
 module("2 lines api", {
     setup: function() {
-        this.div = $("#notepad").notepad();
+        this.div = $("<div>").notepad();
         this.notepad = this.div.data('notepadNotepad');
         var line1 = this.notepad.getContainer().appendLine();
         var line2 = this.notepad.getContainer().appendLine();
@@ -222,7 +223,7 @@ test("verify setup", function() {
 
 module("2 lines DOM", {
     setup: function() {
-        this.div = $("#notepad").notepad();
+        this.div = $("<div>").appendTo("#qunit-fixture").notepad();
         this.notepad = this.div.data('notepadNotepad');
 
         $(this.div).find('[contenteditable="true"]:last')
@@ -268,7 +269,7 @@ module("notepad-2-lines-load", {
             ':childline1 rdfs:label "child line 1"',
             ':childline2 rdfs:label "child line 2"'
             );
-        this.div = $("#notepad").notepad({endpoint: triples});
+        this.div = $("<div>").notepad({endpoint: triples});
         this.notepad = this.div.data('notepadNotepad');
         this.notepad.getContainer().option('describeElements', true);
         this.notepad.getContainer().element.remove();
