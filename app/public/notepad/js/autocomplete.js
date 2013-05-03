@@ -73,7 +73,7 @@
         },
         _renderItem: function( ul, item ) {
           return $( "<li>" )
-            .append( $("<a>").append(item.label) )
+            .append( $("<a>").append(item.label).append( $('<span class="debug uri">').append('('+item.value.subject()+')') ) )
             .appendTo( ul );
         },
 
