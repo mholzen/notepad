@@ -23,16 +23,22 @@ def findTestFromSource(source):
     testDirectory = findup('tests', source)[0]
     return testDirectory + '/' + 'test-' + replaceSuffix(name,'html')
 
+def findTestUrlFromSource(source):
+    name=basename(source)
+    name=name.replace('test-', '')
+    name=name.partition('.')[0]
+    return "http://localhost:8080/tests/" + name
+
 class Test:
-    def __init__(self,file):
-        self.file = file
+    def __init__(self,url):
+        self.url = url
 
     def execute(self):
-        call(["open", "-a", "/Applications/Google Chrome.app", self.file])
+        call(["open", "-a", "/Applications/Google Chrome.app", self.url])
 
 
 if __name__ == '__main__':    
     file = argv[1]
-    test = Test(findTestFromSource(file))
+    test = Test(findTestUrlFromSource(file))
     test.execute()
 
