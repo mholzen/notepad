@@ -375,9 +375,11 @@ ul {
     bottom: 10px;
     left: 10px;
 }
-.debug {
+
+.hideDebug .debug {
     display: none;
 }
+
 i.toggle {
     color: grey;
     text-shadow: 2px 2px white;
@@ -386,7 +388,7 @@ i.toggle {
     clear: both;
     font-family: courier;
     font-size: small;
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 .update {

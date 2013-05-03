@@ -88,9 +88,16 @@ $(function() {
     });
     
     $('.toggle').on('click', function(event) {
-        var targetSelector = $(event.target).data('toggle');
-        $(targetSelector).toggle();
+        var classes = $(event.target).data('toggle-class');
+        var target = $(event.target).data('toggle-on') || $(event.target);
+
+        if (classes) {
+            $(target).toggleClass(classes);
+        } else {
+            $(target).toggle();
+        }
     });
+
     $('#notepad').on("focus", '[contenteditable="true"]', function(event) {
         container = $(event.target).closest(":notepad-container").data('notepadContainer');
 
