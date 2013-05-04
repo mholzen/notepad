@@ -276,7 +276,7 @@
             // find closest literal
             var literalElement = target.closest(":notepad-literal");
             if (literalElement.length === 0) {
-                return false;
+                return;  // for others to handle
             }
             if (literalElement.caret() !== 0) {
                 // We are not at the beginning of the literal
