@@ -1,0 +1,11 @@
+CONSTRUCT {
+	?workspace a inst:Workspace .
+	?workspace dc:created ?time .
+}
+WHERE { 
+	GRAPH ?workspace {
+		?session a inst:Session .
+		?session dc:creator {{{user}}} .
+		OPTIONAL { ?session dc:created ?time } .
+	}
+}

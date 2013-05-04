@@ -1,0 +1,24 @@
+CONSTRUCT {
+	?dataset a inst:Workspace .
+	?dataset dc:created ?time .
+	?dataset dc:creator ?user .
+	?dataset rdfs:label ?label .
+}
+WHERE {
+	GRAPH ?dataset {
+		?session a inst:Session .
+		OPTIONAL { ?session dc:creator ?user }
+		OPTIONAL { ?session dc:created ?time }
+
+		bind(
+			concat ("A workspace",
+				coalesce(
+					concat( ", created by ", ?user, ", on ", ?time),
+					concat( ", created by ", ?user),
+					concat( ", created on ", ?time),
+					""
+				)
+			) as ?label
+		)
+	}
+}

@@ -1,4 +1,0 @@
-CONSTRUCT { ?dataset a notepad:Dataset }
-WHERE { 
-	GRAPH ?dataset { ?session a notepad:Session }
-}

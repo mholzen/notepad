@@ -1,6 +1,14 @@
 $.notepad = $.notepad || {};
 $.notepad.templates = $.notepad.templates || {};
 
+$.notepad.templates.all_datasets = "CONSTRUCT { \n\
+	?dataset a sd:Dataset ; \n\
+		rdfs:label ?label . \n\
+} \n\
+WHERE { \n\
+	GRAPH ?dataset { ?s ?p ?o } \n\
+	BIND (str(?dataset) as ?label) \n\
+}";
 $.notepad.templates.all_labels = "CONSTRUCT { \n\
 	?subject ?labelPredicate ?label . \n\
 } \n\
@@ -12,6 +20,30 @@ WHERE { \n\
     ) \n\
 } \n\
 LIMIT 200";
+$.notepad.templates.all_workspaces = "CONSTRUCT { \n\
+	?dataset a inst:Workspace . \n\
+	?dataset dc:created ?time . \n\
+	?dataset dc:creator ?user . \n\
+	?dataset rdfs:label ?label . \n\
+} \n\
+WHERE { \n\
+	GRAPH ?dataset { \n\
+		?session a inst:Session . \n\
+		OPTIONAL { ?session dc:creator ?user } \n\
+		OPTIONAL { ?session dc:created ?time } \n\
+ \n\
+		bind( \n\
+			concat (\"A workspace\", \n\
+				coalesce( \n\
+					concat( \", created by \", ?user, \", on \", ?time), \n\
+					concat( \", created by \", ?user), \n\
+					concat( \", created on \", ?time), \n\
+					\"\" \n\
+				) \n\
+			) as ?label \n\
+		) \n\
+	} \n\
+}";
 $.notepad.templates.c_paths_by_words = "CONSTRUCT {  \n\
     ?subject rdfs:label ?reason . \n\
 	?subject ?predicate ?object  .  \n\
@@ -100,11 +132,6 @@ WHERE { \n\
 	{{{graphPatterns}}} \n\
 } \n\
 ";
-$.notepad.templates.datasets = "CONSTRUCT { ?dataset a notepad:Dataset } \n\
-WHERE {  \n\
-	GRAPH ?dataset { ?session a notepad:Session } \n\
-} \n\
-";
 $.notepad.templates.describe_predicate = "CONSTRUCT { \n\
 	{{{about}}} ?p ?o . \n\
 } \n\
@@ -140,39 +167,56 @@ WHERE { \n\
 	LET ( ?about := {{{about}}} ) \n\
  \n\
 	{ ?about ?predicateForward ?neighbourForward . \n\
-#		OPTIONAL { ?neighbourForward rdfs:label ?label1 } \n\
+		# OPTIONAL { ?neighbourForward rdfs:label ?label1 } \n\
 		BIND (?neighbourForward as ?neighbour) \n\
+ \n\
+		# Ignore 'a inst:Session' \n\
+		# FILTER NOT ( \n\
+		#	sameTerm(?predicateForward, a) AND sameTerm(?neighbourForward, inst:Session) \n\
+		# ) \n\
 	} \n\
 	UNION \n\
 	{ ?neighbourBackward ?predicateBackward ?about . \n\
-#		OPTIONAL { ?neighbourBackward rdfs:label ?label2 } \n\
+		# OPTIONAL { ?neighbourBackward rdfs:label ?label2 } \n\
 		BIND (?neighbourBackward as ?neighbour) \n\
-		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } \n\
+ \n\
+		# Ignore the sessions that this URI is a member of \n\
+		FILTER NOT EXISTS { \n\
+			{ ?neighbourBackward a <http://www.vonholzen.org/instruct/notepad/#Session> }		# past \n\
+			UNION \n\
+			{ ?neighbourBackward a inst:Session }												# current \n\
+			UNION { \n\
+				?neighbourBackward dc:creator ?notepad 											# future \n\
+					FILTER ( ?notepad IN ( \n\
+			  			<http://localhost:8080/notepad>, \n\
+			  			<http://instruct.vonholzen.org/notepad> ) ) \n\
+		  	} \n\
+		} \n\
 	} \n\
  \n\
 } \n\
 ";
 $.notepad.templates.find_predicate_label_by_label = "CONSTRUCT { \n\
 	?predicate rdfs:label ?label . \n\
-	?predicate notepad:inverseLabel ?inverseLabel . \n\
+	?predicate inst:inverseLabel ?inverseLabel . \n\
 } \n\
 WHERE { \n\
 	{ ?anySubject ?predicate ?object } \n\
 	UNION \n\
 	{ ?predicate a rdf:Property } \n\
  \n\
-	OPTIONAL { ?predicate rdfs:label 		   ?label 	     FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") } . \n\
-	OPTIONAL { ?predicate notepad:inverseLabel ?inverseLabel FILTER regex(?inverseLabel, \"{{{rdfs:label}}}\", \"i\") } . \n\
+	OPTIONAL { ?predicate rdfs:label 		?label 			FILTER regex(?label, \"{{{rdfs:label}}}\", \"i\") } . \n\
+	OPTIONAL { ?predicate inst:inverseLabel	?inverseLabel	FILTER regex(?inverseLabel, \"{{{rdfs:label}}}\", \"i\") } . \n\
  \n\
 	# optional { ?predicate owl:inverseOf [ rdfs:label ?inverseLabel ] } . \n\
 } \n\
 ";
 $.notepad.templates.find_subject_label_by_label = "CONSTRUCT { \n\
 	?subject ?labelPredicate ?label ; \n\
-			 notepad:reason ?reason . \n\
+			 inst:reason ?reason . \n\
 } \n\
 WHERE { \n\
-    ?subject ?labelPredicate ?label \n\
+	?subject ?labelPredicate ?label \n\
     FILTER ( \n\
     	isLiteral(?label) && \n\
     	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent) && \n\
@@ -274,5 +318,17 @@ WHERE { \n\
 	{{^object}} \n\
   		?object \n\
 	{{/object}} \n\
+} \n\
+";
+$.notepad.templates.workspaces_by_user = "CONSTRUCT { \n\
+	?workspace a inst:Workspace . \n\
+	?workspace dc:created ?time . \n\
+} \n\
+WHERE {  \n\
+	GRAPH ?workspace { \n\
+		?session a inst:Session . \n\
+		?session dc:creator {{{user}}} . \n\
+		OPTIONAL { ?session dc:created ?time } . \n\
+	} \n\
 } \n\
 ";

@@ -1,0 +1,8 @@
+CONSTRUCT {
+	?dataset a sd:Dataset ;
+		rdfs:label ?label .
+}
+WHERE {
+	GRAPH ?dataset { ?s ?p ?o }
+	BIND (str(?dataset) as ?label)
+}
