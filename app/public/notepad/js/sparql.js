@@ -117,17 +117,15 @@ FusekiEndpoint.prototype = {
             return this.update(sparql, callback);
         }
     },
-    clear: function(callback) {
-        var pattern = '{ ?s ?p ?o }';
-        if (this.graph !== 'default') {
-            pattern = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + pattern + '}';
+    _graphSparqlPattern: function(sparql) {
+        if (this.graph && this.graph !== 'default') {
+            sparql = '{ GRAPH ' + toResource(this.graph).toSparqlString() + ' ' + sparql + '}';
         }
-        return this.update('DELETE '+pattern+' WHERE '+pattern, callback);
+        return sparql;
     },
-    start: function(callback) {
-        var triples = new Triples();
-        triples.add(toTriple('rdfs:member', 'notepad:inverseLabel', 'appears on'));
-        this.insertData(triples, callback);
+    clear: function(callback) {
+        var pattern = this._graphSparqlPattern ( '{ ?s ?p ?o }' );
+        return this.update('DELETE '+pattern+' WHERE '+pattern, callback);
     },
     post: function(triples, callback) {
         // Not yet implemented
@@ -215,23 +213,13 @@ FusekiEndpoint.prototype = {
         });
     },
     _insertSparql: function(triples) {
-        var sparql = '{' + triples.update().toSparqlString() + '}';
-        if ( this.graph != 'default') {
-            sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
-        }
-        sparql = 'INSERT DATA ' + sparql;
-        return sparql;
+        return 'INSERT DATA ' + this._graphSparqlPattern ( '{' + triples.update().toSparqlString() + '}' );
     },
     insertData: function(triples, callback) {
         return this.execute(this._insertSparql(triples),callback);
     },
     _deleteSparql: function(triples) {
-        var sparql = '{' + triples.toSparqlString() + '}';
-        if ( this.graph != 'default') {
-            sparql = '{ GRAPH ' + this.graph.toSparqlString() + ' ' + sparql + '}';
-        }
-        sparql = 'DELETE DATA ' + sparql;
-        return sparql;
+        return 'DELETE DATA ' + this._graphSparqlPattern ( '{' + triples.update().toSparqlString() + '}' );
     },
     deleteData: function(triples, callback) {
         return this.execute(this._deleteSparql(triples),callback);
