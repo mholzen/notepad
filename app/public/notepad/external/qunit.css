@@ -73,6 +73,7 @@
 	background-color: #2b81af;
 	color: #fff;
 	text-shadow: rgba(0, 0, 0, 0.5) 2px 2px 1px;
+	display: none;		/* hide until this matters */
 }
 
 
