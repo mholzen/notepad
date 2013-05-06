@@ -44,7 +44,7 @@
                 return this.newUri();
             }
             this._setUri(uri);
-            this.getContainer().load();
+            return this.getContainer().load();
         },
         open: function(uri) {
             $("#control").hide().appendTo('body');                  // move the control out of the line to remove

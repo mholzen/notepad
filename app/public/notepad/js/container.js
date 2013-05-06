@@ -177,7 +177,7 @@
 
             var container = this;
             var query = this.getQuery();
-            query.execute(endpoint, {}, function(triples) {
+            return query.execute(endpoint, {}, function(triples) {
                 if (triples.length > MAX_TRIPLES_BEFORE_COLLAPSING) {
                     container.option('describeElements', false);
                 }
@@ -254,10 +254,8 @@
                 }
                 var line;
                 if (childLines.length == 1) {
-                    console.debug("Using existing line for triple");
                     line = $(childLines[0]).data('notepadLine');
                 } else {
-                    console.debug("Adding new line");
                     line = container.appendLine();
                 }
                 

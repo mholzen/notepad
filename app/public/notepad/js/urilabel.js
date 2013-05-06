@@ -59,18 +59,23 @@
             }
             return toResource(attr);
         },
+
+        // should: if the triples passed don't contain all data (ie missing 'rdfs:label', it will not be loaded, and will be missing
+
         setUri: function(uri, triples) {
             if (uri === undefined) {
                 throw new Error("cannot set uri to undefined");
             }
             // Do not ignore if the URI is the same, as the template might have changed
             this._setUri(uri);
+            var promise;
             if ( triples ) {
-                this.update(triples)
+                promise = this.update(triples)
             } else {
-                this.uriChanged();    
+                promise = this.uriChanged();    
             }
             this._trigger("urichange"); // adds widget prefix.
+            return promise;
         },
         _setUri: function(uri) {
             if (this.getUri() && this.getNotepad()) {
@@ -142,11 +147,11 @@
             var label = this;
             if (this.options.dynamicTemplate) {
                 // consider: this.templates( this.templateReceived.bind(this) );
-                this.templates( function(templateTriples) {
+                return this.templates( function(templateTriples) {
                     label.templateReceived(templateTriples, callback);
                 });
             } else {
-                this.load(callback);
+                return this.load(callback);
             }
         },
         templateReceived: function(templateTriples, callback) {
