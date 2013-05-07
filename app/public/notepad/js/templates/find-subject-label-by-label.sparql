@@ -1,6 +1,6 @@
 CONSTRUCT {
 	?subject ?labelPredicate ?label ;
-			 notepad:reason ?reason .
+			 inst:reason ?reason .
 }
 WHERE {
     ?subject ?labelPredicate ?label

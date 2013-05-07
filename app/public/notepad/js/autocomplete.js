@@ -8,10 +8,9 @@
                 return memo;
             }, {});
 
-            // get an array of objects, labeled with 'notepad:reason'
-            // results: [{label: graph.notepad:reason, value: graph}, ...]
+            // get an array of objects, labeled with 'inst:reason'
             results = _.map(results, function(graph) {
-                return {label: graph.toString(), value: graph};
+                return {label: graph.literals(undefined, "inst:reason").join(" ,"), value: graph};
             });
 
             // Sort by label length
