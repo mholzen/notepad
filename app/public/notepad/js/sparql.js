@@ -213,12 +213,18 @@ FusekiEndpoint.prototype = {
         });
     },
     _insertSparql: function(triples) {
+        if (!triples || triples.length === 0) {
+            return '';
+        }
         return 'INSERT DATA ' + this._graphSparqlPattern ( '{' + triples.update().toSparqlString() + '}' );
     },
     insertData: function(triples, callback) {
         return this.execute(this._insertSparql(triples),callback);
     },
     _deleteSparql: function(triples) {
+        if (!triples || triples.length === 0) {
+            return '';
+        }
         return 'DELETE DATA ' + this._graphSparqlPattern ( '{' + triples.update().toSparqlString() + '}' );
     },
     deleteData: function(triples, callback) {
