@@ -167,19 +167,6 @@ test("a new line should update labels from RDF", function() {
     this.notepad.getContainer()._updateLabelsFromRdf( toTriples(toTriple(uri,'rdfs:label','line label')) );
     assertThat(this.line.getLiteral(),'line label','line label should be set by RDF retrieved');
 });
-test("a notepad should display RDF", function() {
-    var uri = this.notepad.getUri();
-
-    this.notepad.endpoint = mock(FusekiEndpoint);
-    when(this.notepad.endpoint).getRdfBySubjectObject('_:line1').then( function() {
-        start();
-        return ['_:line1','rdfs:label','line label'];
-    });
-
-    this.notepad.setRdf( [ toTriple(uri,'rdf:Seq','_:line1') ] );
-    ok(this.div.find('li[about="_:line1"]'), "Should be able to find a line with the URI");
-    equal(this.div.find('li[about="_:line1"] .notepad-object').text(), '', "First line should be empty");
-});
 
 test("newline end-of-line", function() {
 
@@ -271,16 +258,21 @@ module("notepad-2-lines-load", {
         this.notepad = this.div.data('notepadNotepad');
         this.notepad.getContainer().option('describeElements', true);
         this.notepad.getContainer().element.remove();
-        this.notepad.setUri(':session');
     },
     teardown: function() {
         //this.notepad.destroy();
     }
 });
 asyncTest("test setup", function() {
+
     var notepad = this.notepad;
-    setTimeout(function() {
-        assertThat ( notepad.getContainer().getAllLines().length, 2 );
-        start();
-    }, 2000);
+    notepad.setUri(':session').done(function() {
+        // console.debug(notepad.getContainer().getAllLineElements()[0].queue().length);
+        // console.debug(notepad.getContainer().getAllLineElements()[1].queue().length);
+        setTimeout(function() {
+            assertThat ( notepad.getContainer().getAllLines().length, greaterThan(2) );
+            start();
+        }, 2000);
+    });
+
 });

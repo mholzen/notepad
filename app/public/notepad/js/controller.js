@@ -17,60 +17,73 @@ var test = $.notepad.test;
 
 var log = console;
 
-function hashToResource(hash) {
-    var fragment = hash.substring(1);
-    var resource = new Resource(fragment);
-    if (resource.isLiteral()) {
-        resource = new Resource(":" + fragment);
-    }
-    return resource;
-}
-
 $(function() {
+
+    function getEndpoint() {
+        var endpoint = new FusekiEndpoint ( $.notepad.getParameterByName('endpoint') || $.notepad.defaultEndpoint.url );
+        
+        // Set the meaning of the empty prefix ':' to the value of the endpoint,
+        // so that the application (in the page URL) does not interfere with the data URI
+        $.notepad.namespaces[''] = endpoint.url + '#';
+
+        return endpoint;
+    }
+
+    function user() {
+        var cookie = $.cookie('user');
+        if (! cookie) {
+            return;
+        }
+        return toResource(cookie);
+    }
+
+    if (! user() ) {
+        window.location = "/";
+        return;
+    }
+
+    function hashToResource(hash) {
+        var fragment = hash.substring(1);
+        var resource = toResource(fragment);
+        if (resource.isLiteral()) {
+            resource = toResource(":" + fragment);
+        }
+        return resource;
+    }
 
     var hash = window.location.hash;
     if (hash) {
         $("#notepad").attr('about', hashToResource(hash));
     }
 
-    var endpointParam = $.notepad.getParameterByName('endpoint') || $.notepad.defaultEndpoints;
-    var datasetParam = $.notepad.getParameterByName('dataset');
+    setupNotepad (
+        $.notepad.getParameterByName('dataset'),
+        user()
+    );
 
-    notepad = $("#notepad").notepad({endpoint: endpointParam, dataset: datasetParam}).data('notepadNotepad');
-    endpoint = notepad.element.data('notepadEndpoint');
+    function createNotepadWithEndpoint(endpoint, workspace, user) {
+        endpoint.graph = workspace;
+        notepad = $("#notepad").notepad({endpoint: endpoint, identity: user}).data('notepadNotepad');
+        endpoint = notepad.element.data('notepadEndpoint');
 
-    $("#notepad").on('keydown', '[contenteditable="true"]', function(event) {
-        if (event.keyCode === 32 && event.ctrlKey) {
-            var line = $(event.target).closest(":notepad-line").data('notepadLine');
-            line.option('describeDepth', 1);
-            line.childrenToggle();
-            // Must prevent autocomplete from triggering
-        }
+        setTimeout(function() {
+            notepad.focus();
+        }, 500);
+    }
 
-        if (event.keyCode === 83 && event.metaKey) { // Alt/Cmd - S
-            event.preventDefault();     // prevents save dialog
-            notepad.save();
-        }
+    function setupNotepad(datasetParam, user) {
+        var endpoint = getEndpoint();
+        var datasetParam = $.notepad.getParameterByName('dataset');
 
-    });
-    
-    $("#notepad").on('keyup', '.notepad-object3 [contenteditable="true"]', function(event) {
-        var target = $(event.target);
-        if (event.keyCode != 186 /* colon */ ) {
-            return;
+        if ( datasetParam ) {
+            return createNotepadWithEndpoint ( endpoint, datasetParam, user );
+        } else {
+            endpoint.selectWorkspace( user, function (workspace) {
+                createNotepadWithEndpoint ( endpoint, workspace, user );
+            });
         }
-        var line = target.closest(":notepad-line");
-        if (!line) {
-            log.error("cannot find a line widget");
-            return;
-        }
-        line = line.data('notepadLine');
-        if (line.isPredicateVisible()) {
-            log.info("predicate is already shown.  Ignoring ':'");
-            return;
-        }
-        line.discoverPredicate(event);
-    });
+    }
+
 
     $(".triples").click(function() {
         $(this).siblings(".turtle").text(notepad.triples().toTurtle());
@@ -88,9 +101,8 @@ $(function() {
     });
     
     $('.toggle').on('click', function(event) {
-        var classes = $(event.target).data('toggle-class');
-        var target = $(event.target).data('toggle-on') || $(event.target);
-
+        var classes = $(event.currentTarget).data('toggle-class');
+        var target = $(event.currentTarget).data('toggle-on') || $(event.currentTarget);
         if (classes) {
             $(target).toggleClass(classes);
         } else {
@@ -106,7 +118,7 @@ $(function() {
         predicateLabel = predicate ? predicate.getLabel() : undefined;
 
         object = line ? line.getObject() : undefined;
-        uri = object.isUri() ? object.uri().getUri() : undefined;
+        uri = (object && object.isUri()) ? object.uri().getUri() : undefined;
 
         childContainer = line ? line.getChildContainer() : undefined;
         childLines = childContainer ? childContainer.getLines() : undefined;
@@ -144,17 +156,8 @@ $(function() {
         console.timeEnd("load");
     });
 
-    $(".toggle .toggle-button").click(function(event) {
-        $(event.target).closest('.toggle').find('.toggle-target').toggle();      // should: not depend on having to call parent() twice
-        $(event.target).toggleClass('ui-icon-plus').toggleClass('ui-icon-minus');
-    });
-
     $(".reload").click(function(event) {
         notepad.reset();
     });
-
-    setTimeout(function() {
-        notepad.focus();
-    }, 500);
 
 });

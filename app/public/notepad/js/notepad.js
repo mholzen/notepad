@@ -1,5 +1,3 @@
-// See README.txt
-
 (function($, undefined) {
 
     var DEFAULT_ENDPOINT = new Triples();
@@ -75,19 +73,13 @@
 
             this.element.addClass("notepad notepad-session");
 
-            this.element.endpoint({display: true, dataset: this.options.dataset});  // Create the endpoint widget
-
-            if (this.options.endpoint instanceof Array
-                && this.options.endpoint.length > 0
-                && !(this.options.endpoint[0] instanceof Triple)
-                ) {
-                this.discoverEndpoint(this.options.endpoint, function() {
-                    notepad.setUri(notepad.element.attr('about'));
+            // Create the endpoint widget
+            this.element.endpoint({
+                endpoint: this.options.endpoint,
+                display: true
                 });
-            } else {
-                this.option('endpoint', this.options.endpoint);
+
                 this.setUri(this.element.attr('about'));            // if no [about] attr, setUri(undefined) calls newUri().
-            }
             
             this.element.on("keydown.notepad", function(event) {
                 var keyCode = $.ui.keyCode;
@@ -125,10 +117,42 @@
                         }
                     }
                     break;
+                case keyCode.SPACE:
+                    if (event.ctrlKey) {
+                        var line = $(event.target).closest(":notepad-line").data('notepadLine');
+                        line.option('describeDepth', 1);
+                        line.childrenToggle();
+                        // Must prevent autocomplete from triggering
+                    }
+                case 83: /* s */
+                    if (event.metaKey) { // Alt/Cmd - S
+                        event.preventDefault();     // prevents save dialog
+                        notepad.save();
+                    }
+
                 default:
                     break;
                 }
             });
+
+            this.element.on('keyup', '.notepad-object3 [contenteditable="true"]', function(event) {
+                var target = $(event.target);
+                if (event.keyCode != 186 /* colon */ ) {
+                    return;
+                }
+                var line = target.closest(":notepad-line");
+                if (!line) {
+                    log.error("cannot find a line widget");
+                    return;
+                }
+                line = line.data('notepadLine');
+                if (line.isPredicateVisible()) {
+                    log.info("predicate is already shown.  Ignoring ':'");
+                    return;
+                }
+                line.discoverPredicate(event);
+            });
+
 
             $('body').on('keydown', function(event) {
                 if ( $(event.target).attr('contenteditable') === 'true' ) {
