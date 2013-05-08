@@ -32,6 +32,9 @@ body {
     font-weight: 700;
     font-size: 24px;
 }
+.meta .session {
+    display: none;  /* start hidden. meta toggle button shows/hides */
+}
 
 button {
     /*font-family: 'Lucida Grande', 'Geneva', 'Helvetica', sans-serif;*/
