@@ -53,18 +53,18 @@
 			<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>
 		{{/rdfs:label}}
 
-		{{#notepad:inverseLabel}}
+		{{#inst:inverseLabel}}
 			<span class="tooltip">
 				<div class="item notepad-literal" rel="rdfs:label">related to</div>
 				<div class="content">
 					<h1>Reverse of:
-						<span class="predicate-label" rel="notepad:inverseLabel">{{notepad:inverseLabel}}</span>
+						<span class="predicate-label" rel="inst:inverseLabel">{{inst:inverseLabel}}</span>
 					</h1>
 					<h2>As in:</h2>
 					<ul about="{{{notepad:subject}}}" class="notepad-container"/>
 				</div>
 			</span>
-		{{/notepad:inverseLabel}}
+		{{/inst:inverseLabel}}
 
 
 - urilabel.DOM should be
@@ -72,10 +72,10 @@
 		<div class="notepad-literal notepad-predicate" rel="rdfs:label">created</div>
 		<span class="tooltip">
 			<div class="item notepad-literal" rel="rdfs:label">related to</div>
-			<span class="content">Reverse of: <span class="predicate-label" rel="notepad:inverseLabel">created</span></span>
+			<span class="content">Reverse of: <span class="predicate-label" rel="inst:inverseLabel">created</span></span>
 			<div  class="content">
 				<ul about="notepad:subject" class="notepad-container"reated</span></p>
-				<p>Reverse of: <span class="predicate-label" rel="notepad:inverseLabel">created</span></p>
+				<p>Reverse of: <span class="predicate-label" rel="inst:inverseLabel">created</span></p>
 			</div>
 		<span>
 
@@ -90,7 +90,7 @@
 			<span class="tooltip">
 				<div class="item notepad-literal" rel="rel:rdfs:label">related to</div>
 				<div class="content">
-					<h1>Reverse of: <span class="predicate-label" rel="notepad:inverseLabel">creator of</span></h1>
+					<h1>Reverse of: <span class="predicate-label" rel="inst:inverseLabel">creator of</span></h1>
 					<h2>As in:</h2>
 					<!-- a urilabel -->
 					<div class="notepad-urilabel" about="http://google.com" rel="rdfs:label"><span class="value">Google</span>

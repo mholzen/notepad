@@ -8,7 +8,7 @@
     }
 
     function direction(triples) {
-        var inverseCount = triples.triples(undefined, 'notepad:inverseLabel').length;
+        var inverseCount = triples.triples(undefined, 'inst:inverseLabel').length;
         var forwardCount  = triples.triples(undefined, 'rdfs:label').length;
 
         if (inverseCount && forwardCount) {
@@ -31,7 +31,7 @@
                 '<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>' +
             '{{/rdfs:label}}' +
             '{{^rdfs:label}}' +
-                '{{#notepad:inverseLabel}}' +
+                '{{#inst:inverseLabel}}' +
                     // Forward context, no forward label but an inverse one: compute the inverse (defaults to 'related to')
                     '<span class="tooltip notepad-session">' +
                         '<div class="item notepad-literal" rel="rdfs:label">'+
@@ -45,21 +45,21 @@
                         '</span>' +
 
                     '</span>' +
-                '{{/notepad:inverseLabel}}' +
-                '{{^notepad:inverseLabel}}' +
+                '{{/inst:inverseLabel}}' +
+                '{{^inst:inverseLabel}}' +
                     '<div class="item notepad-literal" rel="rdfs:label">related to</div>' +
-                '{{/notepad:inverseLabel}}' +
+                '{{/inst:inverseLabel}}' +
             '{{/rdfs:label}}' +
             '',
         backward: 
-            '{{#notepad:inverseLabel}}' +
-                '<div class="notepad-literal notepad-predicate" rel="notepad:inverseLabel">{{xsd:string}}</div>' +
-            '{{/notepad:inverseLabel}}' +
-            '{{^notepad:inverseLabel}}' +
+            '{{#inst:inverseLabel}}' +
+                '<div class="notepad-literal notepad-predicate" rel="inst:inverseLabel">{{xsd:string}}</div>' +
+            '{{/inst:inverseLabel}}' +
+            '{{^inst:inverseLabel}}' +
                 '{{#rdfs:label}}' +
                     // Inverse context, no inverse label but a forward one: compute the inverse (defaults to 'related to')
                     '<span class="tooltip notepad-session">' +
-                        '<div class="item notepad-literal" rel="notepad:inverseLabel">'+
+                        '<div class="item notepad-literal" rel="inst:inverseLabel">'+
                             '<img src="./external/images/glyphicons/glyphicons_210_left_arrow.png"/>' +
                             '{{xsd:string}}' +
                         '</div>' +
@@ -71,9 +71,9 @@
                     '</span>' +
                 '{{/rdfs:label}}' +
                 '{{^rdfs:label}}' +
-                    '<div class="item notepad-literal" rel="notepad:inverseLabel">related to</div>' +
+                    '<div class="item notepad-literal" rel="inst:inverseLabel">related to</div>' +
                 '{{/rdfs:label}}' +
-            '{{/notepad:inverseLabel}}' +
+            '{{/inst:inverseLabel}}' +
             ''
     };
 

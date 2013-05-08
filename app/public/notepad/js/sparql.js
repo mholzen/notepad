@@ -1,32 +1,17 @@
 (function($) {
 
 $.notepad = $.notepad || {};
-$.notepad.core = toResource('notepad:core');
 
-cache = {};
+var cache = {};
 
-FusekiEndpoint = function(uri, graph) {
-    this.uri = uri;
-    if (graph === 'new') {
-        graph = $.notepad.newUri();
-    }
+FusekiEndpoint = function(url, graph) {
+    this.url = url;
     this.graph = graph || 'default';
-}
-
-TempFusekiEndpoint = function(triples, callback) {
-    var endpoint = new FusekiEndpoint("http://localhost:3030/test");
-    endpoint.graph = $.notepad.newUri();
-    this.endpoint = endpoint;
-    endpoint.insertData( triples, callback.bind(this) );
 }
 
 FusekiEndpoint.prototype = {
     toString: function() {
-        var value = "Fuseki SPARQL at " + this.uri;
-        if (this.graph != 'default') {
-            value += " and graph " + this.graph;
-        }
-        return value;
+        return "Fuseki SPARQL at " + this.url;
     },
     prefixes: function() {
         var prefixes = "";
@@ -35,27 +20,38 @@ FusekiEndpoint.prototype = {
         }
         return prefixes;
     },
-    updateUri: function() {
-        return this.uri + "/update";
+    updateUrl: function() {
+        return this.url + "/update";
     },
-    queryUri: function() {
-        return this.uri + "/query";
+    queryUrl: function() {
+        return this.url + "/query";
         // This doesn't seem to work anymore because the inferred model is not re-bound when the base model changes.  Also deleted triples don't disappear from the inf model.
-        //return this.uri + "Inferred" + "/query";
+        //return this.url + "Inferred" + "/query";
     },
+
+    _defaultGraphUriParams: function() {
+        if (this.graph === 'default' || !this.graph) {
+            return undefined;
+        }
+        return toResource(this.graph).toURL();
+
+        // consider: 
+        // return [ 
+        //     toResource(this.graph).toURL(),
+        //     toResource(':core').toURL()
+        // ];
+    },
+
     query: function(command, callback) {
         var options = { query: command, output:'json' };
 
-        if (this.graph != 'default') {
-            options['default-graph-uri'] = [ 
-                this.graph.toURL(),
-                $.notepad.core.toURL()
-            ];
-        }
+        options['default-graph-uri'] = this._defaultGraphUriParams();
+
+        console.debug('[endpoint]', 'query', {query:command});
 
         if (command.match(/# query:cache/)) {
             if (command in cache) {
-                console.debug("returning cached results");
+                console.log('[query]', '[cache]', 'return cache hit');
                 callback ( cache[command] );
                 return $.Deferred().resolve();
             } else {
@@ -66,34 +62,48 @@ FusekiEndpoint.prototype = {
                 }
             }
         }
-        var finalCallback;
-        if (callback) {
-            finalCallback = function(response, status, xhr) {
-                var type = xhr.getResponseHeader("Content-Type");
-                if (type.contains('application/rdf+json')) {
-                    var databank = $.rdf.databank();
-                    databank.load(response);
-                    callback($.notepad.toTriples(databank));
-                } else {
-                    callback(response);
-                }    
+        return $.ajax({url: this.queryUrl(), dataType: "json", data: options, traditional: true})
+        .then(function(response, status, xhr) {
+            var type = xhr.getResponseHeader("Content-Type");
+            if (type.contains('application/rdf+json')) {
+                var databank = $.rdf.databank();
+                databank.load(response);
+                response = $.notepad.toTriples(databank);
             }
+            console.debug('[endpoint]', 'query response', response);
+            if (callback) {
+                callback(response);
+            }
+            return response;
+        });
+    },
+    _graphSparqlPattern: function(sparql) {
+        if (this.graph && this.graph !== 'default') {
+            sparql = '{ GRAPH ' + toResource(this.graph).toSparqlString() + ' ' + sparql + '}';
         }
-        return $.ajax({url: this.queryUri(), dataType: "json", data: options, traditional: true, success: finalCallback});
+        return sparql;
+    },
+    _addGraph: function(command) {
+        var endpoint = this;
+        command = command.replace(/INSERT ({.*?})/g, function(match, pattern) {
+            return 'INSERT ' + endpoint._graphSparqlPattern(pattern);
+        });
+        command = command.replace(/DELETE ({.*?})/g, function(match, pattern) {
+            return 'DELETE ' + endpoint._graphSparqlPattern(pattern);
+        });
+        return command;
     },
     update: function(command, callback) {
-        console.log('[endpoint]', 'update', 'POST', {command:command});
+        command = this._addGraph(command);
+        console.log('[endpoint]', 'update', 'POST', {update:command});
 
-        return $.post(this.updateUri(), {update: command}, function() {
+        return $.post(this.updateUrl(), {update: command, 'using-graph-uri': this._defaultGraphUriParams() }, function() {
             // There is a delay before the updates are available in the query server.
             // So we force the client to wait for this delay here.
 
             console.log('[endpoint]', 'update', 'completed', {command:command});
             setTimeout(callback, 100);
         });
-
-        // ALTERNATIVE: use a query parameter to set the default graph, instead of a GRAPH patter.  Could not get FUSEKI to work with it.
-        // return $.post(this.uri+'/update', {update: command, 'using-named-graph-uri':this.graph}, callback);
     },
     queryReturningGraph: function(command, callback) {
         return this.query(command, function(graph) {
@@ -109,6 +119,9 @@ FusekiEndpoint.prototype = {
         });
     },
     execute: function(sparql, callback) {
+        if (!sparql || sparql.length === 0) {
+            return new $.Deferred().resolveWith();
+        }
         var isRead = sparql.match(/^\s*(construct|describe|ask|select)/i);
         var sparql = this.prefixes() + sparql;
         if (isRead) {
@@ -117,18 +130,27 @@ FusekiEndpoint.prototype = {
             return this.update(sparql, callback);
         }
     },
-    _graphSparqlPattern: function(sparql) {
-        if (this.graph && this.graph !== 'default') {
-            sparql = '{ GRAPH ' + toResource(this.graph).toSparqlString() + ' ' + sparql + '}';
-        }
-        return sparql;
-    },
     clear: function(callback) {
         var pattern = this._graphSparqlPattern ( '{ ?s ?p ?o }' );
         return this.update('DELETE '+pattern+' WHERE '+pattern, callback);
     },
     post: function(triples, callback) {
         // Not yet implemented
+    },
+    workspaces: function(user, callback) {
+        var query = $.notepad.queries.workspaces_by_user;
+        var endpointDefaultDataset = new FusekiEndpoint(this.url);
+        return query.execute(endpointDefaultDataset, {user: user}, callback);
+    },
+    selectWorkspace: function(user, callback) {
+        return this.workspaces(user, function(workspaces) {
+            if (workspaces.length === 0) {
+                this.graph = $.notepad.newUri();
+            } else {
+                this.graph = workspaces[0].subject;
+            }
+            callback(this.graph);
+        });
     },
     getSubjectsLabelsByLabel: function(label, callback) {
         var nbsp = String.fromCharCode(160);
@@ -169,21 +191,6 @@ FusekiEndpoint.prototype = {
         this.execute(command,function(data) { 
             var triples = _.map(data.results.bindings, function(binding) {
                 return new Triple(subject, binding.p, binding.o);
-            });
-            callback(triples);
-        });
-    },
-    getRdfBySubjectObject: function(uri, callback) {
-        var r = new Resource(uri)
-        var command = 'SELECT ?s ?p ?o WHERE { ' +
-                '{ '+r.resource.toString() +' ?p ?o } UNION ' + 
-                '{ ?s ?p '+r.resource.toString() +' } ' +
-            '}';
-        this.execute(command, function(data) { 
-            var triples = $.map(data.results.bindings, function(element,index) {
-                var subject = element.s || {value: uri};
-                var object = element.o || {value: uri};
-                return new Triple(subject.value, element.p.value, object.value );
             });
             callback(triples);
         });
@@ -234,19 +241,28 @@ FusekiEndpoint.prototype = {
         var sparql = this._deleteSparql(deleted) + this._insertSparql(inserted);
         return this.execute(sparql,callback);  
     },
+    // should: refactor using a query
     constructAll: function(callback) {
         var sparql = '{ ?s ?p ?o }';
         sparql = 'CONSTRUCT { ?s ?p ?o } WHERE ' + sparql;
-        this.execute(sparql, callback);
+        return this.execute(sparql, callback);
     },
     canAnswer: function(callback) {
         return this.query("ask {?s ?p ?o}", callback);
     }
 }
 
-    $.notepad.test = new FusekiEndpoint("http://localhost:3030/test");
-    $.notepad.dev = new FusekiEndpoint("http://localhost:3030/dev");
-    $.notepad.prod = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
+TempFusekiEndpoint = function(triples, callback) {
+    var endpoint = new FusekiEndpoint("http://localhost:3030/test", $.notepad.newUri());
+    if ( callback ) {
+        callback = callback.bind(endpoint);
+    }
+    return endpoint.insertData( triples, callback );
+}
+
+$.notepad.test = new FusekiEndpoint("http://localhost:3030/test");
+$.notepad.dev = new FusekiEndpoint("http://localhost:3030/dev");
+$.notepad.prod = new FusekiEndpoint("http://instruct.vonholzen.org:3030/dev");
 $.notepad.defaultEndpoint = new FusekiEndpoint('http://' + $.uri.base().authority.replace(/:(.*)$/, '') + ':3030/dev');
 $.notepad.defaultEndpoints = [
     $.notepad.defaultEndpoint,

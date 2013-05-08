@@ -17,7 +17,7 @@
             // (this._line().options.forwardLabel)({edit: false, about: uri})
 
             var template = this._line().getDirection() === 'forward' ?
-                '{{#notepad:inverseLabel}}<div class="notepad-literal notepad-predicate" rel="notepad:inverseLabel">{{xsd:string}}</div>{{/notepad:inverseLabel}}' :
+                '{{#inst:inverseLabel}}<div class="notepad-literal notepad-predicate" rel="inst:inverseLabel">{{xsd:string}}</div>{{/inst:inverseLabel}}' :
                 '{{#rdfs:label}}<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>{{/rdfs:label}}' ;
 
             return $('<div class="notepad-predicate-label">')

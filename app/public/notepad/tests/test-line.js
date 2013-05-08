@@ -1,4 +1,3 @@
-QUnit.file = "test-line.js";
 module("given a new line", {
     setup: function() {
         // this.endpoint = mock(new FusekiEndpoint("http://ex.com"));
@@ -84,7 +83,7 @@ test("select a label", function() {
 test("select a reverse label", function() {
 
     var autocomplete = this.line.getPredicateLabel().element.find(":notepad-autocomplete2").data('notepadAutocomplete2');
-    var ui = { item: { value: toTriples('ex:created notepad:inverseLabel "created by"') } };
+    var ui = { item: { value: toTriples('ex:created inst:inverseLabel "created by"') } };
 
     var target = this.line.getPredicateLabel().element;
     autocomplete._trigger('select', { target: target }, ui);
@@ -121,4 +120,22 @@ test("discoverSparql", function() {
 
     line.setLineLiteral( toLiteral('construct {?s ?p ?o} from {?s ?p ?o}', 'notepad:sparql') );
     assertThat(line.discoverSparql(), instanceOf(Query));
+});
+
+function getContainer(uri) {
+    var element = $('<div>').attr('about',uri).container();
+    return element.data('notepadContainer');
+}
+
+testWithContainer("display reverse label", toTriples(':p rdfs:label "label"'), function() {
+    this.container.element.attr('about', ':s');
+    var line = this.container.appendLine();
+    var elem = line.element;
+
+    line.update(toTriple(':o', ':p', ':s'));
+
+    setTimeout(function() {
+        assertThat(elem.html(), containsString('<img'));
+        start();
+    }, 500);
 });

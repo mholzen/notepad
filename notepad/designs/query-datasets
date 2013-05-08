@@ -1,5 +1,5 @@
 # Given an URI that is an endpoint
-	?endpointUri 	a 		notepad:Endpoint
+	?endpointUri 	a 		sd:endpoint
 	#  consider: sd:Service, http://www.w3.org/ns/sparql-service-description#Service
 
 
@@ -11,11 +11,11 @@
 	n:dataset rdfs:domain n:endpoint .
 
 # And we defined how to compute objects given that predicate
-	n:dataset n:computeUsingSparql "select ?dataset  WHERE { GRAPH ?dataset { ?session a notepad:Session } }" .
+	n:dataset n:computeUsingSparql "select ?dataset  WHERE { GRAPH ?dataset { ?session a inst:Session } }" .
 
 
 # Given an endpoint
-	<http://instruct.vonholzen.org:3030/test> a notepad:endpoint .
+	<http://instruct.vonholzen.org:3030/test> a sd:endpoint .
 
 
 # When I query for its datasets

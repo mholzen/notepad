@@ -42,12 +42,14 @@
         owl:        "http://www.w3.org/2002/07/owl#",
         ex:         "http://example.com/#",
         nmo:        "http://www.semanticdesktop.org/ontologies/nmo/#",
-        notepad:    "http://www.vonholzen.org/instruct/notepad/#",
         sp:         "http://spinrdf.org/sp#",
         dc:         "http://purl.org/dc/elements/1.1/#",
+        sd:         "http://www.w3.org/ns/sparql-service-description#",
 
-        // consider: map to endpoint+'#' instead, to remove the application from the resource URI
-        '':         $.notepad.uri() + '#'
+        inst:        "http://instruct.vonholzen.org/#",
+
+        notepad:    $.notepad.uri() + '#',  // the notepad resource
+        // was notepad:  "http://www.vonholzen.org/instruct/notepad/#",
     };
     $.notepad.namespaces = namespaces;
 
@@ -93,7 +95,7 @@
             return $.rdf.blank(value);
         }
         if ( value.indexOf(':') == 0) {
-            return $.rdf.resource('<' + $.notepad.uri() + '#' + value.toString().slice(1) + '>' );
+            return $.rdf.resource(value, {namespaces: namespaces} );
         }
         if ( value.indexOf(':') > 0) {
             try {
@@ -446,21 +448,31 @@
                 return results;
             } },
             execute: { value: function(sparql, callback) {
-                TempFusekiEndpoint(this, function() {
-                    this.endpoint.execute(sparql, callback);
+                return TempFusekiEndpoint(this, function() {
+                    this.execute(sparql, callback);
                 })
             } },
-            subjects: { value: function() {
-                return _.keys(this.subjectIndex());
+            subjects: { value: function(predicate, object) {
+                return _.keys( this.subjectIndex(predicate, object) );
             } },
-            subjectIndex: { value: function() {
-                return _.reduce(this, function(memo, triple) { memo[triple.subject] = triple; return memo; }, {});
+            subject: { value: function(predicate, object) {
+                var subjects = _.keys( this.subjectIndex(predicate, object) );
+                if (subjects.length === 0) {
+                    return;
+                }
+                if (subjects.length === 1) {
+                    return subjects[0];
+                }
+                return subjects;
+            } },
+            subjectIndex: { value: function(predicate, object) {
+                return _.reduce(this.triples(predicate, object), function(memo, triple) { memo[triple.subject] = triple; return memo; }, {});
             } },
             objects: { value: function(subject, predicate) {
-                return this.triples(subject, predicate).map(function(triple) { return triple.object; });
+                return _.keys( this.objectIndex(subject, predicate) );
             } },
             object: { value: function(subject, predicate) {
-                var objects = this.objects(subject, predicate);
+                var objects = _.keys( this.objectIndex(subject, predicate) );
                 if (objects.length === 0) {
                     return;
                 }
@@ -469,8 +481,8 @@
                 }
                 return objects;
             } },
-            objectIndex: { value: function() {
-                return _.reduce(this, function(memo, triple) { memo[triple.object] = triple; return memo; }, {});
+            objectIndex: { value: function(subject, predicate) {
+                return _.reduce(this.triples(subject, predicate), function(memo, triple) { memo[triple.object] = triple; return memo; }, {});
             } },
             toPrettyString: { value: function() {
                 return this.join("\n");
@@ -508,7 +520,7 @@
                 this.map(function(triple) {})
             } },
             toString: { value: function() {
-                return this.triples(undefined, "notepad:reason").objects().join(",");
+                return this.triples(undefined, "rdfs:label").objects().join(",");
             } },
             literals: { value: function(subject, predicate) {
                 return this

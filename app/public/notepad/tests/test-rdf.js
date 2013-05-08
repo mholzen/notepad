@@ -49,6 +49,8 @@ test("resources", function() {
     var r = new Resource(':123');
     equal(r.toString(),':123', "default prefix should be preserved");
 
+    // default prefix should depend on the endpoint
+
     var resourceWithColon = new Resource("Hello my friend: how are you?");
     assertThat(resourceWithColon.isLiteral(), truth(), "a resource with ':' can be a literal");
 });

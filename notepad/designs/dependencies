@@ -1,0 +1,84 @@
+FILES with inverselabel
+=======================
+
+notepad.css			style for predicate label
+predicate.js		template for predicate label
+					code for direction
+
+widgets.js			template for reverseline
+
+core.ttl
+
+find-predicate-label-by-label			discoverPredicate
+
+
+OTHER queries about predicate label
+===================================
+describe-predicate						urilabel from predicate
+
+
+find-subject-label-by-label				autocomplete, used by predicate label
+
+
+
+DEPENDENCIES
+============
+notepad:predicateLabel 	  inst:dependsOn			inst:inverseLabel
+notepad:reverseLine 	 inst:dependsOn				inst:inverseLabel
+
+inst:inverseLabel        is described to be a successor to   notepad:inverseLabel
+
+
+FUNCTIONALLY
+------------
+verify if expectation (requirement, should, etc...) is met
+	if met, then go ahead
+	if not met, then correct by:
+		a) changing source
+			eg) upgrading source
+		b) adapting from source
+			eg) insert filter in between
+		c) using source as is
+
+
+notepad:app
+expectation is: script ( "notepad:inverseLabel sameAs inst:revLabel" ) has been applied at least once
+expectation is: endpoint contains "notepad:inverseLabel sameAs inst:revLabel"
+
+this script should essentially say:
+if ( "notepad:inverseLabel sameAs inst:revLabel" is known) thenwill delete/insert
+
+:backwards-compatible
+	:expect "endpoint contains 'notepad:inverseLabel owl:sameAs inst:revLabel' "
+	:update "endpoint executes 'delete {...} insert {...} where {...}' "
+	:adapt  "may not be provided.  could be filtering the RDF on the client at every response"
+
+
+IN JAVASCRIPT
+=============
+given a dataset expectation,
+when I verify the expectation against a dataset
+it can tell me truth or false.
+
+expectation = toTriples(
+	'inst:revLabel inst:test "ask { inst:revLabel a rdfs:property UNION ?s inst:revLabel ?o }"^^sd:sparql,
+ 	'inst:revLabel inst:update :change-revlabel.sparql '
+);
+notepad.add(toTriple(notepad:app, inst:expects, inst:revLabel))
+
+if (! dataset.meets(expectation))
+	dataset.update(expectation.update);
+}
+
+
+given an endpoint, a dataset that "knows about inst:revLabel", an application
+when I ask the application to check the dataset for inst:revLabel"
+then it should reply yes
+
+given an endpoint, a dataset that "doesn't know about inst:revLabel", an application
+when I ask the application to check the dataset for inst:revLabel"
+then it should reply "should apply this change"
+
+given an endpoint, a dataset that "doesn't know about inst:revLabel", an application, an apply change
+when I ask ... to apply the change
+then it should ...

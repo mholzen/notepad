@@ -1,3 +1,4 @@
+(function($, undefined) {
 
 module("given a hostname", {
     setup: function() {
@@ -34,8 +35,8 @@ asyncTest("select", function() {
 });
 asyncTest("construct", function() {
     expect(1);
-    this.endpoint.execute('construct {?s ?p ?o} {?s ?p ?o}', function() {
-        assertThat(true);
+    this.endpoint.execute('construct {?s ?p ?o} {?s ?p ?o}', function(triples) {
+        assertThat(triples, hasMember(length));
         start();
     });
 });
@@ -46,6 +47,7 @@ asyncTest("insert data", function() {
         start();
     });
 });
+
 test("when I delete all content, then", function() {
     stop();
     expect(2);
@@ -140,7 +142,7 @@ asyncTest("when I create a temp endpoint", function() {
     );
 
     var endpoint = TempFusekiEndpoint(triples, function() {
-        this.endpoint.execute("construct {ex:s1 ex:p1 ?o} { ex:s1 ex:p1 ?o }", function(triples) {
+        this.execute("construct {ex:s1 ex:p1 ?o} { ex:s1 ex:p1 ?o }", function(triples) {
             assertThat(triples, hasItem(equalToObject(new Triple('ex:s1','ex:p1','ex:o1'))), "it returns the triple I just created");
             start();
         })
@@ -265,9 +267,38 @@ var find_content_given_meta = '' +
 
 });
 
+    // For tests, set the empty prefix to the Dev point
+    // $.notepad.namespaces[''] = 'http://localhost:3030/dev';
+
 testWithTriples("testWithTriples", toTriples(":s :p :o"), function() {
     $.notepad.queries.describe.execute(this.endpoint, {about: ':s'}, function(triples) {
         assertThat(triples, hasItem(':s :p :o .'));
         start();
     });
 });
+
+module('dataset', {
+    setup: function() {
+        this.endpoint = new FusekiEndpoint('http://localhost:3030/test', $.notepad.newUri());
+    },
+});
+asyncTest("deleteInsertData", function() {
+    var endpoint = this.endpoint;
+
+    endpoint.constructAll().then(function(response) {
+        assertThat(response.length, 0);
+        return endpoint.deleteInsertData(null, toTriples(':s :p :o'));
+    }).then(function(response) {
+        return endpoint.constructAll();
+    }).then(function(response) {
+        assertThat(response.length, 1);
+        return endpoint.deleteInsertData(toTriples(':s :p :o'), null);
+    }).then(function(response) {
+        return endpoint.constructAll();
+    }).then(function(response) {
+        assertThat(response.length, 0);
+        start();
+    });
+});
+
+}(jQuery));

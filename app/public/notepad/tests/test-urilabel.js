@@ -69,17 +69,17 @@ asyncTest("predicate-label-forward", function() {
                 '<div class="notepad-literal notepad-predicate" rel="rdfs:label">{{xsd:string}}</div>' +
             '{{/rdfs:label}}' +
             '{{^rdfs:label}}' +
-                '{{#notepad:inverseLabel}}' +
+                '{{#inst:inverseLabel}}' +
                     'Reverse of {{xsd:string}}' +
-                '{{/notepad:inverseLabel}}' +
-                '{{^notepad:inverseLabel}}' +
+                '{{/inst:inverseLabel}}' +
+                '{{^inst:inverseLabel}}' +
                     '<div class="item notepad-literal" rel="rdfs:label">related to</div>' +
-                '{{/notepad:inverseLabel}}' +
+                '{{/inst:inverseLabel}}' +
             '{{/rdfs:label}}' +
 '';
 
     var setup = toTriples( 
-        toTriple('ex:created notepad:inverseLabel "created by"')
+        toTriple('ex:created inst:inverseLabel "created by"')
     );
 
     this.endpoint.insertData(setup, function() {

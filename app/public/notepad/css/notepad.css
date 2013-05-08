@@ -144,7 +144,7 @@ ul {
 }
 
 .notepad-predicate-label [rel="rdfs:label"],
-.notepad-predicate-label [rel="notepad:inverseLabel"] {
+.notepad-predicate-label [rel="inst:inverseLabel"] {
     font-style: italic;
     display: inline;
     padding-top: 4px;
@@ -156,7 +156,7 @@ ul {
 }
 
 .notepad-predicate-label [rel="rdfs:label"] [contenteditable="true"],
-.notepad-predicate-label [rel="notepad:inverseLabel"] [contenteditable="true"] {
+.notepad-predicate-label [rel="inst:inverseLabel"] [contenteditable="true"] {
     display: inline;
 }
 
@@ -175,7 +175,7 @@ ul {
     content: ":" ;
 }
 
-.notepad-predicate-label [rel="notepad:inverseLabel"]:after {
+.notepad-predicate-label [rel="inst:inverseLabel"]:after {
     content: ":" ;
 }
 
