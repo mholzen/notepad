@@ -200,6 +200,11 @@
                 }
                 var literal = $(event.target).closest(':notepad-literal');
                 if ( literal.length > 0 ) {
+                    var menu = $("#menu").data('notepadMenu2');
+                    if (! menu) {
+                        console.error('[notepad]', "cannot find menu -- somebody killed it!");
+                        return;
+                    }
                     $("#menu").data('notepadMenu2').option('source', literal );
                 }
 
