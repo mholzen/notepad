@@ -96,7 +96,7 @@
                 if (callback) {
                     callback();
                 }
-            }).error(function() {
+            }).fail(function() {
                 console.log('[endpoint]', 'received error from', uri);
                 if (uris.length === 0) {
                     endpoint.option('endpoint', undefined);

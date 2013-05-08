@@ -1,5 +1,3 @@
-QUnit.file = "test-endpoint.js";
-
 var testEndpointUri = 'http://instruct.vonholzen.org:3030/test';
 
 asyncTest("ask", 1, function() {
@@ -69,7 +67,7 @@ asyncTest("setUriToFirstResponding", function() {
         function() {
             assertThat(endpoint.options.endpoint, testEndpointUri);
             start(); 
-        }).error(function() {
+        }).fail(function() {
             // BUG:
             //  expected: this function should not be called (assuming instruct.vonholzen.org is up)
             //  actual: this function gets called because the Deferred object returned is for the first call
@@ -84,7 +82,7 @@ asyncTest("setUriToFirstResponding all failing", function() {
         function() {
             assertThat(false, "unexpected success");
             start(); 
-        }).error(function() {
+        }).fail(function() {
             assertThat(endpoint.options.endpoint, 'http://localhost:3030/dev');
             start();
         });
