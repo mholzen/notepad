@@ -33,3 +33,44 @@ test("when add two triples with the same subject", function() {
 
     assertThat(this.container.elements().length, equalTo(1), "it should have one element");
 });
+
+module("given a container2 with no uri", {
+    setup: function() {
+        this.element = $('<div>').container2();
+        this.container = this.element.data('notepadContainer2');
+    },
+    teardown: function() {
+        this.container.destroy();
+    }
+});
+
+// containerChainEnpoint not figured out
+skippedTest("when I add triple to a container2, then it retrieves the labels", function() {
+    var triple = new Triple(':a', ':p', "123");
+    this.container.addTriple(triple);
+    assertThat(this.container.triples(), hasItem(equalToObject(triple)), "the container contains the triple");
+    start();
+});
+
+
+// Skipped until...
+skippedTest("when I add a triple to it", function() {
+    var test = this;
+    function addAndTest(triple) {    
+        var line = test.container.addTriple(triple);
+        assertThat(line.triple(), equalToObject(triple));
+        assertThat(test.container.triples(), hasItem(equalToObject(triple)), "the container should contain it");
+
+        // verify that the container tried to display 'triple.subject'
+        verify(test.endpoint,times(1)).execute(containsString(triple.subject.toSparqlString()));
+    }
+    addAndTest(new Triple(":aUri", ":describe1", "a literal"));
+    addAndTest(new Triple(":aUri", ":relate1", ":anotherUri"));
+    addAndTest(new Triple(":anotherUri", ":foo", "another literal"));
+
+    verify(test.endpoint,times(2)).getLabels(":describe1");
+    verify(test.endpoint,times(2)).getLabels(":relate1");
+    verify(test.endpoint,times(1)).getLabels(":foo");
+
+    assertThat(this.container.getLines().length, greaterThanOrEqualTo(3), "it has at least 3 lines");
+});

@@ -92,6 +92,13 @@ test("add-literal", function() {
     assertThat(line.childTriples(), [], "the line has only one triple (no child triples)");
     ok(line.triples().contains(triple), "the line has the triple");
 });
+test("update with labels", function() {
+    var triples = toTriples(":s :member :line1", ':line1 rdfs:label "foo"');
+    this.container.update(triples);
+    assertThat(this.container.element.text(), containsString("foo"));
+});
+
+
 test("when I add a triple where the container is the predicate, then nothing happens", function() {
     var triple = new Triple(":s1", ":s", ":o");
 
@@ -189,53 +196,13 @@ test("when I configure two containers to be applied to the results of one query"
     ok(true);
 });
 
-
-module("given a container2 with no uri", {
-    setup: function() {
-        this.element = $('<div>').container2();
-        this.container = this.element.data('notepadContainer2');
-    },
-    teardown: function() {
-        this.container.destroy();
-    }
-});
-
-// containerChainEnpoint not figured out
-skippedTest("when I add triple to a container2, then it retrieves the labels", function() {
-    var triple = new Triple(':a', ':p', "123");
-    this.container.addTriple(triple);
-    assertThat(this.container.triples(), hasItem(equalToObject(triple)), "the container contains the triple");
-    start();
-});
-
-
-// Skipped until...
-skippedTest("when I add a triple to it", function() {
-    var test = this;
-    function addAndTest(triple) {    
-        var line = test.container.addTriple(triple);
-        assertThat(line.triple(), equalToObject(triple));
-        assertThat(test.container.triples(), hasItem(equalToObject(triple)), "the container should contain it");
-
-        // verify that the container tried to display 'triple.subject'
-        verify(test.endpoint,times(1)).execute(containsString(triple.subject.toSparqlString()));
-    }
-    addAndTest(new Triple(":aUri", ":describe1", "a literal"));
-    addAndTest(new Triple(":aUri", ":relate1", ":anotherUri"));
-    addAndTest(new Triple(":anotherUri", ":foo", "another literal"));
-
-    verify(test.endpoint,times(2)).getLabels(":describe1");
-    verify(test.endpoint,times(2)).getLabels(":relate1");
-    verify(test.endpoint,times(1)).getLabels(":foo");
-
-    assertThat(this.container.getLines().length, greaterThanOrEqualTo(3), "it has at least 3 lines");
-});
-
 testWithContainer("testWithContainer", toTriples(':s :p :o'), function() {
-    this.container.element.attr('about', ':s');
-    this.container.load();
+    var container = this.container;
+    container.element.attr('about', ':s');
+    container.load();
     setTimeout(function() {
-        assertThat(this.container.getLines().length, 1);
+        assertThat(container.getLines().length, 1);
         start();
     }, 200);
 });
+
