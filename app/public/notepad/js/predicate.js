@@ -166,10 +166,11 @@
         },
         _setUri: function(uri) {
             this.element.attr(this.getAttribute(), uri);
-            this._trigger('urichange');
         },
         setUri: function(uri) {
             this._setUri(uri);
+            this._trigger('urichange');
+
             if (this.hasLabel()) {
                 this.getLabel().setUri(uri);    
             }
@@ -179,6 +180,8 @@
             var uri = $.notepad.newUri();
             this._setUri(uri);
             this._setDirection(FORWARD);
+            this._trigger('urichange');
+
             if (this.hasLabel()) {
                 this.getLabel().newUri(uri);
             }
@@ -187,6 +190,8 @@
         setUriDirection: function(uri, direction) {
             this._setUri(uri);
             this.setDirection(direction);
+            this._trigger('urichange');
+
             if (this.hasLabel()) {
                 this.getLabel().setUri(uri);
             }
@@ -232,6 +237,8 @@
                 var urilabel = $(event.target).data('notepadUrilabel');
                 var uri = urilabel.getUri();
                 predicate._setUri(urilabel.getUri());
+                predicate._trigger('urichange');
+
             });
 
             label.setUri(predicate.getUri());
@@ -357,7 +364,9 @@
                 this.add(this.options.initialTriple);
             } else {
                 var uri = this.getUri() || "rdfs:member";
-                this.setUri(uri);
+                this._setUri(uri);
+                    // ask: should creating a new widget trigger urichange event at creation?
+                    // favor: no, to avoid the function passed as option to be triggered immediately
             }
         },
         detach: function() {
