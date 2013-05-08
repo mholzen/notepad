@@ -62,14 +62,18 @@ function wrapInEndpoint(element, endpoint) {
 
 function testWithTriples(name, triples, testFunction) {
     asyncTest(name, function() {
-        TempFusekiEndpoint(triples, testFunction);
+        var context = this;
+        TempFusekiEndpoint(triples, function() {
+            context.endpoint = this;
+            return testFunction.call(context);
+        });
     });
 }
 
 function testWithContainer(name, triples, testFunction) {
     testWithTriples(name, triples, function() {
         this.container = $("<ul>").appendTo("body").endpoint({endpoint: this.endpoint}).container().data('notepadContainer');
-        testFunction();
+        testFunction.call(this);
     });
 }
 
