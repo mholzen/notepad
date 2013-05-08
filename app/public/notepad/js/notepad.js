@@ -168,11 +168,11 @@
                 }
             });
 
-            // notepad:created rdfs:subPropertyOf dc:created
+            // dc:created rdfs:subPropertyOf dc:created
 
-            this.element.find('[property="notepad:created"]').attr('content',Date.now());
+            this.element.find('[property="dc:created"]').attr('content',Date.now());
             setInterval(function() {
-                $("[property='notepad:created']").each(function(i,e) {
+                $("[property='dc:created']").each(function(i,e) {
                     $(e).text(moment(parseInt($(e).attr('content'))).fromNow());
                 });
             }, 1000);
