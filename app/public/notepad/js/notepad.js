@@ -77,9 +77,9 @@
             this.element.endpoint({
                 endpoint: this.options.endpoint,
                 display: true
-                });
+            });
 
-                this.setUri(this.element.attr('about'));            // if no [about] attr, setUri(undefined) calls newUri().
+            this.setUri(this.element.attr('about'));            // if no [about] attr, setUri(undefined) calls newUri().
             
             this.element.on("keydown.notepad", function(event) {
                 var keyCode = $.ui.keyCode;
@@ -342,7 +342,6 @@
             return false;
 
         },
-
         _indent: function(event) {
             var li = $(event.target).closest(":notepad-line");
             if ( li.length === 0 ) {
@@ -406,9 +405,6 @@
         getRdfBySubject: function(uri, callback) {
             this.getEndpoint().getRdfBySubject(uri, callback);
         },
-        getRdfBySubjectObject: function(uri, callback) {
-            this.getEndpoint().getRdfBySubjectObject(uri, callback);
-        },
         getSubjectsLabelsByLabel: function(label, callback) {
             return this.getEndpoint().getSubjectsLabelsByLabel(label, callback);
         },   
@@ -425,6 +421,8 @@
             });
             return _.uniq(labels);
         },
+
+        // should: deprecate
         getLabels: function(uri, callback) {
             // get labels from notepad-triples-endpoint
             // get labels from notepad-endpoint
@@ -448,6 +446,8 @@
             });
             return results;
         }, 
+
+        // should: deprecate
         getPredicatesLabelsByLabel: function(label, callback) {
             var notepadPredicateLabels = this._getNotepadPredicatesLabelsByLabel(label);
             if (this.getEndpoint() === undefined) {
@@ -599,7 +599,6 @@
             $("#control").appendTo('body');         // move the control out of the line to remove
             line.delete();
         },
-
     });
     
 }(jQuery));
