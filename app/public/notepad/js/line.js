@@ -636,6 +636,7 @@
 
             // should:
             // container = this.newChildContainer({query: function() { return line.discoverSparql(); } loadAll: true});
+            this.getChildList().remove();       // blow away any past responses
             var container = this.getChildContainer();
             container.option('describeElements', false);
             container.option('sourceElement', container.element);
