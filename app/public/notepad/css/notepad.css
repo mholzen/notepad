@@ -628,15 +628,16 @@ ul.data:first-of-type > li:first-of-type > .notepad-predicate > .notepad-object3
  * SPARQL  -- hide the query
  */
 
-[datatype="notepad:sparql"] > .value {
+[datatype="sd:SPARQL11Update"] > .value,
+[datatype="sd:Language"] > .value {
     font-family: courier;
 }
 
 /* Experimenting with hiding the SPARQL */
-[about="notepad:sparql"] [rel="rdfs:label"] {
+[about="sd:SPARQL11Update"] [rel="rdfs:label"] {
     /*display: none;*/
 }
-[rel="notepad:sparql"] > .notepad-object3 > .value {
+[rel="sd:SPARQL11Update"] > .notepad-object3 > .value {
     /*display:none;*/
 }
 

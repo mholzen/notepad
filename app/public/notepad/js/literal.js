@@ -181,10 +181,10 @@
             this.element.text(literal);
         },
         getLiteral: function() {
-            return toLiteral(this.element.text(), 'notepad:sparql');
+            return toLiteral(this.element.text(), 'sd:SPARQL11Update');
         },
         query: function() {
-            return new Query(this.getLiteral().toString(), {}, "<from a literal; could search rdfs:label of the uri>");
+            return new Query(this.getLiteral().toString(), {}, "<unnamed query from literal>"); // consider: search for rdfs:label
         },
         _meta: function() {
             return toTriples(
@@ -198,7 +198,7 @@
         },
     });
 
-    // should: translate to RDF
+    // should: translate to RDF and suggest types in rdfs:range context
     var widgetsByDatatype = {
         'xsd:string': {
             init: $.fn.xsdstring,
@@ -212,11 +212,12 @@
             init: $.fn.xsddate,
             name: 'notepadXsddate'
         },
-        'notepad:sparql': {
+        'sd:SPARQL11Update': {
             init: $.fn.sparql,
             name: 'notepadSparql'
         },
 
     };
+
 
 }(jQuery));

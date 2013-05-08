@@ -56,19 +56,19 @@ $(function() {
             'rdf:type           rdfs:label           "a"',
             'rdfs:range         rdfs:label           "Range" ',
 
-            'notepad:sparql     rdfs:range           notepad:sparql ',
-            'notepad:sparql     rdfs:label           "Sparql" ',
+            'sd:SPARQL11Update     rdfs:range           sd:SPARQL11Update ',
+            'sd:SPARQL11Update     rdfs:label           "Sparql" ',
 
             'notepad:Session    rdfs:label          "Session"',
 
-            'notepad:All        notepad:sparql       "construct {?s ?p ?o} where {?s ?p ?o filter not exists {?s a notepad:Session}}" ',
-            'notepad:All        rdfs:label           "All" ',
+            'inst:All        sd:SPARQL11Update       "construct {?s ?p ?o} where {?s ?p ?o filter not exists {?s a inst:Session}}" ',
+            'inst:All        rdfs:label           "All" ',
 
-            'notepad:Datasets   notepad:sparql      "construct {?s a notepad:Dataset} where { graph ?s { ?session a notepad:Session } }" ',
-            'notepad:Datasets   rdfs:label          "Datasets"',
+            'inst:Datasets   sd:SPARQL11Update      "construct {?s a inst:Dataset} where { graph ?s { ?session a inst:Session } }" ',
+            'inst:Datasets   rdfs:label          "Datasets"',
 
-            'notepad:Sessions   notepad:sparql      "construct {?s a notepad:Session} where {?s a notepad:Session}" ',
-            'notepad:Sessions   rdfs:label          "Sessions"'
+            'inst:Sessions   sd:SPARQL11Update      "construct {?s a inst:Session} where {?s a inst:Session}" ',
+            'inst:Sessions   rdfs:label          "Sessions"'
             ));
 	});
 });

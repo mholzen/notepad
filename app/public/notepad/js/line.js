@@ -625,8 +625,8 @@
             var literal = this.getObject().literal();
 
             // the datatype should already be set.  Call discoverDatatype() on the literal, if not.
-            if ( literal.getLiteral().datatype() != 'notepad:sparql' ) {
-                console.warn('[line]', 'literal is not of notepad:sparql datatype');
+            if ( literal.getLiteral().datatype() != 'sd:SPARQL11Update' ) {
+                console.warn('[line]', 'literal is not of sd:SPARQL11Update datatype');
                 // consider: test this using instanceOf
                 return;
             }

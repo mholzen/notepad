@@ -1,0 +1,40 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix inst:  <http://instruct.vonholzen.org/#> .
+@prefix dc:   <http://purl.org/dc/elements/1.1/#> .
+@prefix sd:   <http://www.w3.org/ns/sparql-service-description#> .
+
+rdfs:member
+      rdfs:label "member";
+      inst:inverseLabel "appears on".
+
+rdf:type
+      rdfs:label "a".
+
+rdfs:range
+      rdfs:label "Range".
+
+# consider: replace sd:SPARQL11Update with sd:SPARQL11Update
+sd:SPARQL11Update
+      rdfs:label "Sparql";
+      rdfs:range sd:SPARQL11Update.
+
+inst:Session
+      rdfs:label "Session".
+
+inst:Sessions
+      rdfs:label "Sessions";
+      sd:SPARQL11Update "construct {?s a inst:Session} where {?s a inst:Session}".
+
+inst:All
+      rdfs:label "All";
+      sd:SPARQL11Update "construct {?s ?p ?o} where {?s ?p ?o filter not exists {?s a ?session filter (regex(str(?session), "Session"))}}".
+
+inst:Datasets
+      rdfs:label "Datasets";
+      sd:SPARQL11Update "construct {?g a sd:Dataset} where { graph ?g { ?s ?p ?o } }".
+
+inst:Workspaces
+      rdfs:label "Workspaces";
+      sd:SPARQL11Update "construct {?g a inst:Workspace} where { graph ?g { ?session a inst:Session } }".
+
