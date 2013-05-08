@@ -195,7 +195,13 @@
             if (!endpoint) {
                 return;
             }
-            return this.getQuery().execute(endpoint, {}, this.addSubjects.bind(this));
+            var container = this;
+            return this.getQuery().execute(endpoint, {}, function(triples) {
+                TempFusekiEndpoint(triples, function() {
+                    container.element.endpoint({endpoint: this});
+                    container.addSubjects(triples);                    
+                })
+            });
         },
         unload: function() {
             if (this.getNotepad()) {
