@@ -38,6 +38,9 @@
                 : undefined;
         },
         _create: function() {
+            if ( ! this._line() ) {
+                return;
+            }
             // consider: send triples to a "read only urilabel" widget
             this.element.append(this._subject());
             this.element.append(this._list());
@@ -56,7 +59,10 @@
     $.widget("notepad.externalLink", {
         _create: function() {
             if (! this._source() ) {  // requires a urilabel
-                throw new Error("cannot create an externalLink without a urilabel");
+                // when creating an external link while creating a line, this throws
+                // throw new Error("cannot create an externalLink without a urilabel");
+                console.warn ("cannot create an externalLink without a urilabel");
+                return;
             }
             var element = this._source().element;
 
@@ -141,5 +147,7 @@
         },
 
     });
+
+    $.notepad.externalUri = externalUri;
 
 }(jQuery));
