@@ -117,8 +117,7 @@ testWithContainer("discoverPredicate",
 test("discoverSparql", function() {
     var el = $("<li>").line();
     var line = el.data('notepadLine');
-
-    line.setLineLiteral( toLiteral('construct {?s ?p ?o} from {?s ?p ?o}', 'notepad:sparql') );
+    line.setLineLiteral( toLiteral('construct {?s ?p ?o} from {?s ?p ?o}', 'sd:SPARQL11Update') );
     assertThat(line.discoverSparql(), instanceOf(Query));
 });
 
