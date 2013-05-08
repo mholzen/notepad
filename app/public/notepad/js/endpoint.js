@@ -2,7 +2,7 @@
 
     $.widget("notepad.endpoint", {
 
-        // This widget manages the "notepad:endpoint" predicate under its DOM element
+        // This widget manages the "sd:endpoint" predicate under its DOM element
 
         options: {
             // The 'endpoint' is either a FusekiEndpoint object or a URI used to construct a FusekiEndpoint.
@@ -12,43 +12,49 @@
             display:    false
         },
 
-
         _setOption: function(key, value) {
             this._super(key, value);
             switch(key) {
-                case 'dataset':
                 case 'endpoint':
+                    // setting an endpoint without a data should disable dataset field
+                    break;
+                case 'dataset':
+                    this.options.dataset = value;
+                    break;
                 case 'display':
-                    this.updateElement();
-                break;
+                    break;
             }
+            this.refresh();
         },
         _create: function() {
-            this.updateElement();
+            this.refresh();
         },
         _destroy: function() {
         },
         getLabel: function() {
-            var elements = this.element.find('[about="notepad:endpoint"]');
+            var elements = this.element.find('[about="sd:endpoint"]');
             if (elements.length > 0) {
                 return elements;
             }
-            return $('<div about="notepad:endpoint">').appendTo(this.element);
+            return $('<div about="sd:endpoint">').appendTo(this.element);
         },
         getElement: function() {
-            var elements = this.element.find('[property="notepad:endpoint"]');
+            var elements = this.element.find('[property="sd:endpoint"]');
             if (elements.length > 0) {
                 return elements;
             }
-            return $('<div property="notepad:endpoint">').appendTo(this.element);
+            return $('<div property="sd:endpoint">').appendTo(this.element);
         },
-        updateElement: function() {
+        refresh: function() {
             if (this.options.display) {
                 var endpoint = this.getEndpoint();
                 if (endpoint) {
-                    this.getElement().attr('content', this.getEndpoint().uri);
+                    this.getElement().attr('content', endpoint.uri);
                     this.getElement().find('[rel="rdfs:label"]').remove();
-                    this.getElement().append('<div rel="rdfs:label">'+this.getEndpoint()+'</div>');
+                    this.getElement().append('<div rel="rdfs:label">'+endpoint+'</div>');
+
+                    this.element.find('[rel="sd:dataset"]').text( endpoint.graph );
+
                 } else {
                     this.getElement().removeAttr('content');
                     this.getElement().find('[rel="rdfs:label"]').remove();
@@ -57,22 +63,26 @@
                 this.getElement().remove();
             }
         },
-        identity: function() {
-            var identity = localStorage.identity ?
-                localStorage.identity :
-                ( localStorage.identity = $.notepad.newUri());
-            return toResource(identity);
+        _dataset: function() {
+            return this.element.find('[rel="sd:dataset"]').text();
         },
-        dataset: function() {
-            return this.options.dataset ?
-                this.options.dataset :
-                this.identity();
+        _updateWorkspaces: function(datasets) {
+            var elem = this.element.find('.notepad-container').container();
+            var container = elem.data('notepadContainer');
+            return container.addSubjects(datasets);
         },
         getEndpoint: function() {
+            var endpoint;
             if (typeof this.options.endpoint === "string") {
-                return new FusekiEndpoint(this.options.endpoint, this.dataset());       // Interpret as the URI to the endpoint
+                endpoint = new FusekiEndpoint(this.options.endpoint);       // Interpret as the URI to the endpoint
+            } else {
+                endpoint = this.options.endpoint;
             }
-            return this.options.endpoint;            
+            var dataset = this._dataset() || this.options.dataset;
+            if (dataset) {
+                endpoint.graph = dataset;
+            }
+            return endpoint;
         },
         setUriToFirstResponding: function(uris, callback) {
             var endpoint = this;

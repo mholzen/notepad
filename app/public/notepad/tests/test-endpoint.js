@@ -21,7 +21,19 @@ asyncTest("canAnswer", function() {
 test("create", function() {
     var element = $("<div>").endpoint();
     var endpoint = element.data('notepadEndpoint');
-    assertThat(endpoint.options.endpoint, containsString('localhost'));
+    assertThat(endpoint.getEndpoint(), truth(), "provides a default endpoint");
+});
+
+test("create and change dataset", function() {
+    var template = $('<div rel="sd:dataset">');
+
+    var element = $("<div>").append(template).endpoint({dataset: ":aDataset", display: true});
+    var endpoint = element.data('notepadEndpoint');
+    assertThat(endpoint.getEndpoint().graph, ":aDataset");
+    assertThat(element.text(), containsString(":aDataset"));
+
+    element.find(":contains(:aDataset)").text(":anotherDataset");
+    assertThat(endpoint.getEndpoint().graph, ":anotherDataset");
 });
 
 module("given an element", {
@@ -36,8 +48,8 @@ module("given an element", {
 test("create with URI", function() {
     var element = $("#endpoint").endpoint({endpoint: testEndpointUri});
     var endpoint = element.data('notepadEndpoint');
-    assertThat(endpoint.getEndpoint().uri, testEndpointUri);
-    assertThat(endpoint.element.children('[rel="notepad:endpoint"]').length, 0);
+    assertThat(endpoint.getEndpoint().url, testEndpointUri);
+    assertThat(endpoint.element.children('[rel="sd:endpoint"]').length, 0);
     endpoint.option('display', true);
     assertThat(endpoint.element.text(), containsString(testEndpointUri));
 });
@@ -46,7 +58,8 @@ test("create with endpoint", function() {
     var endpoint = new ContainerChainEndpoint(this);
     var element = $("#endpoint").endpoint({endpoint: endpoint, display: false});
     var endpoint = element.data('notepadEndpoint');
-    assertThat(endpoint.element.children('[rel="notepad:endpoint"]').length, 0);
+    assertThat(endpoint.element.children('[rel="sd:endpoint"]').length, 0);
+
 });
 
 asyncTest("setUriToFirstResponding", function() {

@@ -518,7 +518,7 @@
                 'prov:affects': {
                     a: 'sp:TriplePattern',
                     'sp:subject': this.getUri(),
-                    'sp:predicate': 'notepad:endpoint',
+                    'sp:predicate': 'sd:endpoint',
                     'sp:object': 'spin:_uri'                      // could be ommitted if absent implies a variable
                 },
                 'prov:used': uris,
@@ -529,7 +529,7 @@
             // could be: describeActivity(endpointWidget, uris));
 
 
-            this.element.find("[property='notepad:endpoint']").tooltip({
+            this.element.find("[property='sd:endpoint']").tooltip({
                 content: function() {
                     return activityDescription['rdfs:label'];
                 },
