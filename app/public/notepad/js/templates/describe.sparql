@@ -9,14 +9,31 @@ WHERE {
 	LET ( ?about := {{{about}}} )
 
 	{ ?about ?predicateForward ?neighbourForward .
-#		OPTIONAL { ?neighbourForward rdfs:label ?label1 }
+		# OPTIONAL { ?neighbourForward rdfs:label ?label1 }
 		BIND (?neighbourForward as ?neighbour)
+
+		# Ignore 'a inst:Session'
+		# FILTER NOT (
+		#	sameTerm(?predicateForward, a) AND sameTerm(?neighbourForward, inst:Session)
+		# )
 	}
 	UNION
 	{ ?neighbourBackward ?predicateBackward ?about .
-#		OPTIONAL { ?neighbourBackward rdfs:label ?label2 }
+		# OPTIONAL { ?neighbourBackward rdfs:label ?label2 }
 		BIND (?neighbourBackward as ?neighbour)
-		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session }
+
+		# Ignore the sessions that this URI is a member of
+		FILTER NOT EXISTS {
+			{ ?neighbourBackward a <http://www.vonholzen.org/instruct/notepad/#Session> }		# past
+			UNION
+			{ ?neighbourBackward a inst:Session }												# current
+			UNION {
+				?neighbourBackward dc:creator ?notepad 											# future
+					FILTER ( ?notepad IN (
+			  			<http://localhost:8080/notepad>,
+			  			<http://instruct.vonholzen.org/notepad> ) )
+		  	}
+		}
 	}
 
 }

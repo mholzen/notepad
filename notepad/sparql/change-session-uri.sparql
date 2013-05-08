@@ -1,0 +1,16 @@
+# Change one URI to another
+
+# Essentially an HTTP 301 - Permanent Redirect
+
+
+# should: copy the affected dataset to a uri. define meta data for it (time, author, purpose, expectations, provenance, etc...)
+# could be:
+#	applied continuously
+#	monitored for rate of change significant departure from 1/t
+
+PREFIX notepad:		<http://www.vonholzen.org/instruct/notepad/#>
+PREFIX inst:        <http://instruct.vonholzen.org/#>
+
+DELETE { ?s ?p notepad:Session }
+INSERT { ?s ?p inst:Session }
+WHERE { ?s ?p notepad:Session }

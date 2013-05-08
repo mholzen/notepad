@@ -41,7 +41,7 @@ WHERE
 					UNION 
 					{ ?neighbourBackward ?predicateBackward ?about 
 						BIND (?neighbourBackward as ?neighbour) 
-						FILTER EXISTS { ?neighbourBackward a notepad:Session }
+						FILTER EXISTS { ?neighbourBackward a inst:Session }
 					} 
 				} 
 			}

@@ -23,7 +23,7 @@ WHERE {
 	UNION 
 	{ ?neighbourBackward ?predicateBackward ?about 
 		BIND (?neighbourBackward as ?neighbour) 
-#		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } 
+#		FILTER NOT EXISTS { ?neighbourBackward a inst:Session } 
 	} 
  
 	# Ignore  

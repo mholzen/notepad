@@ -7,7 +7,7 @@ WHERE {
 	} 
 	UNION 
 	{ ?neighbourBackward ?predicateBackward ?about .
-		FILTER NOT EXISTS { ?neighbourBackward a notepad:Session } 
+		FILTER NOT EXISTS { ?neighbourBackward a inst:Session } 
 		?predicateBackward rdfs:label ?labelBackward .
 
 	} 
