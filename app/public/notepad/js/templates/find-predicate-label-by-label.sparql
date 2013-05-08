@@ -7,7 +7,7 @@ WHERE {
 	UNION
 	{ ?predicate a rdf:Property }
 
-	OPTIONAL { ?predicate rdfs:label 		   ?label 	     FILTER regex(?label, "{{{rdfs:label}}}", "i") } .
+	OPTIONAL { ?predicate rdfs:label 		?label 			FILTER regex(?label, "{{{rdfs:label}}}", "i") } .
 	OPTIONAL { ?predicate inst:inverseLabel	?inverseLabel	FILTER regex(?inverseLabel, "{{{rdfs:label}}}", "i") } .
 
 	# optional { ?predicate owl:inverseOf [ rdfs:label ?inverseLabel ] } .

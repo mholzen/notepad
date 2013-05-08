@@ -4,6 +4,6 @@
 	$.notepad.namespaces[''] = 'http://localhost:3030/dev#';
 
     JsMockito.Integration.QUnit();
-    JsHamcrest.Integration.QUnit(); 
+    JsHamcrest.Integration.QUnit();
 
 }(jQuery));

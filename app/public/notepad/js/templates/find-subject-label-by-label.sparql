@@ -3,7 +3,7 @@ CONSTRUCT {
 			 inst:reason ?reason .
 }
 WHERE {
-    ?subject ?labelPredicate ?label
+	?subject ?labelPredicate ?label
     FILTER (
     	isLiteral(?label) &&
     	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent) &&
