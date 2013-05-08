@@ -11,12 +11,10 @@ test("when I create a notepad, it should have initial components", function(){
    equal(this.div.find("li").length, 1, "should have one line element");
 
    assertThat(this.div.find("li [contenteditable='true']").length, greaterThan(0), "the first line should have at least one contenteditable area");
-   assertThat(this.div.find('li .notepad-predicate-label').length, greaterThan(0), "the first line should have a predicate label");
 
    var notepad = this.div.data('notepadNotepad');
-   ok(notepad,"it should have a widget");
 
-   assertThat(notepad.triples(), hasItem(equalToObject(toTriple(notepad.getUri(), "rdf:type", "notepad:Session"))));
+   assertThat(notepad.triples(), hasItem(equalToObject(toTriple(notepad.getUri(), "rdf:type", "inst:Session"))));
    
    // The following tests may be too highly coupled
    equal(notepad.getLines().length,1, "should have one line widget");
