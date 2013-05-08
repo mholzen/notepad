@@ -468,6 +468,11 @@
 
             triples.push(toTriple(this.getUri(), "rdf:type", "inst:Session")); // ALT: use RDFAs typeof attribute instead
 
+            var user = this.option('identity');
+            if (user) {
+                triples.push(toTriple(this.getUri(), "dc:creator", user)); // ALT: use RDFAs typeof attribute instead
+            }
+
             $.merge(triples,this.getContainer().triples());
 
             return triples;
