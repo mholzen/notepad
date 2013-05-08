@@ -1,0 +1,2 @@
+COPY default to :default-archived
+MOVE default to :marc
