@@ -437,7 +437,7 @@
             // rdfaTriples = $.notepad.toTriples(rdf.databank);  // This shouldn't need its own code
             // triples.add(rdfaTriples);
 
-            triples.push(new Triple(this.getUri(), "rdf:type", "notepad:Session")); // ALT: use RDFAs typeof attribute instead
+            triples.push(toTriple(this.getUri(), "rdf:type", "inst:Session")); // ALT: use RDFAs typeof attribute instead
 
             $.merge(triples,this.getContainer().triples());
 
