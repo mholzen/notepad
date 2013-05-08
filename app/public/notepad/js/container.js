@@ -2,7 +2,7 @@
 
     var MAX_DEPTH = 8;
     var MAX_TRIPLES = 500;
-    var MAX_ROWS = 50;
+    var MAX_LINES = 50;
     var MAX_TRIPLES_BEFORE_COLLAPSING = 10;
     var MAX_TRIPLES_BEFORE_FILTERING = 2;
 
@@ -213,11 +213,8 @@
 
             console.log("[container]","updating with ", triples.length, " triples");
 
-            triples.sort();
-
-            if (triples.length > MAX_ROWS) {
-                console.debug("too many rows.  Displaying only " + MAX_ROWS)
-                triples = triples.slice(-MAX_ROWS);
+            if (triples.length > MAX_TRIPLES) {
+                console.warn('[container]', 'number of triples >' + MAX_TRIPLES);
             }
 
             _.each(triples, function(triple) {
@@ -230,7 +227,7 @@
                     console.debug("Triple already expressed in DOM path", triple);
                     return;
                 }
-                if (container.getNotepad() && container.getNotepad().triples().length >= MAX_TRIPLES) {
+                if (container.getAllLineElements().length >= MAX_LINES) {
                     console.warn("Max triple count reached");
                     return;
                 }                
