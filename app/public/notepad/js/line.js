@@ -163,6 +163,10 @@
             this.getPredicate().getLabel().element.show();
         },
         hidePredicate: function() {
+            // do nothing if the element doesn't exit
+            if (! this.getPredicate().hasLabel()) {
+                return;
+            }
             this.getPredicate().getLabel().element.hide();
         },
         _predicateUriSameAsContainer: function() {
