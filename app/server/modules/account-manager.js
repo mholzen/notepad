@@ -24,7 +24,7 @@ var accounts = db.collection('accounts');
 
 exports.autoLogin = function(user, pass, callback)
 {
-	accounts.findOne({user:user}, function(e, o) {
+	accounts.findOne({user:user.toLowerCase()}, function(e, o) {
 		if (o){
 			o.pass == pass ? callback(o) : callback(null);
 		}	else{
@@ -35,7 +35,7 @@ exports.autoLogin = function(user, pass, callback)
 
 exports.manualLogin = function(user, pass, callback)
 {
-	accounts.findOne({user:user}, function(e, o) {
+	accounts.findOne({user:user.toLowerCase()}, function(e, o) {
 		if (o == null){
 			callback('user-not-found');
 		}	else{
@@ -54,6 +54,7 @@ exports.manualLogin = function(user, pass, callback)
 
 exports.addNewAccount = function(newData, callback)
 {
+	newData.user = newData.user.toLowerCase();
 	accounts.findOne({user:newData.user}, function(e, o) {
 		if (o){
 			callback('username-taken');
@@ -76,6 +77,7 @@ exports.addNewAccount = function(newData, callback)
 
 exports.updateAccount = function(newData, callback)
 {
+	newData.user = newData.user.toLowerCase();
 	accounts.findOne({user:newData.user}, function(e, o){
 		o.name 		= newData.name;
 		o.email 	= newData.email;
