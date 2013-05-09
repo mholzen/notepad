@@ -128,6 +128,7 @@ module.exports = function(app) {
 				// this callback takes a moment to return //
 				// should add an ajax loader to give user feedback //
 					if (!e) {
+						console.log('[router /lost-password]', 'password reset email set');
 					//	res.send('ok', 200);
 					}	else{
 						res.send('email-server-error', 400);
