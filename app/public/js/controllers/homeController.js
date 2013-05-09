@@ -48,7 +48,7 @@ function HomeController()
 	}
 
 	this.showLockedAlert = function(msg){
-		$('.modal-alert').modal({ show : false, keyboard : false, backdrop : 'static' });
+		$('.modal-alert').modal({ show : false, keyboard : true, backdrop : 'static' });
 		$('.modal-alert .modal-header h3').text('Success!');
 		$('.modal-alert .modal-body p').html(msg);
 		$('.modal-alert').modal('show');
