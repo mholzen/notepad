@@ -4,7 +4,7 @@ asyncTest("verify and reset core", function() {
 
     var coreTriples = toTriples(
         'rdfs:member        rdfs:label           "member" ',
-        'rdfs:member        inst:inverseLabel    "appears on" ',
+        'rdfs:member        inst:inverseLabel    "appears under" ',
         'rdf:type           rdfs:label           "a"',
         'rdfs:range         rdfs:label           "Range" ',
 
