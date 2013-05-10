@@ -190,7 +190,7 @@ module.exports = function(app) {
 	    });
 	});
 
-	app.get('/tests', function(req, res) {
+	app.get('/tests/', function(req, res) {
 	  	fs.readdir("app/public/notepad/tests", function(err, data){
 	  		data = data
 	  			.reduce( function(result, file) {
@@ -200,7 +200,7 @@ module.exports = function(app) {
 	  				}
 	  				return result;
 	  			}, []);
-	    	res.render('tests/index', {"files": data});
+	    	res.render('tests/index', {"names": data});
 	  	});
 	});
 
