@@ -44,14 +44,6 @@
             this._setUri(uri);
             return this.getContainer().load();
         },
-        open: function(uri) {
-            $("#control").hide().appendTo('body');                  // move the control out of the line to remove
-            this.unloaded(this.getContainer().triples());           // to avoid triples being marked as deleted
-            this.getContainer().element.empty();
-            this.getContainer().destroy();
-            var line = this.getContainer().appendLine();            // getContainer() will recreate the deleted element
-            line.setUri(uri);
-        },
         ul: function() {
             var container = this.element.find('ul.data');
             return container.length ? container : $('<ul class="data">').appendTo(this.element);
@@ -511,15 +503,17 @@
             return (triple.predicate != 'nmo:htmlMessageContent' && triple.predicate != 'nmo:plainTextMessageContent');
             // could be generalized to excluding any objects that cannot be edited by the current notepad (images, audio, svg, ...)
         },
-        reset: function() {
+        reset: function(uri) {
             // should: confirm if changes will be discarded
             $("#control").hide().appendTo('body');  // move the control out of the line to remove
             this._loaded = null;
             this.getContainer().reset();
+            if (uri) {
+                this.getContainer().getAllLines()[0].setUri(uri);
+            }
             this.focus();
             return this;
         },
-
         added: function() {
             return this.triples().minus( this.loaded() ).filter(this.canSave);
         },
