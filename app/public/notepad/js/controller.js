@@ -19,16 +19,6 @@ var log = console;
 
 $(function() {
 
-    function getEndpoint() {
-        var endpoint = new FusekiEndpoint ( $.notepad.getParameterByName('endpoint') || $.notepad.defaultEndpoint.url );
-        
-        // Set the meaning of the empty prefix ':' to the value of the endpoint,
-        // so that the application (in the page URL) does not interfere with the data URI
-        $.notepad.namespaces[''] = endpoint.url + '#';
-
-        return endpoint;
-    }
-
     function user() {
         var cookie = $.cookie('user');
         if (! cookie) {
@@ -72,7 +62,7 @@ $(function() {
     }
 
     function setupNotepad(datasetParam, user) {
-        var endpoint = getEndpoint();
+        var endpoint = $.notepad.getEndpoint();
         var datasetParam = $.notepad.getParameterByName('dataset');
 
         if ( datasetParam ) {

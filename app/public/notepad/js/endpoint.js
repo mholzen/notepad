@@ -183,4 +183,15 @@
         }
     };
 
+    function getEndpoint() {
+        var endpoint = new FusekiEndpoint ( $.notepad.getParameterByName('endpoint') || $.notepad.defaultEndpoint.url );
+        
+        // Set the meaning of the empty prefix ':' to the value of the endpoint,
+        // so that the application (in the page URL) does not interfere with the data URI
+        $.notepad.namespaces[''] = endpoint.url + '#';
+
+        return endpoint;
+    }
+    $.notepad.getEndpoint = getEndpoint;        // should: refactor into a controller component
+
 }(jQuery));
