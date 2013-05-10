@@ -153,6 +153,14 @@
                 line.discoverPredicate(event);
             });
 
+            // Place the caret at line end, when clicking at the end of a line
+            this.element.on('click', '.notepad-line', function(event) {
+                // should: profile to understand why it feels sluggish
+                if ( ! $.contains($(event.currentTarget)[0], document.activeElement) ) {
+                    console.debug('line does not contain element that has the focus');
+                    $(event.currentTarget).data('notepadLine').focus().caretToEnd();
+                }
+            });
 
             $('body').on('keydown', function(event) {
                 if ( $(event.target).attr('contenteditable') === 'true' ) {
