@@ -125,8 +125,8 @@
                         // Must prevent autocomplete from triggering
                     }
                 case 83: /* s */
-                    if (event.metaKey) { // Alt/Cmd - S
-                        event.preventDefault();     // prevents save dialog
+                    if (event.metaKey || event.ctrlKey) { // Cmd-S or Ctrl-S
+                        event.preventDefault(); // prevents save dialog
                         notepad.save();
                     }
 
@@ -162,7 +162,7 @@
                     notepad.reset();
                     return false;
                 }
-                if (event.keyCode === 83 && event.metaKey /* Cmd-S */) {
+                if (event.keyCode === 83 && (event.metaKey || event.ctrlKey)) {  // Cmd-S or Ctrl-S
                     notepad.save();
                     return false;
                 }
