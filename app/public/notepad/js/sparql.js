@@ -33,13 +33,10 @@ FusekiEndpoint.prototype = {
         if (this.graph === 'default' || !this.graph) {
             return undefined;
         }
-        return toResource(this.graph).toURL();
-
-        // consider: 
-        // return [ 
-        //     toResource(this.graph).toURL(),
-        //     toResource(':core').toURL()
-        // ];
+        return [
+            toResource(this.graph).toURL(),
+            toResource(':core').toURL()
+        ];
     },
 
     query: function(command, callback) {
