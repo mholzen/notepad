@@ -301,4 +301,26 @@ asyncTest("deleteInsertData", function() {
     });
 });
 
+asyncTest("clear only affects current dataset", function() {
+    var endpoint = this.endpoint;
+    var anotherEndpoint = new FusekiEndpoint('http://localhost:3030/test', $.notepad.newUri());
+
+    var timestamp = new Date().getTime();
+    var initialTriples = toTriples(':s :p '+timestamp);
+
+    endpoint.insertData(initialTriples).then(function() {
+        return anotherEndpoint.insertData(initialTriples);
+    }).then(function() {
+        return endpoint.clear();
+    }).then(function() {
+        return endpoint.constructAll();
+    }).then(function(triples) {
+        assertThat(triples.length, 0, "the cleared endpoint should have no triples");
+        return anotherEndpoint.constructAll();
+    }).then(function(triples) {
+        assertThat(triples.length, initialTriples.length, "the other endpoint should be unaffecte");
+        start();
+    });
+});
+
 }(jQuery));

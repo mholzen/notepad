@@ -91,12 +91,14 @@ FusekiEndpoint.prototype = {
         command = command.replace(/DELETE ({.*?})/g, function(match, pattern) {
             return 'DELETE ' + endpoint._graphSparqlPattern(pattern);
         });
+        command = command.replace(/WHERE ({.*?})/g, function(match, pattern) {
+            return 'WHERE ' + endpoint._graphSparqlPattern(pattern);
+        });
         return command;
     },
     update: function(command, callback) {
         command = this._addGraph(command);
         console.log('[endpoint]', 'update', 'POST', {update:command});
-
         return $.post(this.updateUrl(), {update: command, 'using-graph-uri': this._defaultGraphUriParams() }, function() {
             // There is a delay before the updates are available in the query server.
             // So we force the client to wait for this delay here.
@@ -131,8 +133,7 @@ FusekiEndpoint.prototype = {
         }
     },
     clear: function(callback) {
-        var pattern = this._graphSparqlPattern ( '{ ?s ?p ?o }' );
-        return this.update('DELETE '+pattern+' WHERE '+pattern, callback);
+        return this.update('DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }', callback);
     },
     post: function(triples, callback) {
         // Not yet implemented
