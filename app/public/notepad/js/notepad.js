@@ -485,9 +485,6 @@
 
             return triples;
         },
-        deletedTriples: function() {
-            return $.grep(this.triples(), function(triple) { return triple.operation === 'delete'; });
-        },
         contains: function(triple) {
             return this.triples().contains(triple);
         },
