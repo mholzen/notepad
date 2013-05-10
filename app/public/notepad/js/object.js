@@ -141,7 +141,7 @@
         },
 
         focus: function() {
-            this.element.find('[contenteditable="true"]:eq(0)').focus();
+            return this.element.find('[contenteditable="true"]:eq(0)').focus();
         },
 
 
