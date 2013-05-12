@@ -1,2 +1,2 @@
-COPY default to :default-archived
-MOVE default to :marc
+PREFIX prod:        <http://instruct.vonholzen.org:3030/dev#>
+MOVE default to prod:instruct
