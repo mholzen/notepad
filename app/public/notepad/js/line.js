@@ -133,9 +133,14 @@
         _setPredicateUri: function(uri) {
             this.getPredicate().setUri(uri);
         },
+        // replace with setPredicate
         setContainerPredicateUri: function(uri, direction) {
             this.getPredicate().setUriDirection(uri, direction);
             this.updatePredicateDisplay();
+        },
+        setPredicate: function(uri,direction) {
+            this.getPredicate().setUriDirection(uri, direction);
+            return this.updatePredicateDisplay();
         },
         newPredicateUri: function(term) {
             this.getPredicate().newUri();
