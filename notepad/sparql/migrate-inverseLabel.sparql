@@ -1,0 +1,6 @@
+PREFIX notepad:		<http://www.vonholzen.org/instruct/notepad/#>
+PREFIX inst:        <http://instruct.vonholzen.org/#>
+
+DELETE { graph ?g { ?s notepad:inverseLabel ?o } }
+INSERT { graph ?g { ?s inst:inverseLabel ?o } }
+WHERE { graph ?g { ?s notepad:inverseLabel ?o } }

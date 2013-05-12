@@ -1,0 +1,5 @@
+PREFIX notepad:		<http://www.vonholzen.org/instruct/notepad/#>
+PREFIX inst:        <http://instruct.vonholzen.org/#>
+
+SELECT (COUNT(DISTINCT ?s) as ?count)
+WHERE { GRAPH ?g { ?s notepad:inverseLabel ?o } }
