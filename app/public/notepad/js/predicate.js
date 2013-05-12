@@ -134,7 +134,7 @@
         },
 
         _setDirection: function(direction) {
-            if (direction === FORWARD) {
+            if (direction === FORWARD || direction === undefined) {
                 var uri = this.element.attr('rev');
                 this.element.attr('rel', uri).removeAttr('rev');
             } else if (direction === BACKWARD) {
@@ -147,8 +147,6 @@
                         object.uri();
                     }
                 });
-            } else {
-                throw new Error('unknow direction', direction);
             }
         },
         setDirection: function(direction) {
