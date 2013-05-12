@@ -292,6 +292,16 @@ ul {
     padding-right: 3px;
 }
 
+/*
+ * LITERALS
+ */
+
+[contenteditable="true"]:active,
+[contenteditable="true"]:focus{
+    border:none;
+    outline:none;
+}
+
 
 /*
  * COLUMNS, HEADERES
