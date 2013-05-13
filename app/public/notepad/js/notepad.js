@@ -58,12 +58,15 @@
         getLines: function() {
             return this.getContainer().getLines();
         },
+        getSession: function() {
+            return this.element.data('notepadSession');
+        },
 
         // Set up the notepad
         _create: function() {
             var notepad = this;
 
-            this.element.addClass("notepad notepad-session");
+            this.element.addClass("notepad").session({triples: this._triples.bind(notepad)});
 
             // Create the endpoint widget
             this.element.endpoint({
@@ -229,7 +232,7 @@
             }
 
             // Get the list of lines
-            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements().filter(':visible');
+            var lines = this.getContainer().getAllLineElements().filter(':visible');
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -249,7 +252,7 @@
             }
 
             // Get the list of lines
-            var lines = li.data('notepadLine').getNotepad().getContainer().getAllLineElements().filter(':visible');
+            var lines = this.getContainer().getAllLineElements().filter(':visible');
             var i;
             for (i=0; i<lines.length; i++) {
                 if (lines[i] == li[0]) {
@@ -459,7 +462,7 @@
             this.getContainer()._updateFromRdf(triples);
         },
         
-        triples: function(){
+        _triples: function() {
             var triples = new Triples();
 
             // var rdf = this.element.children('div').rdf();
@@ -472,9 +475,11 @@
             if (user) {
                 triples.push(toTriple(this.getUri(), "dc:creator", user)); // ALT: use RDFAs typeof attribute instead
             }
-
-            $.merge(triples,this.getContainer().triples());
-
+            return triples;
+        },
+        triples: function(){
+            var triples = this._triples();
+            triples.add(this.getContainer().triples());
             return triples;
         },
         contains: function(triple) {
@@ -483,30 +488,10 @@
         expresses: function(triple) {
             return this.triples().expresses(triple);
         },
-        loaded: function(triple) {
-            if (!this._loaded) {
-                this._loaded = new Triples();
-            }
-            if (triple === undefined) {
-                return this._loaded;
-            }
-            this._loaded.add(triple);
-            return this._loaded;
-        },
-        unloaded: function(triples) {
-            if (!this._loaded) {
-                return;
-            }
-            this._loaded = this._loaded.minus(triples);
-        },
-        canSave: function(triple) {
-            return (triple.predicate != 'nmo:htmlMessageContent' && triple.predicate != 'nmo:plainTextMessageContent');
-            // could be generalized to excluding any objects that cannot be edited by the current notepad (images, audio, svg, ...)
-        },
         reset: function(uri) {
             // should: confirm if changes will be discarded
             $("#control").hide().appendTo('body');  // move the control out of the line to remove
-            this._loaded = null;
+            this.getSession().reset();
             this.getContainer().reset();
             if (uri) {
                 this.getContainer().getAllLines()[0].setUri(uri);
@@ -514,20 +499,15 @@
             this.focus();
             return this;
         },
-        added: function() {
-            return this.triples().minus( this.loaded() ).filter(this.canSave);
-        },
-        removed: function() {
-            return this.loaded().minus( this.triples() ).filter(this.canSave);
-        },
 
         _save: function() {
-            var removed = this.removed();
-            var added = this.added();
+            var session = this.getSession();
+            var removed = session.removed();
+            var added = session.added();
             return this.getEndpoint().deleteInsertData(removed, added)
                 .success(function() {
-                    notepad.loaded(added);
-                    notepad.unloaded(removed);
+                    session.loaded(added);
+                    session.unloaded(removed);
                 });
         },
 
@@ -599,5 +579,5 @@
             line.delete();
         },
     });
-    
+
 }(jQuery));

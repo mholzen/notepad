@@ -50,8 +50,8 @@
                 widget.setUri(uris[0], triples);
 
                 // mark any triples resulting from setUri as having been loaded by this session
-                if (widget.getNotepad()) {
-                    widget.getNotepad().loaded(widget.triples());
+                if (widget.getSession()) {
+                    widget.getSession().loaded(widget.triples());
                 }
 
                 // should: focus on the source text element

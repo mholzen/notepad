@@ -98,3 +98,14 @@ asyncTest("predicate-label-forward", function() {
     });
 });
 
+var triples = toTriples(':s rdfs:label "line"');
+
+testWithTriples("pending", triples, function() {
+    var urilabel = $('<div about=":s">').urilabel().appendTo($('<div>').endpoint()).data('notepadUrilabel');
+
+    assertThat(urilabel.pending(), truth(), "the urilabel is pending a query");
+    urilabel.pending().then(function() {
+        assertThat(urilabel.pending(), not(truth()), "after completion, the urilabel is not pending anymore");
+        start();
+    });
+})

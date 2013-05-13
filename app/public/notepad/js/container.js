@@ -45,6 +45,10 @@
                 return closestSubject;
             }
         },
+        setUri: function(uri) {
+            this.element.attr('about', uri);
+            return this.load();
+        },
         getUri: function() {
             var subjectElement = this.getSourceElement();
             if (subjectElement) {
@@ -61,15 +65,8 @@
             }
             return query;
         },
-        getNotepad: function() {
-            return this.element.parents('.notepad-session').data("notepadNotepad");
-        },
-        getParent: function() {
-            var parent = this.element.parents(".notepad-container").data('notepadContainer');
-            if (parent) {
-                return parent;
-            }
-            return this.getNotepad();
+        getSession: function() {
+            return this.element.closestSession();
         },
         getDepth: function() {
             return this.element.parents(".notepad-container").length;
@@ -204,8 +201,8 @@
             });
         },
         unload: function() {
-            if (this.getNotepad()) {
-                this.getNotepad().unloaded(this.triples());
+            if (this.getSession()) {
+                this.getSession().unloaded(this.triples());
             }
             this.element.children('li').remove();
         },
@@ -270,8 +267,9 @@
                     line.setUri(lineSelector.line);
                 }
 
-                if (container.getNotepad()) {
-                    container.getNotepad().loaded(triple);
+                // consider: move this inside load(), to allow update(triples) to add to the session
+                if (container.getSession()) {
+                    container.getSession().loaded(triple);
                 }
 
             });
@@ -378,8 +376,8 @@
                 $.notepad.clusterQuery.execute(endpoint, {about: about.toSparqlString()}, function(triples) {
                     filters.addAllTriples(triples);
 
-                    // if (container.getNotepad()) {
-                    //     container.getNotepad().loaded(triples);     // to ensure that filter triples are not counted as deleted
+                    // if (container.getSession()) {
+                    //     container.getSession().loaded(triples);     // to ensure that filter triples are not counted as deleted
                     // }
 
                     // dev:techdebt
