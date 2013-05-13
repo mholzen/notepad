@@ -29,7 +29,7 @@
             // should: use literal, to: use autocomplete2 on literal
             autocomplete:       true,
             allowBlankNodes:    true,
-            dynamicTemplate:    true,
+            dynamicTemplate:    false,
         },
         _setOption: function(key, value) {
             this._super(key, value);
@@ -48,8 +48,8 @@
         getEndpoint: function () {
             return this.element.findEndpoint();
         },
-        getNotepad: function() {
-            return this.element.parents('.notepad').data("notepadNotepad");
+        getSession: function() {
+            return this.element.closestSession();
         },
 
         getUri: function() {
@@ -78,9 +78,9 @@
             return promise;
         },
         _setUri: function(uri) {
-            if (this.getUri() && this.getNotepad()) {
+            if (this.getUri() && this.getSession()) {
                 // This might have to go in the public function, if there is a need to set a URI and delete the associated triples
-                this.getNotepad().unloaded(this.triples());
+                this.getSession().unloaded(this.triples());
             }
             this.element.attr('about', uri);
             return this;
@@ -133,7 +133,8 @@
             if (!callback) {
                 return defaultTemplates;
             }
-            return this.templateQuery().execute(this.element.findEndpoint(), undefined, callback);
+            this._query = this.templateQuery().execute(this.element.findEndpoint(), undefined, callback);
+            return this._query;
         },
 
         // refactor: using above
@@ -174,15 +175,18 @@
             var label = this;
             var template = new Template(this.options.template);
             var dataQuery = this.options.query || $.notepad.queryFromPredicates(template.predicates());
-            dataQuery.execute(this.getEndpoint(), {about: this.getUri()}, function(dataTriples) {
+            label._query = dataQuery.execute(this.getEndpoint(), {about: this.getUri()}, function(dataTriples) {
                 label.dataReceived(dataTriples, callback);
             });
+            return label._query;
         },
         dataReceived: function(triples, callback) {
+            this._query = null;
+
             this.update(triples);
 
-            if (this.getNotepad()) {
-                this.getNotepad().loaded(this.triples());
+            if (this.getSession()) {
+                this.getSession().loaded(this.triples());
             }
             if (callback !== undefined) {
                 callback.apply(this);
@@ -239,6 +243,9 @@
             });
 
             return triples;
+        },
+        pending: function() {
+            return this._query;
         },
 
         // Set up the widget
