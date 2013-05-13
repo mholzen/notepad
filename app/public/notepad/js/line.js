@@ -67,10 +67,6 @@
             // "CONSTRUCT { ?s rdfs:label ?label } WHERE { ?s rdfs:label ?label FILTER sameTerm(?s, {{{about}}} ) }",
         },
 
-        getNotepad: function() {
-            return this.getContainer().getNotepad();
-        },
-
         getEndpoint: function () {
             return this.element.findEndpoint();
         },
@@ -340,7 +336,10 @@
         triples: function() {
             var triples = new Triples();
             if ( this.getObject().isLiteral() ||
-                 ( this.getObject().isUri() && this.getObject().uri().triples().length !== 0 ) )  {
+                 ( this.getObject().isUri() && 
+                    (this.getObject().uri().triples().length !== 0 || this.getObject().uri().pending())
+                ) )  {
+
                 // only count predicate triples if we've defined something about the URI itself
                 triples.add(this.predicateTriples());
             }
@@ -528,26 +527,22 @@
                 this.getChildContainer().refresh();
             }
         },
-        detach: function() {
-            this.getObject().detach();
-            this.element.remove();
-        },
         remove: function() {
-            // TODO:
-            // should unload all triples other than the line membership triple
-            // _destroy should not unload triples (to make delete possible)
-            this.element.remove();
+            var session = this.element.closestSession();    // to use the session after the element was detached
+
+            this.element.detach();                  // to remove the line-container membership triple
+
+            if (session) {
+                session.unloaded(this.triples());   // to unload all other triples
+            }
+
+            this.element.remove();                  // to destroy this widget
         },
         delete: function() {
-            // TODO:
-            // should destroy all (probably not labels though), without unloading anything
+            // All triples, other than predicate labels, will be marked for deletion
             this.element.remove();
         },
-
         _destroy : function() {
-            if (this.getNotepad()) {
-                this.getNotepad().unloaded(this.triples());
-            }
             this.getPredicate().element.remove();
             this.element.removeClass("notepad-line").removeAttr('about');
         },

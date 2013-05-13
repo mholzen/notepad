@@ -103,7 +103,9 @@
                 return undefined;
             }
             if (! (subject = this.getSubjectUri())) {
-                throw new Error("cannot find a subject URI but can find a predicate URI (ie. inconsistent state)");
+                // throw new Error("cannot find a subject URI but can find a predicate URI (ie. inconsistent state)");
+                console.warn('cannot find a triple anymore -- suggests detached element');
+                return undefined;
             }
             var object = object || this.getObject();
             if (!object) {

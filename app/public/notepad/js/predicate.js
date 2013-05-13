@@ -369,15 +369,12 @@
                     // favor: no, to avoid the function passed as option to be triggered immediately
             }
         },
-        detach: function() {
-            if (this.getNotepad()) {
-                this.getNotepad().unloaded(this.getLabel().triples());
-            }
-            this.getLabel().element.remove();
-            this.getObjects().detach();
-        },
         _destroy : function() {
             //this.element.off('predicateurichange');
+            if (this.hasLabel()) {
+                // Don't mark the predicate labels for deletion
+                this.element.closestSession().unload(this.getLabel().triples);
+            }
             this.element.removeClass("notepad-predicate").removeAttr('contenteditable');
         }
     });

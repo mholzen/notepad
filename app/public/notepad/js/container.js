@@ -45,6 +45,10 @@
                 return closestSubject;
             }
         },
+        setUri: function(uri) {
+            this.element.attr('about', uri);
+            return this.load();
+        },
         getUri: function() {
             var subjectElement = this.getSourceElement();
             if (subjectElement) {
