@@ -36,7 +36,7 @@ test("when I create a notepad, it should be destroyed cleanly", function() {
 
 module("given a new notepad", {
     setup: function() {
-        this.div = $("<div><h1 rel='rdfs:label'></h1></div>").appendTo("#qunit-fixture");
+        this.div = $("<div>").appendTo("#qunit-fixture");
         this.div.notepad();
         this.notepad = this.div.data('notepadNotepad');
         this.endpoint = new FusekiEndpoint('http://localhost:3030/test');
@@ -97,6 +97,21 @@ asyncTest("newline beginning", function() {
         start();
     }, 500);
 });
+
+asyncTest("save", function() {
+    var text = 'a unique line ' + $.notepad.newUri();
+    this.div.find('[contenteditable="true"]').text(text);
+
+    var endpoint = this.endpoint;
+
+    this.notepad.save().then( function() {
+        return endpoint.constructAll();
+    }).done(function(triples) {
+        assertThat(triples, hasItem(hasMember('object', text)));
+        start();
+    });
+});
+
 
 module("given a notepad with one line of text", {
     setup: function() {

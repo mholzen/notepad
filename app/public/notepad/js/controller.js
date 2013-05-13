@@ -80,10 +80,10 @@ $(function() {
     });
 
     $(".preview").click(function() {
-        var removed = notepad.removed().toTurtle();
+        var removed = notepad.getSession().removed().toTurtle();
         $(this).siblings(".delete").text(removed);
 
-        var added = notepad.added().toTurtle();
+        var added = notepad.getSession().added().toTurtle();
         $(this).siblings(".update").text(added);
     });
     $(".save").click(function() {

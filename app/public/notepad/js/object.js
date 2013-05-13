@@ -27,9 +27,6 @@
         getEndpoint: function () {
             return this.element.findEndpoint();
         },
-        getNotepad: function() {
-            return this.element.parents('.notepad').data("notepadNotepad");
-        },
 
         isUri: function() {
             return (this.element.data('notepadUrilabel') != undefined);
