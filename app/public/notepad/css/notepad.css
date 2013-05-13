@@ -193,7 +193,7 @@ ul {
 [rel="rdfs:label"] {
     display: inline-block;
     vertical-align: top;
-    min-width: 100px;
+    min-width: 50px;
     max-width: 90%;
 }
 
@@ -212,7 +212,7 @@ ul {
 
 .value {
     display: inline-block;
-    min-width: 200px;
+    min-width: 50px;
 }
 
 .notepad-line {
