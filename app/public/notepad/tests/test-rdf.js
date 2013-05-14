@@ -101,6 +101,10 @@ test("triple", function() {
     assertThat(toTriple(":1 :2 :3").toString(), ':1 :2 :3 .');
     assertThat(toTriple(':1 :2 "abc"').toString(), ':1 :2 "abc" .');
 
+    var func = '<javascript:f()> :p :o';
+    assertThat(toTriple(func).subject.toString(), "javascript:f()");
+    //assertThat(toTriple(func).toString(), func, "a triple's string should recreate the same triple");
+
     // Does not work
     //assertThat(new Triple(':1', ':2', ':3'), equalTo(new Triple(':1', ':2', ':3')), "two identical triples should be identical with ==");
 });

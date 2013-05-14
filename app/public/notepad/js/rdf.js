@@ -76,7 +76,7 @@
         return value.substr(0,value.indexOf(':'));
     }
     function knownScheme(value) {
-        return ["http", "https", "file", "urn", "mailto"].indexOf(value) != -1;
+        return ["http", "https", "file", "urn", "mailto", "javascript"].indexOf(value) != -1;
     }
     $.notepad.knownScheme = knownScheme;
 
