@@ -158,7 +158,7 @@ module.exports = function(app) {
 	app.post('/reset-password', function(req, res) {
 		var nPass = req.param('pass');
 
-		if (! req.session || ! req.session.reset) {
+		if (! req.session || !req.session.reset) {
 			// if the user resubmits a post, the session has been destroyed
 			res.send('unable to update password', 400);
 			return;
