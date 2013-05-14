@@ -129,9 +129,15 @@
             if (! uri ) {
                 return;
             }
+
             // Represent availble operations using triples
             // notepad:6262ff85-39b3-bd65-565d-a2eccdaffdc0
-            return toTriples(toTriple("javascript:urilabel.setUri('"+uri+"')", 'rdfs:label', "Fetch URL..."));
+            var meta = toTriples(
+                "javascript:urilabel.setUri('"+uri+"')", 'rdfs:label', "Fetch URL...",
+                'javascript:urilabel.editUri() rdfs:label "Edit URI..."'
+                );
+
+            return []; // return meta, when it works !
         },
         
         // should: provide this as a menu function
