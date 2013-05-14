@@ -133,8 +133,8 @@
             // Represent availble operations using triples
             // notepad:6262ff85-39b3-bd65-565d-a2eccdaffdc0
             var meta = toTriples(
-                "javascript:urilabel.setUri('"+uri+"')", 'rdfs:label', "Fetch URL...",
-                'javascript:urilabel.editUri() rdfs:label "Edit URI..."'
+                'javascript:externalUri.setUri(urilabel) rdfs:label "Fetch URL..."',
+                'javascript:externalUri.editUri(urilabel) rdfs:label "Edit URI..."'
                 );
 
             return []; // return meta, when it works !
