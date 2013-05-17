@@ -1,0 +1,11 @@
+PREFIX local:			<http://localhost:3030#>
+PREFIX prod:			<http://instruct.vonholzen.org:3030/dev#>
+PREFIX prod-endpoint:	<http://instruct.vonholzen.org:3030/dev/query?default>
+
+SELECT ?s ?p ?o
+WHERE
+{
+	SERVICE prod-endpoint:
+	{ graph prod:instruct { ?s ?p ?o . } }
+}
+limit 10

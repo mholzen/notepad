@@ -1,0 +1,69 @@
+CONSTRUCT {
+	?uri0 rdfs:label ?label0 .
+	?uri1 rdfs:label ?label1 .
+
+	?solution inst:reason ?reason .
+	?solution rdfs:label ?reason .
+	?solution rdf:_0 ?a0 .
+	?solution rdf:_1 ?a1 .
+	?solution rdf:_2 ?a2 .
+}
+WHERE {
+	{
+		?uri0 rdfs:label ?label0
+			FILTER (
+		    	isLiteral(?label0) &&
+		    	regex(?label0, "{{{regexp}}}", "i")
+		    ) .
+		BIND (substr(?label0, 0, 100) as ?reason)
+
+		BIND (?uri0 as ?a0)
+		BIND (UUID() as ?solution)
+	}
+	UNION
+	{
+		?uri0 ?predicate ?uri1 .
+
+		# it seems that if I move these outside of the UNION, ?labelX is not bound in here anymore
+		{{#words}}
+			?uri{{index}} rdfs:label ?label{{index}} .
+			    FILTER (
+			    	isLiteral(?label{{index}}) &&
+			    	regex(?label{{index}}, "{{{source}}}", "i")
+			    ) .
+		{{/words}}
+
+		?predicate rdfs:label ?predicateLabel .
+
+		BIND ( IF(?predicate = rdfs:member, "", ?predicateLabel + ": ") as ?predicateReason )
+
+		BIND (substr(?label0 + ' > ' +?predicateReason + ?label1, 0, 100) as ?reason)
+		BIND (?uri0 as ?a0)
+		BIND (?predicate as ?a1)
+		BIND (?uri1 as ?a2)
+		BIND (UUID() as ?solution)
+	}
+	UNION
+	{
+		?uri0 ?uri1 ?object .
+
+		{{#words}}
+			?uri{{index}} rdfs:label ?label{{index}} .
+			    FILTER (
+			    	isLiteral(?label{{index}}) &&
+			    	regex(?label{{index}}, "{{{source}}}", "i")
+			    ) .
+		{{/words}}
+
+		?object rdfs:label ?objectLabel .
+
+		BIND (substr(?label0 + ' > ' + ?label1 + ': ' + ?objectLabel, 0, 100) as ?reason)
+		BIND (?uri0 as ?a0)
+		BIND (?uri1 as ?a1)
+		BIND (?object as ?a2)
+
+		BIND (UUID() as ?solution)
+	}
+
+}
+LIMIT 30

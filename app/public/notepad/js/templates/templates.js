@@ -196,6 +196,75 @@ WHERE { \n\
  \n\
 } \n\
 ";
+$.notepad.templates.find_match_by_path = "CONSTRUCT { \n\
+	?uri0 rdfs:label ?label0 . \n\
+	?uri1 rdfs:label ?label1 . \n\
+ \n\
+	?solution inst:reason ?reason . \n\
+	?solution rdfs:label ?reason . \n\
+	?solution rdf:_0 ?a0 . \n\
+	?solution rdf:_1 ?a1 . \n\
+	?solution rdf:_2 ?a2 . \n\
+} \n\
+WHERE { \n\
+	{ \n\
+		?uri0 rdfs:label ?label0 \n\
+			FILTER ( \n\
+		    	isLiteral(?label0) && \n\
+		    	regex(?label0, \"{{{regexp}}}\", \"i\") \n\
+		    ) . \n\
+		BIND (substr(?label0, 0, 100) as ?reason) \n\
+ \n\
+		BIND (?uri0 as ?a0) \n\
+		BIND (UUID() as ?solution) \n\
+	} \n\
+	UNION \n\
+	{ \n\
+		?uri0 ?predicate ?uri1 . \n\
+ \n\
+		# it seems that if I move these outside of the UNION, ?labelX is not bound in here anymore \n\
+		{{#words}} \n\
+			?uri{{index}} rdfs:label ?label{{index}} . \n\
+			    FILTER ( \n\
+			    	isLiteral(?label{{index}}) && \n\
+			    	regex(?label{{index}}, \"{{{source}}}\", \"i\") \n\
+			    ) . \n\
+		{{/words}} \n\
+ \n\
+		?predicate rdfs:label ?predicateLabel . \n\
+ \n\
+		BIND ( IF(?predicate = rdfs:member, \"\", ?predicateLabel + \": \") as ?predicateReason ) \n\
+ \n\
+		BIND (substr(?label0 + ' > ' +?predicateReason + ?label1, 0, 100) as ?reason) \n\
+		BIND (?uri0 as ?a0) \n\
+		BIND (?predicate as ?a1) \n\
+		BIND (?uri1 as ?a2) \n\
+		BIND (UUID() as ?solution) \n\
+	} \n\
+	UNION \n\
+	{ \n\
+		?uri0 ?uri1 ?object . \n\
+ \n\
+		{{#words}} \n\
+			?uri{{index}} rdfs:label ?label{{index}} . \n\
+			    FILTER ( \n\
+			    	isLiteral(?label{{index}}) && \n\
+			    	regex(?label{{index}}, \"{{{source}}}\", \"i\") \n\
+			    ) . \n\
+		{{/words}} \n\
+ \n\
+		?object rdfs:label ?objectLabel . \n\
+ \n\
+		BIND (substr(?label0 + ' > ' + ?label1 + ': ' + ?objectLabel, 0, 100) as ?reason) \n\
+		BIND (?uri0 as ?a0) \n\
+		BIND (?uri1 as ?a1) \n\
+		BIND (?object as ?a2) \n\
+ \n\
+		BIND (UUID() as ?solution) \n\
+	} \n\
+ \n\
+} \n\
+LIMIT 30";
 $.notepad.templates.find_predicate_label_by_label = "CONSTRUCT { \n\
 	?predicate rdfs:label ?label . \n\
 	?predicate inst:inverseLabel ?inverseLabel . \n\
@@ -257,6 +326,18 @@ WHERE { \n\
 	} \n\
 } \n\
 LIMIT 30";
+$.notepad.templates.insert_instruct_backup = "PREFIX local:			<http://localhost:3030/dev#> \n\
+PREFIX prod:			<http://instruct.vonholzen.org:3030/dev#> \n\
+PREFIX prod-endpoint:	<http://instruct.vonholzen.org:3030/dev/query?default> \n\
+ \n\
+INSERT { \n\
+	GRAPH local:instruct-backup { ?s ?p ?o } \n\
+} \n\
+WHERE { \n\
+	SERVICE prod-endpoint: { \n\
+  		GRAPH prod:instruct { ?s ?p ?o . } \n\
+	} \n\
+}";
 $.notepad.templates.s_subject_label_by_label = "SELECT DISTINCT ?subject ?label (substr(?label, 0, 100) as ?reason) \n\
 WHERE { \n\
     ?subject ?labelPredicate ?label \n\
@@ -268,6 +349,17 @@ WHERE { \n\
 } \n\
 ORDER BY strlen(?label) \n\
 LIMIT 30";
+$.notepad.templates.select_from_prod = "PREFIX local:			<http://localhost:3030#> \n\
+PREFIX prod:			<http://instruct.vonholzen.org:3030/dev#> \n\
+PREFIX prod-endpoint:	<http://instruct.vonholzen.org:3030/dev/query?default> \n\
+ \n\
+SELECT ?s ?p ?o \n\
+WHERE \n\
+{ \n\
+	SERVICE prod-endpoint: \n\
+	{ graph prod:instruct { ?s ?p ?o . } } \n\
+} \n\
+limit 10";
 $.notepad.templates.templates = "CONSTRUCT { \n\
 	?uri notepad:template ?uriTemplate . \n\
  	?uri notepad:template ?classTemplate . \n\
@@ -287,6 +379,15 @@ WHERE \n\
 } \n\
 # query:cache \n\
 ";
+$.notepad.templates.test_select = "select ?start \n\
+WHERE { \n\
+	?start rdfs:label ?label . \n\
+ \n\
+	# rdfs:member behaves differently than another predicate (rdfs:member2) for example \n\
+	?start rdfs:member ?end . \n\
+ \n\
+	# ?start ?p ?end FILTER (?p = rdfs:member) . \n\
+}";
 $.notepad.templates.triples = "CONSTRUCT { \n\
 	{{{subject}}} \n\
 	{{^subject}} \n\

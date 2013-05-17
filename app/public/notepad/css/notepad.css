@@ -302,6 +302,15 @@ ul {
     outline:none;
 }
 
+/*
+ * search, autocomplete
+ */
+.highlight {
+    color: blue;
+    font-weight: bold;
+}
+
+
 
 /*
  * COLUMNS, HEADERES

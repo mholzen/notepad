@@ -1,0 +1,12 @@
+PREFIX local:			<http://localhost:3030/dev#>
+PREFIX prod:			<http://instruct.vonholzen.org:3030/dev#>
+PREFIX prod-endpoint:	<http://instruct.vonholzen.org:3030/dev/query?default>
+
+INSERT {
+	GRAPH local:instruct-backup { ?s ?p ?o }
+}
+WHERE {
+	SERVICE prod-endpoint: {
+  		GRAPH prod:instruct { ?s ?p ?o . }
+	}
+}
