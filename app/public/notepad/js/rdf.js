@@ -62,7 +62,9 @@
     String.prototype.contains = function(text) {
         return (this.indexOf(text)!=-1);
     };
-
+    String.prototype.ellipses = function(len) { 
+        return (this.length > len) ? this.substr(0, len) + "..." : this; 
+    }
     _.mixin(_.str.exports());
 
     function guidGenerator() {
@@ -453,7 +455,7 @@
                 })
             } },
             subjects: { value: function(predicate, object) {
-                return _.keys( this.subjectIndex(predicate, object) );
+                return _.uniq( this.triples(predicate, object).map(function(t) { return t.subject; }) );
             } },
             subject: { value: function(predicate, object) {
                 var subjects = _.keys( this.subjectIndex(predicate, object) );
@@ -469,7 +471,7 @@
                 return _.reduce(this.triples(predicate, object), function(memo, triple) { memo[triple.subject] = triple; return memo; }, {});
             } },
             objects: { value: function(subject, predicate) {
-                return _.keys( this.objectIndex(subject, predicate) );
+                return _.uniq( this.triples(subject, predicate).map(function(t) { return t.object; }) );
             } },
             object: { value: function(subject, predicate) {
                 var objects = _.keys( this.objectIndex(subject, predicate) );
@@ -531,6 +533,63 @@
             literal: { value: function(subject, predicate) {
                 return this.literals(subject, predicate).join();
             } },
+            connectedTo: { value: function(subject, predicate) {
+                var connected = new Triples();
+                var visited = {};
+                var toTraverse = new Array(0);
+                toTraverse.push(subject);
+                
+                while (toTraverse.length > 0) {
+                    var pivot = toTraverse.pop();
+                    this.triples(pivot, predicate).forEach(function(triple) {
+                        connected.add(triple);
+                        visited[pivot] = true;
+                        if ( ! visited[triple.object] ) {
+                            toTraverse.push(triple.object);
+                        }
+                    });
+                }
+                return connected;
+            } },
+            nodes: { value: function() {
+                var withoutLabels = this.filter(function(t) { return t.predicate != 'rdfs:label'; });
+                var subjects = withoutLabels.subjects();
+                var objects = withoutLabels.objects();
+                var nodes = _.uniq(subjects.concat(objects));
+                return nodes;
+            } },
+            toNodesLinks: { value: function() {
+                var nodes = this.nodes();
+                var nodeIndexByUri = {};
+                nodes = nodes.map(function(object, i) {
+                    nodeIndexByUri[object.toString()] = i;
+                    return {id: i, value: object, size: 5000};
+                });
+
+                var triples = this;
+                this.triples(undefined, 'rdfs:label').forEach(function(triple) {
+
+                    if (triples.triples(undefined, triple.subject).length > 0) {
+                        // a label for a predicate
+                        return;
+                    }
+
+                    var nodeIndex = nodeIndexByUri[triple.subject.toString()];
+                    var node = nodes[nodeIndex];
+                    node.name = triple.object;
+                });
+
+                var links = this
+                    .filter(function(triple) { return triple.predicate != 'rdfs:label'; })
+                    .map(function(triple) { 
+                        var source = nodeIndexByUri[triple.subject.toString()];
+                        var target = nodeIndexByUri[triple.object.toString()];
+                        if (source===undefined || target===undefined) throw new Error ("missing node");
+                        return {source: source, target: target, value: triple.predicate};
+                    });
+                return {nodes:nodes, links:links};
+            } },
+
         };
 
         return function() {

@@ -1,0 +1,15 @@
+CONSTRUCT {
+	?note1 rdfs:label ?label1 .
+	?note2 rdfs:label ?label2 .
+	?note1 ?predicate ?note2 .
+}
+WHERE {
+    ?note1 rdfs:label ?label1
+    	FILTER (isLiteral(?label1)) .
+
+	?note1 ?predicate ?note2 .
+
+    ?note2 rdfs:label ?label2
+    	FILTER (isLiteral(?label2)) .
+}
+LIMIT 600

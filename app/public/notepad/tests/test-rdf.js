@@ -287,3 +287,12 @@ test("when I query for labels", function() {
     ok(triples.getLabels(':s2').contains(triples[2]), "it should provide the second of two labels for s2");
     ok(!triples.getLabels(':s2').contains(triples[0]), "it should not provide a label for s1");
 });
+
+test("nodes", function() {
+    var graph = toTriples(':s1 :p :s2', ':s1 :p :s3', ':s2 :p :s3');
+    var nl = graph.toNodesLinks();
+    assertThat(nl.nodes, hasItem(hasMember('value', ':s1')));
+    assertThat(nl.nodes, hasItem(hasMember('value', ':s2')));
+    assertThat(nl.nodes, hasItem(hasMember('value', ':s3')));
+    assertThat(nl.links, hasSize(3));
+});
