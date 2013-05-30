@@ -62,7 +62,7 @@ FusekiEndpoint.prototype = {
         return $.ajax({url: this.queryUrl(), dataType: "json", data: options, traditional: true})
         .then(function(response, status, xhr) {
             var type = xhr.getResponseHeader("Content-Type");
-            if (type.contains('application/rdf+json')) {
+            if (type && type.contains('application/rdf+json')) {
                 var databank = $.rdf.databank();
                 databank.load(response);
                 response = $.notepad.toTriples(databank);

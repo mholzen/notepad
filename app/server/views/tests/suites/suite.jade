@@ -1,0 +1,24 @@
+!!! 5
+html
+	head
+		title= "QUnit SubsuiteRunner Test Suite"
+
+		// QUnit 
+		script(src='/notepad/external/jquery.js')
+
+		// QUnit
+		link(rel='stylesheet', href='/notepad/external/qunit.css')
+		script(src='/notepad/external/qunit.js')		
+		script(src='/notepad/external/jsmockito-1.0.4.js')
+		script(src='/notepad/external/jshamcrest-0.5.2.js')
+		script(src='/notepad/js/tests/qunit-additions.js')
+		script(src='/notepad/js/tests/integration.js')
+
+		script(src='/notepad/external/qunit-composite.js')
+		link(rel='stylesheet', href='/notepad/external/qunit-composite.css')
+
+		block suite
+
+	body
+		div#qunit
+		div#qunit-fixture

@@ -1,11 +1,8 @@
 CONSTRUCT {
-	?subject ?labelPredicate ?label .
+	?subject rdfs:label ?label .
 }
 WHERE {
-    ?subject ?labelPredicate ?label
-    FILTER (
-    	isLiteral(?label) &&
-    	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent, nmo:content)
-    )
+    ?subject rdfs:label ?label
+    FILTER (isLiteral(?label))
 }
 LIMIT 200

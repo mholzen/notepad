@@ -213,6 +213,10 @@ module.exports = function(app) {
 	  	});
 	});
 
+	app.get('/tests/suites/:name', function(req, res) {
+		res.render('tests/suites/'+req.params.name, { name: req.params.name });
+	});
+
 	app.get('/tests/:name', function(req, res) {
 		res.render('tests/test', { name: req.params.name });
 	});

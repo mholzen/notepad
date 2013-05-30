@@ -48,36 +48,25 @@ asyncTest("insert data", function() {
     });
 });
 
-test("when I delete all content, then", function() {
-    stop();
-    expect(2);
+asyncTest("when I delete all content, then", function() {
     var endpoint = this.endpoint;
-    endpoint.clear( function(){
-        ok(true, "the endpoint should clear");
-        endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
-            equal(subjects.length,0, "the endpoint should be empty after clear");
-            start();
-        });
-    }).error( function(){
-        ok(false,"the endpoint should not generate an error");
+    endpoint.clear().then(function() {
+        return endpoint.constructAll();
+    }).then(function(results) {
+        assertThat(results, []);
         start();
     });
 });
-test("when query for nodes by labels, then", function() {
-    expect(2);
-    stop();
+asyncTest("when query for nodes by labels, then", function() {
     var endpoint = this.endpoint;
-    endpoint.clear( function(){
-        endpoint.execute("INSERT DATA { <a> rdfs:label 'label' }", function(data) {
-            ok(true,"insert should be successful");
-            setTimeout(function() {
-                endpoint.getSubjectsLabelsByLabel('label',function(subjects) {
-                    equal(subjects.length,1, "endpoint should have one label");
-                    start();
-                });
-            }, 1000);
-        });
-    }).error( function(){ start(); ok(false,"should not receive an error from Fuseki Server"); });
+    endpoint.clear().then(function(){
+        return endpoint.execute("INSERT DATA { <a> rdfs:label 'label' }");
+    }).then(function() {
+        return $.notepad.queries.find_subject_label_by_label.execute(endpoint, {label: 'label'});
+    }).then(function(results) {
+        assertThat(results.literal(), 'label');
+        start();
+    });
 });
 test("when I retrieve a literal with a double quote", function() {
     expect(3);

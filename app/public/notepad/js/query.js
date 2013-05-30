@@ -52,7 +52,9 @@
             return endpoint.execute(sparql, function(results) {
 
                 console.log('[query]', query.name() + ' receives ' + summaryOf(results), results );
-                callback(results);
+                if (callback) {
+                    callback(results);
+                }
             });
         },
         appendPattern: function(pattern) {

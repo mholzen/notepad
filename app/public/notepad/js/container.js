@@ -45,8 +45,11 @@
                 return closestSubject;
             }
         },
-        setUri: function(uri) {
+        _setUri: function(uri) {
             this.element.attr('about', uri);
+        },
+        setUri: function(uri) {
+            this._setUri(uri);
             return this.load();
         },
         getUri: function() {
@@ -54,6 +57,11 @@
             if (subjectElement) {
                 return subjectElement.attr('about');
             }
+        },
+        newUri: function(uri) {
+            var uri = uri || $.notepad.newUri();
+            this._setUri(uri);
+            this.reset();
         },
         getQuery: function() {
             var query = this.options.query || $.notepad.describeObject(this.getSourceElement());

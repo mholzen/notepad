@@ -1,0 +1,9 @@
+extends suite
+
+block suite
+	script
+		QUnit.testSuites([ 
+			"/tests/rdf",
+			"/tests/sparql",
+			"/tests/query"
+		]);

@@ -10,14 +10,35 @@ WHERE { \n\
 	BIND (str(?dataset) as ?label) \n\
 }";
 $.notepad.templates.all_labels = "CONSTRUCT { \n\
-	?subject ?labelPredicate ?label . \n\
+	?subject rdfs:label ?label . \n\
 } \n\
 WHERE { \n\
-    ?subject ?labelPredicate ?label \n\
-    FILTER ( \n\
-    	isLiteral(?label) && \n\
-    	?labelPredicate NOT IN (nmo:htmlMessageContent, nmo:plainTextMessageContent, nmo:content) \n\
-    ) \n\
+    ?subject rdfs:label ?label \n\
+    FILTER (isLiteral(?label)) \n\
+} \n\
+LIMIT 200";
+$.notepad.templates.all_predicates = "CONSTRUCT { \n\
+	?predicate rdfs:label ?label . \n\
+} \n\
+WHERE { \n\
+	?s ?predicate ?o . \n\
+	?predicate rdfs:label ?label . \n\
+}";
+$.notepad.templates.all_sessions = "CONSTRUCT { \n\
+	?session a inst:Session . \n\
+	?session ?p ?o . \n\
+} \n\
+WHERE { \n\
+	?session ?p ?o . \n\
+    { ?session a <http://www.vonholzen.org/instruct/notepad/#Session> } \n\
+    UNION \n\
+	{ ?session a inst:Session }												# current \n\
+	UNION { \n\
+		?session dc:creator ?notepad 											# future \n\
+			FILTER ( ?notepad IN ( \n\
+	  			<http://localhost:8080/notepad>, \n\
+	  			<http://instruct.vonholzen.org/notepad> ) ) \n\
+  	} \n\
 } \n\
 LIMIT 200";
 $.notepad.templates.all_workspaces = "CONSTRUCT { \n\
@@ -132,6 +153,17 @@ WHERE { \n\
 	{{{graphPatterns}}} \n\
 } \n\
 ";
+$.notepad.templates.delete_sessions = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n\
+PREFIX notepad: <http://www.vonholzen.org/instruct/notepad/#> \n\
+ \n\
+DELETE { graph ?g { ?session ?p ?o } } \n\
+INSERT { graph <trash> { ?session ?p ?o } } \n\
+WHERE { \n\
+	graph ?g { \n\
+		?session ?p ?o . \n\
+		?session a <http://www.vonholzen.org/instruct/notepad/#Session> \n\
+	} \n\
+}";
 $.notepad.templates.describe_predicate = "CONSTRUCT { \n\
 	{{{about}}} ?p ?o . \n\
 } \n\
@@ -257,6 +289,22 @@ WHERE { \n\
 	} \n\
 } \n\
 LIMIT 30";
+$.notepad.templates.labeled_graph = "CONSTRUCT { \n\
+	?note1 rdfs:label ?label1 . \n\
+	?note2 rdfs:label ?label2 . \n\
+	?note1 ?predicate ?note2 . \n\
+} \n\
+WHERE { \n\
+    ?note1 rdfs:label ?label1 \n\
+    	FILTER (isLiteral(?label1)) . \n\
+ \n\
+	?note1 ?predicate ?note2 . \n\
+ \n\
+    ?note2 rdfs:label ?label2 \n\
+    	FILTER (isLiteral(?label2)) . \n\
+} \n\
+LIMIT 600 \n\
+";
 $.notepad.templates.s_subject_label_by_label = "SELECT DISTINCT ?subject ?label (substr(?label, 0, 100) as ?reason) \n\
 WHERE { \n\
     ?subject ?labelPredicate ?label \n\
@@ -287,6 +335,15 @@ WHERE \n\
 } \n\
 # query:cache \n\
 ";
+$.notepad.templates.test_select = "select ?start \n\
+WHERE { \n\
+	?start rdfs:label ?label . \n\
+ \n\
+	# rdfs:member behaves differently than another predicate (rdfs:member2) for example \n\
+	?start rdfs:member ?end . \n\
+ \n\
+	# ?start ?p ?end FILTER (?p = rdfs:member) . \n\
+}";
 $.notepad.templates.triples = "CONSTRUCT { \n\
 	{{{subject}}} \n\
 	{{^subject}} \n\

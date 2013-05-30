@@ -1396,7 +1396,7 @@ JsHamcrest.Matchers.hasSize = function(matcher) {
 
     return new JsHamcrest.SimpleMatcher({
         matches: function(actual) {
-            return actual instanceof Array && matcher.matches(actual.length);
+            return matcher.matches(actual.length);
         },
 
         describeTo: function(description) {

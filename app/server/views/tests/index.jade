@@ -1,8 +1,14 @@
 h1 Tests
+h2 Suites
 ul
 	li
-		a(href="/notepad/tests/test-all.html") All
-		ul
-			for name in names
-				li
-					a(href=name)= name
+		a(href="/notepad/tests/test-all.html") All HTML
+	li
+		a(href="/tests/suites/core") core
+
+h2 Unit
+ul
+	for name in names
+		li
+			a(href='./'+name)= name
+
