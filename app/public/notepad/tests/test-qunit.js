@@ -12,6 +12,17 @@ $(document).ready(function() {
         assertThat([2,{a:3},4], hasItem(hasMember('a', equalTo(3))));
         assertThat([2,{a:3},4], not(hasItem(hasMember('a', equalTo(4)))));
         // We don't have the latest version of JsHamcrest
+
+        assertThat(toResource(':b'), matches(/b/));
+    });
+
+    test("using matchTriple", function() {
+        var triple = toTriple(':a', ':b', ':c');
+        assertThat(triple, matchesTriple(':a', ':b', ':c'));
+        assertThat(triple, matchesTriple(containsString('a'), ':b', ':c'));
+
+        var triples = toTriples(triple, toTriple(':a', ':b', ':c2'));
+        assertThat(triples, hasItem(matchesTriple(':a', ':b', matches(/c/) )));    
     });
 
     test("mock function", function() {

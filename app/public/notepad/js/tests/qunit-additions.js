@@ -46,6 +46,36 @@ var equalToObject = function(expected) {
     });
 };
 
+var matchesTriple = function(subject, predicate, object) {
+    if (!JsHamcrest.isMatcher(subject)) {
+        subject = JsHamcrest.Matchers.equalTo(subject);
+    }
+    if (!JsHamcrest.isMatcher(predicate)) {
+        predicate = JsHamcrest.Matchers.equalTo(predicate);
+    }
+    if (!JsHamcrest.isMatcher(object)) {
+        object = JsHamcrest.Matchers.equalTo(object);
+    }
+
+    return new JsHamcrest.SimpleMatcher({
+        matches: function(actual) {
+            if (actual === undefined) { return false; }
+            return subject.matches(actual.subject) &&
+                predicate.matches(actual.predicate) &&
+                object.matches(actual.object);
+        },
+
+        describeTo: function(description) {
+            description.append('matches a triple')
+                .append(' with subject ').appendDescriptionOf(subject)
+                .append(' and predicate ').appendDescriptionOf(predicate)
+                .append(' and object ').appendDescriptionOf(object);
+        }
+    });
+};
+
+
+
 module = function(label, options) {
     if (QUnit.file) {
         label = QUnit.file + ':  '+ label;
@@ -60,7 +90,7 @@ function wrapInEndpoint(element, endpoint) {
     return endpoint;
 }
 
-function testWithTriples(name, triples, testFunction) {
+function testWithEndpoint(name, triples, testFunction) {
     asyncTest(name, function() {
         var context = this;
         TempFusekiEndpoint(triples, function() {
@@ -71,7 +101,7 @@ function testWithTriples(name, triples, testFunction) {
 }
 
 function testWithContainer(name, triples, testFunction) {
-    testWithTriples(name, triples, function() {
+    testWithEndpoint(name, triples, function() {
         this.container = $("<ul>").appendTo("body").endpoint({endpoint: this.endpoint}).container().data('notepadContainer');
         testFunction.call(this);
     });
